@@ -76,6 +76,7 @@ namespace MSchwarz.Net.Zigbee
 
 				switch (_command)
 				{
+					case "DB": _data = new ReceivedSignalStrengthData(); break;
 					case "ND": _data = new NodeDiscoverData(); break;
 					case "NI": _data = new NodeIdentifierData(); break;
 					case "%V": _data = new SupplyVoltageData(); break;
@@ -94,6 +95,8 @@ namespace MSchwarz.Net.Zigbee
 
 			if (_data != null)
 				s += "\r\n" + "value\r\n" + _data;
+			else
+				s += "\r\nvalue = " + ByteUtil.PrintBytes(_value);
 
 			return s;
 		}

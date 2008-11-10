@@ -40,10 +40,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Enums\ApiType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Request\AtCommand.cs" />
     <Compile Include="Request\AtQueueCommand.cs" />
     <Compile Include="Request\AtRemoteCommand.cs" />
+    <Compile Include="Request\AT\ApplyChanges.cs" />
+    <Compile Include="Request\AT\ApiEnable.cs" />
+    <Compile Include="Request\AT\Channel.cs" />
+    <Compile Include="Request\AT\ForceSample.cs" />
+    <Compile Include="Request\AT\ReceivedSignalStrength.cs" />
     <Compile Include="Request\AT\SupplyVoltage.cs" />
     <Compile Include="Request\AT\HardwareVersion.cs" />
     <Compile Include="Request\AT\FirmwareVersion.cs" />
@@ -54,15 +60,16 @@
     <Compile Include="Request\ZigBeeTransmitRequest.cs" />
     <Compile Include="Request\ZNetTxRequest.cs" />
     <Compile Include="Response\AtCommandResponse.cs" />
-    <Compile Include="Response\AtCommandStatus.cs" />
+    <Compile Include="Enums\AtCommandStatus.cs" />
     <Compile Include="Response\AtRemoteCommandResponse.cs" />
+    <Compile Include="Response\AT\ReceivedSignalStrengthData.cs" />
     <Compile Include="Response\AT\SupplyVoltageData.cs" />
     <Compile Include="Response\AT\NodeIdentifierData.cs" />
     <Compile Include="Response\AT\IAtCommandData.cs" />
     <Compile Include="Response\AT\NodeDiscoverData.cs" />
     <Compile Include="Response\NodeIdentification.cs" />
     <Compile Include="Response\XBeeSensorRead.cs" />
-    <Compile Include="Response\ZigBeeDeviceType.cs" />
+    <Compile Include="Enums\ZigBeeDeviceType.cs" />
     <Compile Include="Response\ZigBeeIODataSample.cs" />
     <Compile Include="Response\ZigbeeReceivePacket.cs" />
     <Compile Include="XBee.cs" />

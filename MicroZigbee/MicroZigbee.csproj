@@ -33,6 +33,12 @@
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\.NET Micro Framework\$(MicroFrameworkToolsVersion)\CSharp.Targets" />
   <ItemGroup>
+    <Compile Include="..\Zigbee\Enums\AtCommandStatus.cs">
+      <Link>Enums\AtCommandStatus.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Enums\ZigBeeDeviceType.cs">
+      <Link>Enums\ZigBeeDeviceType.cs</Link>
+    </Compile>
     <Compile Include="..\Zigbee\Request\AtCommand.cs">
       <Link>Request\AtCommand.cs</Link>
     </Compile>
@@ -41,6 +47,15 @@
     </Compile>
     <Compile Include="..\Zigbee\Request\AtRemoteCommand.cs">
       <Link>Request\AtRemoteCommand.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\ApiEnable.cs">
+      <Link>Request\AT\ApiEnable.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\ApplyChanges.cs">
+      <Link>Request\AT\ApplyChanges.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\Channel.cs">
+      <Link>Request\AT\Channel.cs</Link>
     </Compile>
     <Compile Include="..\Zigbee\Request\AT\FirmwareVersion.cs">
       <Link>Request\AT\FirmwareVersion.cs</Link>
@@ -72,9 +87,6 @@
     <Compile Include="..\Zigbee\Response\AtCommandResponse.cs">
       <Link>Response\AtCommandResponse.cs</Link>
     </Compile>
-    <Compile Include="..\Zigbee\Response\AtCommandStatus.cs">
-      <Link>Response\AtCommandStatus.cs</Link>
-    </Compile>
     <Compile Include="..\Zigbee\Response\AtRemoteCommandResponse.cs">
       <Link>Response\AtRemoteCommandResponse.cs</Link>
     </Compile>
@@ -95,9 +107,6 @@
     </Compile>
     <Compile Include="..\Zigbee\Response\XBeeSensorRead.cs">
       <Link>Response\XBeeSensorRead.cs</Link>
-    </Compile>
-    <Compile Include="..\Zigbee\Response\ZigBeeDeviceType.cs">
-      <Link>Response\ZigBeeDeviceType.cs</Link>
     </Compile>
     <Compile Include="..\Zigbee\Response\ZigBeeIODataSample.cs">
       <Link>Response\ZigBeeIODataSample.cs</Link>
@@ -126,7 +135,9 @@
     <Compile Include="..\Zigbee\XBeeResponse.cs">
       <Link>XBeeResponse.cs</Link>
     </Compile>
+    <Compile Include="Enums\ApiType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Response\AT\ReceivedSignalStrengthData.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="MFDpwsExtensions" />
