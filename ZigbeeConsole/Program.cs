@@ -51,8 +51,13 @@ namespace ZigbeeConsole
 				//xbee.SendPacket(new NodeIdentifier("XBEECOORD").GetPacket());
 
 				// read power supply
-				xbee.SendPacket(new SupplyVoltage().GetPacket());
+				//xbee.SendPacket(new SupplyVoltage().GetPacket());
 
+				xbee.SendPacket(new Channel().GetPacket());
+
+				Thread.Sleep(1000);
+
+				xbee.SendPacket(new ReceivedSignalStrength().GetPacket());
 
                 while (true)
                 {
