@@ -33,6 +33,9 @@
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\.NET Micro Framework\$(MicroFrameworkToolsVersion)\CSharp.Targets" />
   <ItemGroup>
+    <Compile Include="..\Zigbee\Enums\ApiType.cs">
+      <Link>Enums\ApiType.cs</Link>
+    </Compile>
     <Compile Include="..\Zigbee\Enums\AtCommandStatus.cs">
       <Link>Enums\AtCommandStatus.cs</Link>
     </Compile>
@@ -99,6 +102,9 @@
     <Compile Include="..\Zigbee\Response\AT\NodeIdentifierData.cs">
       <Link>Response\AT\NodeIdentifierData.cs</Link>
     </Compile>
+    <Compile Include="..\Zigbee\Response\AT\ReceivedSignalStrengthData.cs">
+      <Link>Response\AT\ReceivedSignalStrengthData.cs</Link>
+    </Compile>
     <Compile Include="..\Zigbee\Response\AT\SupplyVoltageData.cs">
       <Link>Response\AT\SupplyVoltageData.cs</Link>
     </Compile>
@@ -135,9 +141,7 @@
     <Compile Include="..\Zigbee\XBeeResponse.cs">
       <Link>XBeeResponse.cs</Link>
     </Compile>
-    <Compile Include="Enums\ApiType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Response\AT\ReceivedSignalStrengthData.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="MFDpwsExtensions" />
