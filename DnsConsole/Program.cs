@@ -26,6 +26,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using MSchwarz.Net.Dns;
 
 namespace DnsConsole
 {
@@ -33,7 +34,18 @@ namespace DnsConsole
 	{
 		static void Main(string[] args)
 		{
+			DnsRequest r = new DnsRequest();
+			
+			Question q = new Question("microsoft.com", DnsType.MX, DnsClass.IN);
+			r.Questions.Add(q);
 
+			DnsResolver dns = new DnsResolver();
+			dns.LoadNetworkConfiguration();			// using local IP configuration
+			
+			DnsResponse res = dns.Resolve(r);
+
+			foreach (Answer a in res.Answers)
+				Console.WriteLine(a);
 		}
 	}
 }
