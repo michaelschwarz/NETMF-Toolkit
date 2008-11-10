@@ -35,7 +35,7 @@ namespace MSchwarz.Net.Zigbee
         private string _command;
         private byte _status;
         private byte[] _value;
-		private IAtCommandResponseData _data = null;
+		private IAtCommandData _data = null;
 
         public string Command
         {
@@ -52,7 +52,7 @@ namespace MSchwarz.Net.Zigbee
             get { return _value; }
         }
 
-		public IAtCommandResponseData Data
+		public IAtCommandData Data
 		{
 			get { return _data; }
 		}
@@ -76,13 +76,26 @@ namespace MSchwarz.Net.Zigbee
 
 				switch (_command)
 				{
-					case "ND": _data = new NodeDiscoverResponseData(); break;
-					case "NI": _data = new NodeIdentifierResponseData(); break;
+					case "ND": _data = new NodeDiscoverData(); break;
+					case "NI": _data = new NodeIdentifierData(); break;
+					case "%V": _data = new SupplyVoltageData(); break;
 				}
 
 				if (_data != null)
 					_data.Fill(_value);
 			}
         }
+
+		public override string ToString()
+		{
+			string s =
+				"command " + _command + "\r\n" +
+				"status  " + this.Status;
+
+			if (_data != null)
+				s += "\r\n" + "value\r\n" + _data;
+
+			return s;
+		}
     }
 }

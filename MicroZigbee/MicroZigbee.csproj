@@ -78,14 +78,17 @@
     <Compile Include="..\Zigbee\Response\AtRemoteCommandResponse.cs">
       <Link>Response\AtRemoteCommandResponse.cs</Link>
     </Compile>
-    <Compile Include="..\Zigbee\Response\AT\IAtCommandResponseData.cs">
-      <Link>Response\AT\IAtCommandResponseData.cs</Link>
+    <Compile Include="..\Zigbee\Response\AT\IAtCommandData.cs">
+      <Link>Response\AT\IAtCommandData.cs</Link>
     </Compile>
-    <Compile Include="..\Zigbee\Response\AT\NodeDiscoverResponseData.cs">
-      <Link>Response\AT\NodeDiscoverResponseData.cs</Link>
+    <Compile Include="..\Zigbee\Response\AT\NodeDiscoverData.cs">
+      <Link>Response\AT\NodeDiscoverData.cs</Link>
     </Compile>
-    <Compile Include="..\Zigbee\Response\AT\NodeIdentifierResponseData.cs">
-      <Link>Response\AT\NodeIdentifierResponseData.cs</Link>
+    <Compile Include="..\Zigbee\Response\AT\NodeIdentifierData.cs">
+      <Link>Response\AT\NodeIdentifierData.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\AT\SupplyVoltageData.cs">
+      <Link>Response\AT\SupplyVoltageData.cs</Link>
     </Compile>
     <Compile Include="..\Zigbee\Response\NodeIdentification.cs">
       <Link>Response\NodeIdentification.cs</Link>

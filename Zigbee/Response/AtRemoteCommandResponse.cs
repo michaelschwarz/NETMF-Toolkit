@@ -37,6 +37,7 @@ namespace MSchwarz.Net.Zigbee
         private string _command;
         private byte _status;
         private byte[] _value;
+		private IAtCommandData _data = null;
 
         public string Command
         {
@@ -65,22 +66,34 @@ namespace MSchwarz.Net.Zigbee
 #else
 			_command = Encoding.ASCII.GetString(br.ReadBytes(2));
 #endif
-
             _status = br.ReadByte();
-			//if (length > 15)
-			//    _value = br.ReadBytes(length - 15);
+
+			if (br.AvailableBytes > 0)
+			{
+				_value = br.ReadBytes(br.AvailableBytes - 1);
+
+				switch (_command)
+				{
+					case "ND": _data = new NodeDiscoverData(); break;
+					case "NI": _data = new NodeIdentifierData(); break;
+					case "%V": _data = new SupplyVoltageData(); break;
+				}
+
+				if (_data != null)
+					_data.Fill(_value);
+			}
         }
 
         public override string ToString()
         {
-            string s = _command + " = ";
+			string s = 
+				"remote command " + _command + "\r\n" +
+				"status  " + this.Status;
 
-            if (_value != null && _value.Length > 0)
-                s += ByteUtil.PrintBytes(_value);
+			if (_data != null)
+				s += "\r\n" + "value\r\n" + _data;
 
-            s += "\r\nstatus = " + _status;
-
-            return s;
+			return s;
         }
     }
 }
