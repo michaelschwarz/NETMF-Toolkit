@@ -42,9 +42,9 @@ namespace MSchwarz.Net.Zigbee
             get { return _command; }
         }
 
-        public int Status
+        public AtCommandStatus Status
         {
-            get { return (int)_status; }
+			get { return (AtCommandStatus)_status; }
         }
 
         public byte[] Value
@@ -77,6 +77,7 @@ namespace MSchwarz.Net.Zigbee
 				switch (_command)
 				{
 					case "ND": _data = new NodeDiscoverResponseData(); break;
+					case "NI": _data = new NodeIdentifierResponseData(); break;
 				}
 
 				if (_data != null)

@@ -51,11 +51,14 @@
     <Compile Include="Request\ZigBeeTransmitRequest.cs" />
     <Compile Include="Request\ZNetTxRequest.cs" />
     <Compile Include="Response\AtCommandResponse.cs" />
+    <Compile Include="Response\AtCommandStatus.cs" />
     <Compile Include="Response\AtRemoteCommandResponse.cs" />
+    <Compile Include="Response\AT\NodeIdentifierResponseData.cs" />
     <Compile Include="Response\AT\IAtCommandResponseData.cs" />
     <Compile Include="Response\AT\NodeDiscoverResponseData.cs" />
     <Compile Include="Response\NodeIdentification.cs" />
     <Compile Include="Response\XBeeSensorRead.cs" />
+    <Compile Include="Response\ZigBeeDeviceType.cs" />
     <Compile Include="Response\ZigBeeIODataSample.cs" />
     <Compile Include="Response\ZigbeeReceivePacket.cs" />
     <Compile Include="XBee.cs" />

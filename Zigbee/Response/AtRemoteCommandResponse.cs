@@ -43,9 +43,9 @@ namespace MSchwarz.Net.Zigbee
             get { return _command; }
         }
 
-        public int Status
+        public AtCommandStatus Status
         {
-            get { return (int)_status; }
+			get { return (AtCommandStatus)_status; }
         }
 
         public byte[] Value

@@ -57,6 +57,9 @@
     <Compile Include="..\Zigbee\Response\AtCommandResponse.cs">
       <Link>Response\AtCommandResponse.cs</Link>
     </Compile>
+    <Compile Include="..\Zigbee\Response\AtCommandStatus.cs">
+      <Link>Response\AtCommandStatus.cs</Link>
+    </Compile>
     <Compile Include="..\Zigbee\Response\AtRemoteCommandResponse.cs">
       <Link>Response\AtRemoteCommandResponse.cs</Link>
     </Compile>
@@ -66,11 +69,17 @@
     <Compile Include="..\Zigbee\Response\AT\NodeDiscoverResponseData.cs">
       <Link>Response\AT\NodeDiscoverResponseData.cs</Link>
     </Compile>
+    <Compile Include="..\Zigbee\Response\AT\NodeIdentifierResponseData.cs">
+      <Link>Response\AT\NodeIdentifierResponseData.cs</Link>
+    </Compile>
     <Compile Include="..\Zigbee\Response\NodeIdentification.cs">
       <Link>Response\NodeIdentification.cs</Link>
     </Compile>
     <Compile Include="..\Zigbee\Response\XBeeSensorRead.cs">
       <Link>Response\XBeeSensorRead.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\ZigBeeDeviceType.cs">
+      <Link>Response\ZigBeeDeviceType.cs</Link>
     </Compile>
     <Compile Include="..\Zigbee\Response\ZigBeeIODataSample.cs">
       <Link>Response\ZigBeeIODataSample.cs</Link>

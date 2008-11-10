@@ -43,16 +43,31 @@ namespace MSchwarz.Net.Zigbee
         private ushort _profileID;
         private ushort _manufactureID;
 
-        public NodeIdentification(ByteReader br)
+		#region Public Properties
+
+		// ...
+
+		public ZigBeeDeviceType DeviceType
+		{
+			get { return (ZigBeeDeviceType)_deviceType; }
+		}
+
+		// ...
+
+		#endregion
+
+		public NodeIdentification(ByteReader br)
             : base(br)
         {
             _address64 = br.ReadUInt64();
             _address16 = br.ReadUInt16();
             _options = br.ReadByte();
+
             _addressNode16 = br.ReadUInt16();
             _addressNode64 = br.ReadUInt64();
 
-            _ni = br.ReadString((byte)0x00);
+            _ni = br.ReadString((byte)0x00);		// TODO: verfiy if this is correct?!
+
             _parent16 = br.ReadUInt16();
             _deviceType = br.ReadByte();
             _sourceAction = br.ReadByte();

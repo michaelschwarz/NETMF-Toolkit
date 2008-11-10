@@ -59,16 +59,27 @@ namespace MSchwarz.Net.Zigbee
             set { _value = value; }
         }
 
-        public AtRemoteCommand(ulong address64, ushort address16, byte options, string command, byte[] value, byte frameID)
+		public AtRemoteCommand(ushort address16, ulong address64, byte options, string command, byte[] value, byte frameID)
         {
             this.ApiID = XBeeApiType.RemoteCommandRequest;
             _frameID = frameID;
+			_address16 = address16;
             _address64 = address64;
-            _address16 = address16;
             _options = options;
             this.Command = command;
             this.Value = value;
         }
+
+		public AtRemoteCommand(ushort address16, ulong address64, byte options, AtCommand cmd, byte frameID)
+		{
+			this.ApiID = XBeeApiType.RemoteCommandRequest;
+			_frameID = frameID;
+			_address16 = address16;
+			_address64 = address64;
+			_options = options;
+			this.Command = cmd.Command;
+			this.Value = cmd.Value;
+		}
 
         public override byte[] GetBytes()
         {
