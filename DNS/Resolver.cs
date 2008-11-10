@@ -82,16 +82,10 @@ namespace MSchwarz.Net.Dns
 		{
 			// http://msdn.microsoft.com/en-us/library/aa394217(VS.85).aspx
 
-
-			//create out management class object using the
-			//Win32_NetworkAdapterConfiguration class to get the attributes
-			//of the network adapter
 			ManagementClass mgmt = new ManagementClass ("Win32_NetworkAdapterConfiguration");
-
-			//create our ManagementObjectCollection to get the attributes with
 			ManagementObjectCollection objCol = mgmt.GetInstances ();
 
-			//loop through all the objects we find
+			// loop through all the objects we find
 			foreach (ManagementObject obj in objCol)
 			{
 				if (_server == null)
@@ -106,7 +100,7 @@ namespace MSchwarz.Net.Dns
 						}
 					}
 				}
-				//dispose of our object
+
 				obj.Dispose ();
 			}
 		}
