@@ -45,7 +45,12 @@ namespace ZigbeeConsole
                 xbee.Open();
 
 				// reading node identifier
-				xbee.SendPacket(new NodeIdentifier().GetPacket());
+				//xbee.SendPacket(new NodeIdentifier().GetPacket());
+
+				// read power supply
+				xbee.SendPacket(new SupplyVoltage().GetPacket());
+
+				Thread.Sleep(1 * 60 * 1000);
 
 				// setting node identifier to XBEECOORD
 				//xbee.SendPacket(new NodeIdentifier("XBEECOORD").GetPacket());

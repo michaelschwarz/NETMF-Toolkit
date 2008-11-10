@@ -1,5 +1,5 @@
 ﻿/* 
- * NodeIdentifierResponseData.cs
+ * NodeDiscoverData.cs
  * 
  * Copyright (c) 2008, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -29,21 +29,73 @@ using MSchwarz.IO;
 
 namespace MSchwarz.Net.Zigbee
 {
-	public class NodeIdentifierResponseData : IAtCommandResponseData
+	public class NodeDiscoverData : IAtCommandData
 	{
+		private ushort _addr16;
+		private ulong _addr64;
 		private string _ni;
- 
+		private ushort _parent16;
+		private byte _deviceType;
+		private byte _sourceAction;
+		private ushort _profileID;
+		private ushort _manufactureID;
+
+		#region Public Properties
+
+		public ushort Address16
+		{
+			get { return _addr16; }
+		}
+
+		public ulong Address64
+		{
+			get { return _addr64; }
+		}
+
+		public string NodeIdentifier
+		{
+			get { return _ni; }
+		}
+
+		// ...
+
+		public ZigBeeDeviceType DeviceType
+		{
+			get { return (ZigBeeDeviceType)_deviceType; }
+		}
+
+		// ...
+
+		#endregion
+
 		public void Fill(byte[] value)
 		{
 			ByteReader nd = new ByteReader(value, ByteOrder.BigEndian);
 
-			if(nd.AvailableBytes > 0)
-				_ni = nd.ReadString((int)nd.AvailableBytes);
+            _addr16 = nd.ReadUInt16();
+            _addr64 = nd.ReadUInt64();
+
+            _ni = nd.ReadString((int)nd.AvailableBytes - 8);
+
+			_parent16 = nd.ReadUInt16();
+			_deviceType = nd.ReadByte();
+			_sourceAction = nd.ReadByte();
+			_profileID = nd.ReadUInt16();
+			_manufactureID = nd.ReadUInt16();
 		}
 
 		public override string ToString()
 		{
-			return (_ni != null ? "NI " + _ni : base.ToString());
+			string s = @"                    MY " + _addr16 + @"
+                 SH SL " + _addr64 + @"
+                    NI " + _ni + @"
+PARENT_NETWORK ADDRESS {3}
+           DEVICE_TYPE {4}
+                STATUS {5}
+            PROFILE_ID {6}
+       MANUFACTURER_ID {7}";
+
+			return s;
 		}
 	}
 }
