@@ -1,0 +1,106 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
+  <PropertyGroup>
+    <AssemblyName>MicroZigbee</AssemblyName>
+    <OutputType>Library</OutputType>
+    <RootNamespace>MicroZigbee</RootNamespace>
+    <ProjectTypeGuids>{b69e3092-b931-443c-abe7-7e7b65f2a37f};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{60B9F011-DF1C-4624-8E04-52A2127C4CEE}</ProjectGuid>
+    <TargetFrameworkVersion>v3.0</TargetFrameworkVersion>
+    <MicroFrameworkToolsVersion>v3.0</MicroFrameworkToolsVersion>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;MF</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\.NET Micro Framework\$(MicroFrameworkToolsVersion)\CSharp.Targets" />
+  <ItemGroup>
+    <Compile Include="..\Zigbee\Request\AtCommand.cs">
+      <Link>Request\AtCommand.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AtQueueCommand.cs">
+      <Link>Request\AtQueueCommand.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AtRemoteCommand.cs">
+      <Link>Request\AtRemoteCommand.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\ZigBeeTransmitRequest.cs">
+      <Link>Request\ZigBeeTransmitRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\ZNetTxRequest.cs">
+      <Link>Request\ZNetTxRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\AtCommandResponse.cs">
+      <Link>Response\AtCommandResponse.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\AtRemoteCommandResponse.cs">
+      <Link>Response\AtRemoteCommandResponse.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\NodeIdentification.cs">
+      <Link>Response\NodeIdentification.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\XBeeSensorRead.cs">
+      <Link>Response\XBeeSensorRead.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\ZigBeeIODataSample.cs">
+      <Link>Response\ZigBeeIODataSample.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\ZigbeeReceivePacket.cs">
+      <Link>Response\ZigbeeReceivePacket.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\XBee.cs">
+      <Link>XBee.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\XBeeApiType.cs">
+      <Link>XBeeApiType.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\XBeeChecksum.cs">
+      <Link>XBeeChecksum.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\XBeePacket.cs">
+      <Link>XBeePacket.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\XBeeReader.cs">
+      <Link>XBeeReader.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\XBeeRequest.cs">
+      <Link>XBeeRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\XBeeResponse.cs">
+      <Link>XBeeResponse.cs</Link>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="MFDpwsExtensions" />
+    <Reference Include="Microsoft.SPOT.Hardware.SerialPort" />
+    <Reference Include="Microsoft.SPOT.IO" />
+    <Reference Include="Microsoft.SPOT.Native" />
+    <Reference Include="System" />
+    <Reference Include="System.IO" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MicroIO\MicroIO.csproj">
+      <Project>{A009B2CC-E9A5-4B53-A132-56F25E4D0CB9}</Project>
+      <Name>MicroIO</Name>
+    </ProjectReference>
+  </ItemGroup>
+</Project>
