@@ -43,8 +43,8 @@ namespace MSchwarz.Net.Zigbee
         private ushort _profileID;
         private ushort _manufactureID;
 
-        public NodeIdentification(short length, ByteReader br)
-            : base(length, br)
+        public NodeIdentification(ByteReader br)
+            : base(br)
         {
             _address64 = br.ReadUInt64();
             _address16 = br.ReadUInt16();

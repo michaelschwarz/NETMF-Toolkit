@@ -44,6 +44,8 @@
     <Compile Include="Request\AtCommand.cs" />
     <Compile Include="Request\AtQueueCommand.cs" />
     <Compile Include="Request\AtRemoteCommand.cs" />
+    <Compile Include="Request\AT\NetworkReset.cs" />
+    <Compile Include="Request\AT\SoftwareReset.cs" />
     <Compile Include="Request\AT\NodeIdentifier.cs" />
     <Compile Include="Request\AT\NodeDiscover.cs" />
     <Compile Include="Request\ZigBeeTransmitRequest.cs" />

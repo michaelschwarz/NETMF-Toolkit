@@ -41,7 +41,7 @@ namespace MSchwarz.Net.Zigbee
 
             _addr16 = nd.ReadUInt16();
             _addr64 = nd.ReadUInt64();
-            _ni = nd.ReadString(value.Length - 8);
+            _ni = nd.ReadString((int)nd.AvailableBytes - 8);
 
 			//Console.WriteLine("PARENT " + ByteUtil.PrintBytes(nd.ReadBytes(2)));
 			//Console.WriteLine("DEVICE_TYPE " + ByteUtil.PrintByte(nd.ReadByte()));
@@ -49,7 +49,19 @@ namespace MSchwarz.Net.Zigbee
 			//Console.WriteLine("PROFILE_ID " + ByteUtil.PrintBytes(nd.ReadBytes(2)));
 			//Console.WriteLine("MANUFACTURER_ID " + ByteUtil.PrintBytes(nd.ReadBytes(2)));
 		}
-	}
 
-	
+		public override string ToString()
+		{
+			string s = @"                    MY " + _addr16 + @"
+                 SH SL " + _addr64 + @"
+                    NI " + _ni + @"
+PARENT_NETWORK ADDRESS {3}
+           DEVICE_TYPE {4}
+                STATUS {5}
+            PROFILE_ID {6}
+       MANUFACTURER_ID {7}";
+
+			return s;
+		}
+	}
 }

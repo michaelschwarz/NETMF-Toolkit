@@ -35,8 +35,8 @@ namespace MSchwarz.Net.Zigbee
 		private ushort _address16;
 		private byte _options;
 
-		public ZigbeeReceivePacket(short length, ByteReader br)
-			: base(length, br)
+		public ZigbeeReceivePacket(ByteReader br)
+			: base(br)
 		{
 		}
 

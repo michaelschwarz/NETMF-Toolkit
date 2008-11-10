@@ -23,6 +23,11 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  */
+/*
+ * MS	08-11-10	changed how data reading is working
+ * 
+ * 
+ */
 using System;
 using System.Text;
 using System.Threading;
@@ -38,7 +43,12 @@ namespace MSchwarz.Net.Zigbee
         private int _baudRate = 9600;
         private SerialPort _serialPort;
 		private MemoryStream _readBuffer = new MemoryStream();
-        
+
+		private bool _isEscapeEnabled = false;
+
+		public delegate void PacketReceivedHandler(XBeeResponse response);
+		public event PacketReceivedHandler OnPacketReceived;
+
         public XBee()
         {
 
@@ -81,10 +91,9 @@ namespace MSchwarz.Net.Zigbee
 					//_serialPort.Write("x");     // not sure if this is a bug or not, but if writing any character on init speeds up first command
                 }
 
-#if(!MF)
-                _serialPort.DataReceived += new SerialDataReceivedEventHandler(_serialPort_DataReceived);
-#endif
-            
+				Thread thd = new Thread(new ThreadStart(this.ReceiveData));
+				thd.Start();
+
             }
             catch (Exception)
             {
@@ -94,108 +103,113 @@ namespace MSchwarz.Net.Zigbee
             return true;
         }
 
+		void ReceiveData()
+		{
+			int bytesToRead = _serialPort.BytesToRead;
+
+			while (true)
+			{
+				if (bytesToRead == 0)
+				{
+					Thread.Sleep(200);
+				}
+				else
+				{
+					byte[] bytes = new byte[1024];		// TODO: what is the maximum size of Zigbee packets?
+
+					if (_serialPort == null || !_serialPort.IsOpen)
+						return;		// TODO: what?
+
+					int bytesRead = _serialPort.Read(bytes, 0, bytesToRead);
+
 #if(!MF)
-        void _serialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
-        {
-            int count = _serialPort.BytesToRead;
-            while(count > 0)
-            {
-                //Console.WriteLine("found " + count + " bytes...");
-
-                byte[] bytes = new byte[count];
-                int readBytes = _serialPort.Read(bytes, 0, count);
-
-                for (int i = 0; i < readBytes; i++)
-                    _readBuffer.WriteByte(bytes[i]);
-
-                count = _serialPort.BytesToRead;
-            }
-
-
-            System.Collections.Generic.List<byte> x = new System.Collections.Generic.List<byte>();
-
-            for(int i=0; i<_readBuffer.Length; i++)
-            {
-				byte b = (byte)_readBuffer.ReadByte();
-
-                //if (XBeePacket.IsSpecialByte(b))
-                //{
-                //    if (b == XBeePacket.PACKET_STARTBYTE)
-                //    {
-                //        x.Add(b);
-                //    }
-                //    else if (b == XBeePacket.PACKET_ESCAPE)
-                //    {
-                //        b = _readBuffer[++i];
-                //        x.Add((byte)(0x20 ^ b));
-                //    }
-                //    //else throw new Exception("");
-                //}
-                //else
-                    x.Add(b);
-            }
-
-			_readBuffer = new MemoryStream(x.Count);
-			_readBuffer.Write(x.ToArray(), 0, x.Count);
-
-            //Console.WriteLine("Received:\r\n" + ByteUtil.PrintBytes(_readBuffer.ToArray()));
-
-            CheckFrame();
-        }
-
+					Console.WriteLine(bytesRead + " bytes");
 #endif
 
-        void CheckFrame()
+					for (int i = 0; i < bytesRead; i++)
+					{
+						if (_isEscapeEnabled && XBeePacket.IsSpecialByte(bytes[i]))
+						{
+							if (bytes[i] == XBeePacket.PACKET_STARTBYTE)
+							{
+								_readBuffer.WriteByte(bytes[i]);
+							}
+							else if (bytes[i] == XBeePacket.PACKET_ESCAPE)
+							{
+								_readBuffer.WriteByte((byte)(0x20 ^ bytes[++i]));
+							}
+							else
+								throw new Exception("This special byte should not appear.");
+						}
+						else
+							_readBuffer.WriteByte(bytes[i]);
+					}
+
+					if (_readBuffer.Length > 4)
+					{
+						_readBuffer.Position = 0;
+						if ((byte)_readBuffer.ReadByte() == XBeePacket.PACKET_STARTBYTE)
+						{
+							bytes = _readBuffer.ToArray();
+							_readBuffer.SetLength(0);
+
+							ByteReader br = new ByteReader(bytes, ByteOrder.BigEndian);
+
+							byte startByte = br.ReadByte();	// start byte
+							short length = br.ReadInt16();
+
+							if (br.AvailableBytes > length)
+							{
+								// verify checksum
+								CheckFrame(br);
+
+								if (bytes.Length - (1 + 2 + length + 1) > 0)
+								{
+									_readBuffer.Write(bytes, 1 + 2 + length + 1, bytes.Length - (1 + 2 + length + 1));
+								}
+							}
+							else
+							{
+								_readBuffer.Write(bytes, 0, bytes.Length);
+							}
+						}
+					}
+				}
+
+				if(_serialPort != null && _serialPort.IsOpen)
+					bytesToRead = _serialPort.BytesToRead;
+			}
+		}
+
+		void CheckFrame(ByteReader br)
         {
-            if (_readBuffer.Length < 4) // we don't have the start byte, the length and the checksum
-                return;
-
-            if (_readBuffer.ReadByte() != XBeePacket.PACKET_STARTBYTE)
-                return;
-
-            ByteReader br = new ByteReader(_readBuffer.ToArray(), ByteOrder.BigEndian);
-            br.ReadByte();      // start byte
-
-            short length = br.ReadInt16();
-            if (br.AvailableBytes < length +1) // the frame data and checksum
-            {
-                return;
-            }
-
-            // verify checksum
-            XBeeChecksum checksum = new XBeeChecksum();
-            byte[] bytes = new byte[length +1];
-            Array.Copy(_readBuffer.ToArray(), 3, bytes, 0, length +1);
-            checksum.AddBytes(bytes);
-
             XBeeApiType apiId = (XBeeApiType)br.Peek();
             XBeeResponse res = null;
 
             switch (apiId)
             {
                 case XBeeApiType.ATCommandResponse:
-                    res = new AtCommandResponse(length, br);
+                    res = new AtCommandResponse(br);
                     break;
                 case XBeeApiType.NodeIdentificationIndicator:
-                    res = new NodeIdentification(length, br);
+                    res = new NodeIdentification(br);
                     break;
                 case XBeeApiType.ZigBeeReceivePacket:
-                    res = new ZigbeeReceivePacket(length, br);
+                    res = new ZigbeeReceivePacket(br);
                     break;
                 case XBeeApiType.XBeeSensorReadIndicator:
-                    res = new XBeeSensorRead(length, br);
+                    res = new XBeeSensorRead(br);
                     break;
                 case XBeeApiType.RemoteCommandResponse:
-                    res = new AtRemoteCommandResponse(length, br);
+                    res = new AtRemoteCommandResponse(br);
                     break;
                 case XBeeApiType.ZigBeeIODataSampleRxIndicator:
-                    res = new ZigBeeIODataSample(length, br);
-                    break;
-                default:
+                    res = new ZigBeeIODataSample(br);
                     break;
             }
 
-			//_readBuffer.RemoveRange(0, length +1 +2 +1);
+			if (res != null && OnPacketReceived != null)
+				OnPacketReceived(res);
 		}
 
         public void Close()
@@ -207,6 +221,9 @@ namespace MSchwarz.Net.Zigbee
         public bool SendPacket(XBeePacket packet)
         {
             byte[] bytes = packet.GetBytes();
+#if(!MF)
+			Console.WriteLine(ByteUtil.PrintBytes(bytes));
+#endif
 
             _serialPort.Write(bytes, 0, bytes.Length);
 
