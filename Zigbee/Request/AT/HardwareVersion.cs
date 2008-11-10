@@ -1,5 +1,5 @@
 ﻿/* 
- * AtCommandResponse.cs
+ * HardwareVersion.cs
  * 
  * Copyright (c) 2008, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -25,64 +25,14 @@
  */
 using System;
 using System.Text;
-using MSchwarz.IO;
 
 namespace MSchwarz.Net.Zigbee
 {
-    public class AtCommandResponse : XBeeResponse
-    {
-        private byte _frameID;
-        private string _command;
-        private byte _status;
-        private byte[] _value;
-		private IAtCommandResponseData _data = null;
-
-        public string Command
-        {
-            get { return _command; }
-        }
-
-        public AtCommandStatus Status
-        {
-			get { return (AtCommandStatus)_status; }
-        }
-
-        public byte[] Value
-        {
-            get { return _value; }
-        }
-
-		public IAtCommandResponseData Data
+	public class HardwareVersion : AtCommand
+	{
+		public HardwareVersion()
+			: base("HV")
 		{
-			get { return _data; }
 		}
-
-        public AtCommandResponse(ByteReader br)
-            : base(br)
-        {
-            _frameID = br.ReadByte();
-
-#if(MF)
-			_command = ByteUtil.GetString(br.ReadBytes(2));
-#else
-			_command = Encoding.ASCII.GetString(br.ReadBytes(2));
-#endif
-
-            _status = br.ReadByte();
-
-			if (br.AvailableBytes > 0)
-			{
-				_value = br.ReadBytes(br.AvailableBytes -1);
-
-				switch (_command)
-				{
-					case "ND": _data = new NodeDiscoverResponseData(); break;
-					case "NI": _data = new NodeIdentifierResponseData(); break;
-				}
-
-				if (_data != null)
-					_data.Fill(_value);
-			}
-        }
-    }
+	}
 }

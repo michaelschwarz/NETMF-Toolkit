@@ -1,5 +1,5 @@
 ﻿/* 
- * IAtCommandResponseData.cs
+ * SupplyVoltageData.cs
  * 
  * Copyright (c) 2008, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -25,11 +25,25 @@
  */
 using System;
 using System.Text;
+using MSchwarz.IO;
 
 namespace MSchwarz.Net.Zigbee
 {
-	public interface IAtCommandResponseData
+	public class SupplyVoltageData : IAtCommandData
 	{
-		void Fill(byte[] bytes);
+		private string _ni;
+ 
+		public void Fill(byte[] value)
+		{
+			ByteReader nd = new ByteReader(value, ByteOrder.BigEndian);
+
+			if(nd.AvailableBytes > 0)
+				_ni = nd.ReadString((int)nd.AvailableBytes);
+		}
+
+		public override string ToString()
+		{
+			return (_ni != null ? "NI " + _ni : base.ToString());
+		}
 	}
 }

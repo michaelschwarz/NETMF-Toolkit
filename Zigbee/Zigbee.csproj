@@ -44,6 +44,9 @@
     <Compile Include="Request\AtCommand.cs" />
     <Compile Include="Request\AtQueueCommand.cs" />
     <Compile Include="Request\AtRemoteCommand.cs" />
+    <Compile Include="Request\AT\SupplyVoltage.cs" />
+    <Compile Include="Request\AT\HardwareVersion.cs" />
+    <Compile Include="Request\AT\FirmwareVersion.cs" />
     <Compile Include="Request\AT\NetworkReset.cs" />
     <Compile Include="Request\AT\SoftwareReset.cs" />
     <Compile Include="Request\AT\NodeIdentifier.cs" />
@@ -53,9 +56,10 @@
     <Compile Include="Response\AtCommandResponse.cs" />
     <Compile Include="Response\AtCommandStatus.cs" />
     <Compile Include="Response\AtRemoteCommandResponse.cs" />
-    <Compile Include="Response\AT\NodeIdentifierResponseData.cs" />
-    <Compile Include="Response\AT\IAtCommandResponseData.cs" />
-    <Compile Include="Response\AT\NodeDiscoverResponseData.cs" />
+    <Compile Include="Response\AT\SupplyVoltageData.cs" />
+    <Compile Include="Response\AT\NodeIdentifierResponse.cs" />
+    <Compile Include="Response\AT\IAtCommandResponse.cs" />
+    <Compile Include="Response\AT\NodeDiscoverResponse.cs" />
     <Compile Include="Response\NodeIdentification.cs" />
     <Compile Include="Response\XBeeSensorRead.cs" />
     <Compile Include="Response\ZigBeeDeviceType.cs" />
