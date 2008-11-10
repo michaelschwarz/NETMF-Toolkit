@@ -35,6 +35,7 @@ namespace MSchwarz.Net.Zigbee
         private string _command;
         private byte _status;
         private byte[] _value;
+		private IAtCommandResponseData _data = null;
 
         public string Command
         {
@@ -50,6 +51,11 @@ namespace MSchwarz.Net.Zigbee
         {
             get { return _value; }
         }
+
+		public IAtCommandResponseData Data
+		{
+			get { return _data; }
+		}
 
         public AtCommandResponse(short length, ByteReader br)
             : base(length, br)
@@ -70,26 +76,18 @@ namespace MSchwarz.Net.Zigbee
 #if(DEBUG && !MF)
                 if (_command == "ND")
                 {
-                    ByteReader nd = new ByteReader(_value, ByteOrder.BigEndian);
-
-                    ushort addr16 = nd.ReadUInt16();
-                    Console.WriteLine("MY " + addr16);
-
-                    ulong addr64 = nd.ReadUInt64();
-                    Console.WriteLine("SH SL " + addr64);
-
-                    string ni = nd.ReadString(length - 24);
-
-                    Console.WriteLine("NI [" + ni + "]");
-                    Console.WriteLine("PARENT " + ByteUtil.PrintBytes(nd.ReadBytes(2)));
-                    Console.WriteLine("DEVICE_TYPE " + ByteUtil.PrintByte(nd.ReadByte()));
-                    Console.WriteLine("STATUS " + ByteUtil.PrintByte(nd.ReadByte()));
-                    Console.WriteLine("PROFILE_ID " + ByteUtil.PrintBytes(nd.ReadBytes(2)));
-                    Console.WriteLine("MANUFACTURER_ID " + ByteUtil.PrintBytes(nd.ReadBytes(2)));
+					_data = new NodeDiscoverResponseData();
                 }
+
+				if (_data != null)
+					_data.Fill(_value);
 #endif
             }
         }
+
+		public virtual void Initialize()
+		{
+		}
 
         public override string ToString()
         {
