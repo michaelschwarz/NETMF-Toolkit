@@ -57,8 +57,8 @@ namespace MSchwarz.Net.Zigbee
 			get { return _data; }
 		}
 
-        public AtCommandResponse(short length, ByteReader br)
-            : base(length, br)
+        public AtCommandResponse(ByteReader br)
+            : base(br)
         {
             _frameID = br.ReadByte();
 
@@ -69,25 +69,20 @@ namespace MSchwarz.Net.Zigbee
 #endif
 
             _status = br.ReadByte();
-            if (length > 6)
-            {
-                _value = br.ReadBytes(length - 6);
 
-#if(DEBUG && !MF)
-                if (_command == "ND")
-                {
-					_data = new NodeDiscoverResponseData();
-                }
+			if (br.AvailableBytes > 0)
+			{
+				_value = br.ReadBytes(br.AvailableBytes -1);
+
+				switch (_command)
+				{
+					case "ND": _data = new NodeDiscoverResponseData(); break;
+				}
 
 				if (_data != null)
 					_data.Fill(_value);
-#endif
-            }
+			}
         }
-
-		public virtual void Initialize()
-		{
-		}
 
         public override string ToString()
         {

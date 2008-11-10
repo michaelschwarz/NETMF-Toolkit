@@ -35,7 +35,7 @@ namespace MSchwarz.Net.Zigbee
 {
     public class AtCommand : XBeeRequest
     {
-        private byte _frameID;
+        private byte _frameID = 0x51;
         private string _command;
 
         protected byte[] _value;
@@ -72,7 +72,7 @@ namespace MSchwarz.Net.Zigbee
         }
 
         public AtCommand(string command, byte[] value)
-            : this(command, value, 1)
+            : this(command, value, 0x51)
         {
         }
 

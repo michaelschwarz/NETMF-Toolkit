@@ -39,23 +39,45 @@ namespace ZigbeeConsole
     {
         static void Main(string[] args)
         {
-            using (XBee xbee = new XBee("COM1", 9600))
+            using (XBee xbee = new XBee("COM4", 9600))
             {
+				xbee.OnPacketReceived += new XBee.PacketReceivedHandler(xbee_OnPacketReceived);
                 xbee.Open();
+
+				//xbee.SendPacket(new NodeIdentifier("XBEECOORD").GetPacket());
 
                 while (true)
                 {
-                    AtCommand at = new AtCommand("ND", new byte[0], 1);
-                    xbee.SendPacket(at.GetPacket());
+					//AtCommand at = new AtCommand("ND", new byte[0], 1);
+                    xbee.SendPacket(new NodeDiscover().GetPacket());
 
-					Thread.Sleep(10 * 1000);
+					Console.WriteLine("Waiting for response...");
+
+					Thread.Sleep(20 * 60 * 1000);
             
-                    AtRemoteCommand rat = new AtRemoteCommand(5526146519841232, 11214, 0x02, "IS", new byte[0], 3);
-                    xbee.SendPacket(rat.GetPacket());
+					//AtRemoteCommand rat = new AtRemoteCommand(5526146519841232, 11214, 0x02, "IS", new byte[0], 3);
+					//xbee.SendPacket(rat.GetPacket());
 
-                    Thread.Sleep(5*1000);
+					//Thread.Sleep(5*1000);
                 }
             }
         }
+
+		static void xbee_OnPacketReceived(XBeeResponse response)
+		{
+			Console.WriteLine("OnPacketReceived " + response);
+
+			AtCommandResponse at = response as AtCommandResponse;
+
+			if (at != null)
+			{
+				Console.WriteLine(at.Command);
+
+				if (at.Data != null)
+					Console.WriteLine(at.Data.ToString());
+				else
+					Console.WriteLine("no data");
+			}
+		}
     }
 }

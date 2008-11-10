@@ -53,8 +53,8 @@ namespace MSchwarz.Net.Zigbee
             get { return _value; }
         }
 
-        public AtRemoteCommandResponse(short length, ByteReader br)
-            : base(length, br)
+        public AtRemoteCommandResponse(ByteReader br)
+            : base(br)
         {
             _frameID = br.ReadByte();
             _address64 = br.ReadUInt64();
@@ -67,8 +67,8 @@ namespace MSchwarz.Net.Zigbee
 #endif
 
             _status = br.ReadByte();
-            if (length > 15)
-                _value = br.ReadBytes(length - 15);
+			//if (length > 15)
+			//    _value = br.ReadBytes(length - 15);
         }
 
         public override string ToString()

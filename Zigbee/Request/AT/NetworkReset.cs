@@ -1,5 +1,5 @@
 ﻿/* 
- * XBeeSensorRead.cs
+ * NetworkReset.cs
  * 
  * Copyright (c) 2008, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -25,34 +25,14 @@
  */
 using System;
 using System.Text;
-using MSchwarz.IO;
 
 namespace MSchwarz.Net.Zigbee
 {
-    public class XBeeSensorRead : XBeeResponse
-    {
-        private ulong _address64;
-        private ushort _address16;
-        private byte _options;
-        private byte _sensors;
-        private ushort _sensorA;
-        private ushort _sensorB;
-        private ushort _sensorC;
-        private ushort _sensorD;
-        private ushort _temperature;
-
-        public XBeeSensorRead(ByteReader br)
-            : base(br)
-        {
-            _address64 = br.ReadUInt64();
-            _address16 = br.ReadUInt16();
-            _options = br.ReadByte();
-            _sensors = br.ReadByte();
-            _sensorA = br.ReadUInt16();
-            _sensorB = br.ReadUInt16();
-            _sensorC = br.ReadUInt16();
-            _sensorD = br.ReadUInt16();
-            _temperature = br.ReadUInt16();
-        }
-    }
+	public class NetworkReset : AtCommand
+	{
+		public NetworkReset()
+			: base("NR")
+		{
+		}
+	}
 }

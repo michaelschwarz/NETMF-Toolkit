@@ -33,7 +33,7 @@ namespace MSchwarz.Net.Zigbee
     {
         private XBeeApiType _apiId;
 
-        public XBeeResponse(short length, ByteReader br)
+        public XBeeResponse(ByteReader br)
         {
             _apiId = (XBeeApiType)br.ReadByte();
         }
