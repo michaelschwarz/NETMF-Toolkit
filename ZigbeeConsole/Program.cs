@@ -44,10 +44,15 @@ namespace ZigbeeConsole
 				xbee.OnPacketReceived += new XBee.PacketReceivedHandler(xbee_OnPacketReceived);
                 xbee.Open();
 
+				// reading node identifier
+				xbee.SendPacket(new NodeIdentifier().GetPacket());
+
+				// setting node identifier to XBEECOORD
 				//xbee.SendPacket(new NodeIdentifier("XBEECOORD").GetPacket());
 
                 while (true)
                 {
+					// discovering the network
 					//AtCommand at = new AtCommand("ND", new byte[0], 1);
                     xbee.SendPacket(new NodeDiscover().GetPacket());
 
@@ -63,7 +68,7 @@ namespace ZigbeeConsole
             }
         }
 
-		static void xbee_OnPacketReceived(XBeeResponse response)
+		static void xbee_OnPacketReceived(XBee sender, XBeeResponse response)
 		{
 			Console.WriteLine("OnPacketReceived " + response);
 
@@ -77,6 +82,17 @@ namespace ZigbeeConsole
 					Console.WriteLine(at.Data.ToString());
 				else
 					Console.WriteLine("no data");
+
+				NodeDiscoverResponseData ni = at.Data as NodeDiscoverResponseData;
+
+				if (ni != null)
+				{
+					// Set node identifier to something else
+					Console.WriteLine("Testing Remote Command...");
+					AtCommand cmd = new NodeIdentifier("HELLOCLIENT");
+					AtRemoteCommand atr = new AtRemoteCommand(ni.Address16, ni.Address64, 0x02, cmd, 1);
+					sender.SendPacket(atr.GetPacket());
+				}
 			}
 		}
     }

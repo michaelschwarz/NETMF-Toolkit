@@ -46,7 +46,7 @@ namespace MSchwarz.Net.Zigbee
 
 		private bool _isEscapeEnabled = false;
 
-		public delegate void PacketReceivedHandler(XBeeResponse response);
+		public delegate void PacketReceivedHandler(XBee sender, XBeeResponse response);
 		public event PacketReceivedHandler OnPacketReceived;
 
         public XBee()
@@ -209,7 +209,7 @@ namespace MSchwarz.Net.Zigbee
             }
 
 			if (res != null && OnPacketReceived != null)
-				OnPacketReceived(res);
+				OnPacketReceived(this, res);
 		}
 
         public void Close()
