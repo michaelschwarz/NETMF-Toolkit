@@ -95,7 +95,7 @@ namespace MSchwarz.Net.Zigbee
 				thd.Start();
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return false;
             }
