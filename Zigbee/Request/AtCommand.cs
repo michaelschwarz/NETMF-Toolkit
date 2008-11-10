@@ -23,6 +23,10 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  */
+/*
+ * MS	08-11-10	changed _value to protected
+ * 
+ */
 using System;
 using System.Text;
 using MSchwarz.IO;
@@ -33,7 +37,8 @@ namespace MSchwarz.Net.Zigbee
     {
         private byte _frameID;
         private string _command;
-        private byte[] _value;
+
+        protected byte[] _value;
 
         public string Command
         {
@@ -79,8 +84,7 @@ namespace MSchwarz.Net.Zigbee
             _frameID = frameID;
         }
 
-
-        public override byte[] GetBytes()
+		public override byte[] GetBytes()
         {
             ByteWriter bw = new ByteWriter(ByteOrder.BigEndian);
 
