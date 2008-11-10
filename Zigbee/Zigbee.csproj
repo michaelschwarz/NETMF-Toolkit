@@ -57,9 +57,9 @@
     <Compile Include="Response\AtCommandStatus.cs" />
     <Compile Include="Response\AtRemoteCommandResponse.cs" />
     <Compile Include="Response\AT\SupplyVoltageData.cs" />
-    <Compile Include="Response\AT\NodeIdentifierResponse.cs" />
-    <Compile Include="Response\AT\IAtCommandResponse.cs" />
-    <Compile Include="Response\AT\NodeDiscoverResponse.cs" />
+    <Compile Include="Response\AT\NodeIdentifierData.cs" />
+    <Compile Include="Response\AT\IAtCommandData.cs" />
+    <Compile Include="Response\AT\NodeDiscoverData.cs" />
     <Compile Include="Response\NodeIdentification.cs" />
     <Compile Include="Response\XBeeSensorRead.cs" />
     <Compile Include="Response\ZigBeeDeviceType.cs" />

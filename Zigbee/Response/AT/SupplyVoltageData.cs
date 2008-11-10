@@ -31,19 +31,41 @@ namespace MSchwarz.Net.Zigbee
 {
 	public class SupplyVoltageData : IAtCommandData
 	{
-		private string _ni;
+		private short _supply;
  
+		#region Public Properties
+
+		/// <summary>
+		/// Gets the voltage in mV on the Vcc pin.
+		/// </summary>
+		public int Voltage
+		{
+			get
+			{
+				return ((int)_supply) * (1200 / 1024);
+			}
+		}
+
+		#endregion
+
 		public void Fill(byte[] value)
 		{
-			ByteReader nd = new ByteReader(value, ByteOrder.BigEndian);
+			ByteReader br = new ByteReader(value, ByteOrder.BigEndian);
 
-			if(nd.AvailableBytes > 0)
-				_ni = nd.ReadString((int)nd.AvailableBytes);
+			_supply = br.ReadInt16();
 		}
 
 		public override string ToString()
 		{
-			return (_ni != null ? "NI " + _ni : base.ToString());
+			return this.Voltage + " mV";
+		}
+
+		public static implicit operator int(SupplyVoltageData d)
+		{
+			if (d == null)
+				throw new ArgumentException("SupplyVoltageData can not be null.", "d");
+
+			return d.Voltage;
 		}
 	}
 }

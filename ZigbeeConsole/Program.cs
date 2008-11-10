@@ -47,13 +47,12 @@ namespace ZigbeeConsole
 				// reading node identifier
 				//xbee.SendPacket(new NodeIdentifier().GetPacket());
 
+				// setting node identifier to XBEECOORD
+				//xbee.SendPacket(new NodeIdentifier("XBEECOORD").GetPacket());
+
 				// read power supply
 				xbee.SendPacket(new SupplyVoltage().GetPacket());
 
-				Thread.Sleep(1 * 60 * 1000);
-
-				// setting node identifier to XBEECOORD
-				//xbee.SendPacket(new NodeIdentifier("XBEECOORD").GetPacket());
 
                 while (true)
                 {
@@ -75,21 +74,13 @@ namespace ZigbeeConsole
 
 		static void xbee_OnPacketReceived(XBee sender, XBeeResponse response)
 		{
-			Console.WriteLine("OnPacketReceived " + response);
+			Console.WriteLine("OnPacketReceived\r\n" + response);
 
 			AtCommandResponse at = response as AtCommandResponse;
 
 			if (at != null)
 			{
-				Console.WriteLine(at.Command);
-
-				if (at.Data != null)
-					Console.WriteLine(at.Data.ToString());
-				else
-					Console.WriteLine("no data");
-
-				NodeDiscoverResponseData ni = at.Data as NodeDiscoverResponseData;
-
+				NodeDiscoverData ni = at.Data as NodeDiscoverData;
 				if (ni != null)
 				{
 					// Set node identifier to something else

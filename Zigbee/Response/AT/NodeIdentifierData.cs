@@ -43,7 +43,7 @@ namespace MSchwarz.Net.Zigbee
 
 		public override string ToString()
 		{
-			return (_ni != null ? "NI " + _ni : base.ToString());
+			return (_ni != null ? "NI " + _ni : "-no data-");
 		}
 	}
 }
