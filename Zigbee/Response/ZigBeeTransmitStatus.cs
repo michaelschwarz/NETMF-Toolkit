@@ -1,5 +1,5 @@
 ﻿/* 
- * ZigBeeReceivePacket.cs
+ * ZigBeeTransmitStatus.cs
  * 
  * Copyright (c) 2008, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -29,44 +29,50 @@ using MSchwarz.IO;
 
 namespace MSchwarz.Net.Zigbee
 {
-	public class ZigBeeReceivePacket : XBeeResponse
+	public class ZigBeeTransmitStatus : XBeeResponse
 	{
+		private byte _frameID;
 		private ushort _address16;
-		private ulong _address64;
-		private byte _options;
-		private byte[] _rfdata;
+		private byte _retryCount;
+		private byte _deliveryStatus;
+		private byte _discoveryStatus;
 
 		#region Public Properties
 
 		// ...
 
-		public byte[] RFData
+		public DeliveryStatusType DeliveryStatus
 		{
-			get { return _rfdata; }
+			get { return (DeliveryStatusType)_deliveryStatus; }
 		}
 
+		public DiscoveryStatusType DiscoveryStatus
+		{
+			get { return (DiscoveryStatusType)_discoveryStatus; }
+		}
+		
 		// ...
 
 		#endregion
 
-		public ZigBeeReceivePacket(short length, ByteReader br)
+		public ZigBeeTransmitStatus(short length, ByteReader br)
 			: base(br)
 		{
-			_address64 = br.ReadUInt64();
+			_frameID = br.ReadByte();
 			_address16 = br.ReadUInt16();
-			_options = br.ReadByte();
-
-			_rfdata = br.ReadBytes(length - 12);
+			_retryCount = br.ReadByte();
+			_deliveryStatus = br.ReadByte();
+			_discoveryStatus = br.ReadByte();
 		}
 
 		public override string ToString()
 		{
 			string s = "";
 
-			s += "\taddress64 = " + _address64 + "\r\n";
 			s += "\taddress16 = " + _address16 + "\r\n";
-			s += "\toptions   = " + _options.ToString("X2") + "\r\n";
-			s += "\tvalue     = " + ByteUtil.PrintBytes(_rfdata);
+			s += "\tretries   = " + _retryCount + "\r\n";
+			s += "\tdelivery  = " + this.DeliveryStatus + "\r\n";
+			s += "\tdiscovery = " + this.DiscoveryStatus;
 
 			return s;
 		}

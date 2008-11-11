@@ -33,16 +33,16 @@ namespace MSchwarz.Net.Zigbee
 		/// <summary>
 		/// Disabled (Transparent operation)
 		/// </summary>
-		Disabled = 0,
+		Disabled = 0x00,
 
 		/// <summary>
 		/// API enabled
 		/// </summary>
-		Enabled = 1,
+		Enabled = 0x01,
 
 		/// <summary>
 		/// API enabled (with escaped characters)
 		/// </summary>
-		EnabledWithEscaped = 2
+		EnabledWithEscaped = 0x02
 	}
 }

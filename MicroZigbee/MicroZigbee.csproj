@@ -39,6 +39,15 @@
     <Compile Include="..\Zigbee\Enums\AtCommandStatus.cs">
       <Link>Enums\AtCommandStatus.cs</Link>
     </Compile>
+    <Compile Include="..\Zigbee\Enums\DeliveryStatusType.cs">
+      <Link>Enums\DeliveryStatusType.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Enums\DiscoveryStatusType.cs">
+      <Link>Enums\DiscoveryStatusType.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Enums\XBeeApiType.cs">
+      <Link>Enums\XBeeApiType.cs</Link>
+    </Compile>
     <Compile Include="..\Zigbee\Enums\ZigBeeDeviceType.cs">
       <Link>Enums\ZigBeeDeviceType.cs</Link>
     </Compile>
@@ -84,9 +93,6 @@
     <Compile Include="..\Zigbee\Request\ZigBeeTransmitRequest.cs">
       <Link>Request\ZigBeeTransmitRequest.cs</Link>
     </Compile>
-    <Compile Include="..\Zigbee\Request\ZNetTxRequest.cs">
-      <Link>Request\ZNetTxRequest.cs</Link>
-    </Compile>
     <Compile Include="..\Zigbee\Response\AtCommandResponse.cs">
       <Link>Response\AtCommandResponse.cs</Link>
     </Compile>
@@ -120,11 +126,11 @@
     <Compile Include="..\Zigbee\Response\ZigbeeReceivePacket.cs">
       <Link>Response\ZigbeeReceivePacket.cs</Link>
     </Compile>
+    <Compile Include="..\Zigbee\Response\ZigBeeTransmitStatus.cs">
+      <Link>Response\ZigBeeTransmitStatus.cs</Link>
+    </Compile>
     <Compile Include="..\Zigbee\XBee.cs">
       <Link>XBee.cs</Link>
-    </Compile>
-    <Compile Include="..\Zigbee\XBeeApiType.cs">
-      <Link>XBeeApiType.cs</Link>
     </Compile>
     <Compile Include="..\Zigbee\XBeeChecksum.cs">
       <Link>XBeeChecksum.cs</Link>

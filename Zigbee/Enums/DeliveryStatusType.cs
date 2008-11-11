@@ -1,5 +1,5 @@
 ﻿/* 
- * ZigBeeReceivePacket.cs
+ * DeliveryStatusType.cs
  * 
  * Copyright (c) 2008, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -25,50 +25,17 @@
  */
 using System;
 using System.Text;
-using MSchwarz.IO;
 
 namespace MSchwarz.Net.Zigbee
 {
-	public class ZigBeeReceivePacket : XBeeResponse
+	public enum DeliveryStatusType : byte
 	{
-		private ushort _address16;
-		private ulong _address64;
-		private byte _options;
-		private byte[] _rfdata;
-
-		#region Public Properties
-
-		// ...
-
-		public byte[] RFData
-		{
-			get { return _rfdata; }
-		}
-
-		// ...
-
-		#endregion
-
-		public ZigBeeReceivePacket(short length, ByteReader br)
-			: base(br)
-		{
-			_address64 = br.ReadUInt64();
-			_address16 = br.ReadUInt16();
-			_options = br.ReadByte();
-
-			_rfdata = br.ReadBytes(length - 12);
-		}
-
-		public override string ToString()
-		{
-			string s = "";
-
-			s += "\taddress64 = " + _address64 + "\r\n";
-			s += "\taddress16 = " + _address16 + "\r\n";
-			s += "\toptions   = " + _options.ToString("X2") + "\r\n";
-			s += "\tvalue     = " + ByteUtil.PrintBytes(_rfdata);
-
-			return s;
-		}
+		Success = 0x00,
+		CCAFailure = 0x02,
+		NetworkACKFailure = 0x21,
+		NotJoinedToNetwork = 0x22,
+		SelfAddressed = 0x23,
+		AddressNotFound = 0x24,
+		RouteNotFound = 0x25
 	}
 }
