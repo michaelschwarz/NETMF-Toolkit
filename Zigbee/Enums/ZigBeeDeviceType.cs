@@ -30,8 +30,8 @@ namespace MSchwarz.Net.Zigbee
 {
 	public enum ZigBeeDeviceType : byte
 	{
-		Coordinator = 0,
-		Router = 1,
-		EndDevice = 2
+		Coordinator = 0x00,
+		Router = 0x01,
+		EndDevice = 0x02
 	}
 }

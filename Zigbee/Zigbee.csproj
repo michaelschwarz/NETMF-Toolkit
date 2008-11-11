@@ -41,6 +41,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Enums\ApiType.cs" />
+    <Compile Include="Enums\DiscoveryStatusType.cs" />
+    <Compile Include="Enums\DeliveryStatusType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Request\AtCommand.cs" />
     <Compile Include="Request\AtQueueCommand.cs" />
@@ -58,7 +60,6 @@
     <Compile Include="Request\AT\NodeIdentifier.cs" />
     <Compile Include="Request\AT\NodeDiscover.cs" />
     <Compile Include="Request\ZigBeeTransmitRequest.cs" />
-    <Compile Include="Request\ZNetTxRequest.cs" />
     <Compile Include="Response\AtCommandResponse.cs" />
     <Compile Include="Enums\AtCommandStatus.cs" />
     <Compile Include="Response\AtRemoteCommandResponse.cs" />
@@ -67,13 +68,14 @@
     <Compile Include="Response\AT\NodeIdentifierData.cs" />
     <Compile Include="Response\AT\IAtCommandData.cs" />
     <Compile Include="Response\AT\NodeDiscoverData.cs" />
+    <Compile Include="Response\ZigBeeTransmitStatus.cs" />
     <Compile Include="Response\NodeIdentification.cs" />
     <Compile Include="Response\XBeeSensorRead.cs" />
     <Compile Include="Enums\ZigBeeDeviceType.cs" />
     <Compile Include="Response\ZigBeeIODataSample.cs" />
     <Compile Include="Response\ZigBeeReceivePacket.cs" />
     <Compile Include="XBee.cs" />
-    <Compile Include="XBeeApiType.cs" />
+    <Compile Include="Enums\XBeeApiType.cs" />
     <Compile Include="XBeeChecksum.cs" />
     <Compile Include="XBeePacket.cs" />
     <Compile Include="XBeeReader.cs" />

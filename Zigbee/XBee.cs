@@ -199,9 +199,17 @@ namespace MSchwarz.Net.Zigbee
                 case XBeeApiType.RemoteCommandResponse:
 					res = new AtRemoteCommandResponse(length, br);
                     break;
-                case XBeeApiType.ZigBeeIODataSampleRxIndicator:
+				case XBeeApiType.ZigBeeIODataSampleRxIndicator:
 					res = new ZigBeeIODataSample(length, br);
-                    break;
+					break;
+				case XBeeApiType.ZigBeeTransmitStatus:
+					res = new ZigBeeTransmitStatus(length, br);
+					break;
+				default:
+#if(!MF)
+					Console.WriteLine("Could not handle API message " + apiId + ".");
+#endif
+					break;
             }
 
 			if (res != null && OnPacketReceived != null)

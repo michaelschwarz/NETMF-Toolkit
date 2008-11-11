@@ -30,9 +30,9 @@ namespace MSchwarz.Net.Zigbee
 {
 	public enum AtCommandStatus : byte
 	{
-		Ok = 0,
-		Error = 1,
-		InvalidCommand = 2,
-		InvalidParameter = 3
+		Ok = 0x00,
+		Error = 0x01,
+		InvalidCommand = 0x02,
+		InvalidParameter = 0x03
 	}
 }
