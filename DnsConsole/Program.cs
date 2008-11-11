@@ -34,9 +34,12 @@ namespace DnsConsole
 	{
 		static void Main(string[] args)
 		{
+			// Retreiving the mail record (MX) of a domain
+
+			Console.WriteLine("Retreiving MX record for domain google.com...");
+
 			DnsRequest r = new DnsRequest();
-			
-			Question q = new Question("microsoft.com", DnsType.MX, DnsClass.IN);
+			Question q = new Question("google.com", DnsType.MX, DnsClass.IN);
 			r.Questions.Add(q);
 
 			DnsResolver dns = new DnsResolver();
@@ -46,6 +49,37 @@ namespace DnsConsole
 
 			foreach (Answer a in res.Answers)
 				Console.WriteLine(a);
+
+			Console.WriteLine();
+			Console.WriteLine();
+
+			// Retreiving the IP address of an host
+
+			Console.WriteLine("Retreiving A record for domain www.microsoft.com...");
+
+			r = new DnsRequest();
+			r.Questions.Add(new Question("www.microsoft.com", DnsType.A, DnsClass.IN));
+
+			res = dns.Resolve(r);
+
+			foreach (Answer a in res.Answers)
+				Console.WriteLine(a);
+
+			Console.WriteLine();
+			Console.WriteLine();
+
+			// Retreiving the IP address of an host
+
+			Console.WriteLine("Retreiving TXT record (i.e. SPF) for domain microsoft.com...");
+
+			r = new DnsRequest();
+			r.Questions.Add(new Question("microsoft.com", DnsType.TXT, DnsClass.IN));
+
+			res = dns.Resolve(r);
+
+			foreach (Answer a in res.Answers)
+				Console.WriteLine(a);
+
 		}
 	}
 }
