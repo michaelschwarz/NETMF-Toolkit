@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Enums\ApiType.cs" />
+    <Compile Include="Enums\SleepModeType.cs" />
     <Compile Include="Enums\DiscoveryStatusType.cs" />
     <Compile Include="Enums\DeliveryStatusType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -50,6 +51,9 @@
     <Compile Include="Request\AT\ApplyChanges.cs" />
     <Compile Include="Request\AT\ApiEnable.cs" />
     <Compile Include="Request\AT\Channel.cs" />
+    <Compile Include="Request\AT\InterfaceDataRate.cs" />
+    <Compile Include="Request\AT\TimeBeforeSleep.cs" />
+    <Compile Include="Request\AT\SleepMode.cs" />
     <Compile Include="Request\AT\ForceSample.cs" />
     <Compile Include="Request\AT\ReceivedSignalStrength.cs" />
     <Compile Include="Request\AT\SupplyVoltage.cs" />
