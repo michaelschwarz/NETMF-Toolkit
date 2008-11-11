@@ -45,6 +45,9 @@
     <Compile Include="..\Zigbee\Enums\DiscoveryStatusType.cs">
       <Link>Enums\DiscoveryStatusType.cs</Link>
     </Compile>
+    <Compile Include="..\Zigbee\Enums\SleepModeType.cs">
+      <Link>Enums\SleepModeType.cs</Link>
+    </Compile>
     <Compile Include="..\Zigbee\Enums\XBeeApiType.cs">
       <Link>Enums\XBeeApiType.cs</Link>
     </Compile>
@@ -174,7 +177,6 @@
     <Compile Include="..\Zigbee\XBeeResponse.cs">
       <Link>XBeeResponse.cs</Link>
     </Compile>
-    <Compile Include="Enums\SleepModeType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
