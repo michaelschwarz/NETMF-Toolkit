@@ -91,6 +91,11 @@ namespace ZigbeeConsole
 
 				while (true)
 				{
+					lock (ConsoleLock)
+					{
+						Console.WriteLine("COORDINATOR Sending NodeDiscover command...");
+					}
+
 					// discovering the network
 					//AtCommand at = new AtCommand("ND", new byte[0], 1);
 					xbee.SendPacket(new NodeDiscover().GetPacket());
@@ -116,14 +121,14 @@ namespace ZigbeeConsole
 					NodeDiscoverData ni = at.Data as NodeDiscoverData;
 					if (ni != null)
 					{
-						ZigBeeTransmitRequest send = new ZigBeeTransmitRequest(0x01, ni.Address16, ni.Address64, Encoding.UTF8.GetBytes("Hello from coordinator, " + DateTime.Now.ToShortTimeString()));
-						sender.SendPacket(send.GetPacket());
-						Console.WriteLine("Sent ZigBeeTransmitRequest...");
-
 						ForceSample sample = new ForceSample();
 						AtRemoteCommand rcmd = new AtRemoteCommand(ni.Address16, ni.Address64, 0x00, sample, 0x02);
 						sender.SendPacket(rcmd.GetPacket());
 						Console.WriteLine("Sent ForceSample command...");
+
+						ZigBeeTransmitRequest send = new ZigBeeTransmitRequest(0x01, ni.Address16, ni.Address64, Encoding.UTF8.GetBytes("" + DateTime.Now.Ticks));
+						sender.SendPacket(send.GetPacket());
+						Console.WriteLine("Sent ZigBeeTransmitRequest...");
 					}
 				}
 
@@ -162,7 +167,12 @@ namespace ZigbeeConsole
 				ZigBeeReceivePacket zigp = response as ZigBeeReceivePacket;
 				if (zigp != null)
 				{
-					Console.WriteLine(Encoding.UTF8.GetString(zigp.RFData));
+					DateTime now = DateTime.Now;
+					string txt = Encoding.UTF8.GetString(zigp.RFData);
+					long ticks = long.Parse(txt);
+					DateTime sent = new DateTime(ticks);
+
+					Console.WriteLine((now - sent).TotalMilliseconds + " msec");
 				}
 
 				Console.WriteLine("============================================================");
