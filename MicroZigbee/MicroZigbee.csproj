@@ -69,11 +69,20 @@
     <Compile Include="..\Zigbee\Request\AT\Channel.cs">
       <Link>Request\AT\Channel.cs</Link>
     </Compile>
+    <Compile Include="..\Zigbee\Request\AT\CyclicSleepPeriod.cs">
+      <Link>Request\AT\CyclicSleepPeriod.cs</Link>
+    </Compile>
     <Compile Include="..\Zigbee\Request\AT\FirmwareVersion.cs">
       <Link>Request\AT\FirmwareVersion.cs</Link>
     </Compile>
+    <Compile Include="..\Zigbee\Request\AT\ForceSample.cs">
+      <Link>Request\AT\ForceSample.cs</Link>
+    </Compile>
     <Compile Include="..\Zigbee\Request\AT\HardwareVersion.cs">
       <Link>Request\AT\HardwareVersion.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\InterfaceDataRate.cs">
+      <Link>Request\AT\InterfaceDataRate.cs</Link>
     </Compile>
     <Compile Include="..\Zigbee\Request\AT\NetworkReset.cs">
       <Link>Request\AT\NetworkReset.cs</Link>
@@ -84,11 +93,20 @@
     <Compile Include="..\Zigbee\Request\AT\NodeIdentifier.cs">
       <Link>Request\AT\NodeIdentifier.cs</Link>
     </Compile>
+    <Compile Include="..\Zigbee\Request\AT\ReceivedSignalStrength.cs">
+      <Link>Request\AT\ReceivedSignalStrength.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\SleepMode.cs">
+      <Link>Request\AT\SleepMode.cs</Link>
+    </Compile>
     <Compile Include="..\Zigbee\Request\AT\SoftwareReset.cs">
       <Link>Request\AT\SoftwareReset.cs</Link>
     </Compile>
     <Compile Include="..\Zigbee\Request\AT\SupplyVoltage.cs">
       <Link>Request\AT\SupplyVoltage.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\TimeBeforeSleep.cs">
+      <Link>Request\AT\TimeBeforeSleep.cs</Link>
     </Compile>
     <Compile Include="..\Zigbee\Request\ZigBeeTransmitRequest.cs">
       <Link>Request\ZigBeeTransmitRequest.cs</Link>
@@ -98,6 +116,9 @@
     </Compile>
     <Compile Include="..\Zigbee\Response\AtRemoteCommandResponse.cs">
       <Link>Response\AtRemoteCommandResponse.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\AT\CyclicSleepPeriodData.cs">
+      <Link>Response\AT\CyclicSleepPeriodData.cs</Link>
     </Compile>
     <Compile Include="..\Zigbee\Response\AT\IAtCommandData.cs">
       <Link>Response\AT\IAtCommandData.cs</Link>
@@ -111,8 +132,14 @@
     <Compile Include="..\Zigbee\Response\AT\ReceivedSignalStrengthData.cs">
       <Link>Response\AT\ReceivedSignalStrengthData.cs</Link>
     </Compile>
+    <Compile Include="..\Zigbee\Response\AT\SleepModeData.cs">
+      <Link>Response\AT\SleepModeData.cs</Link>
+    </Compile>
     <Compile Include="..\Zigbee\Response\AT\SupplyVoltageData.cs">
       <Link>Response\AT\SupplyVoltageData.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\AT\TimeBeforeSleepData.cs">
+      <Link>Response\AT\TimeBeforeSleepData.cs</Link>
     </Compile>
     <Compile Include="..\Zigbee\Response\NodeIdentification.cs">
       <Link>Response\NodeIdentification.cs</Link>
@@ -147,6 +174,7 @@
     <Compile Include="..\Zigbee\XBeeResponse.cs">
       <Link>XBeeResponse.cs</Link>
     </Compile>
+    <Compile Include="Enums\SleepModeType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

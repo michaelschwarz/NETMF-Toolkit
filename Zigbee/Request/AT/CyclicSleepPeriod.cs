@@ -1,5 +1,5 @@
 ﻿/* 
- * SleepModeType.cs
+ * CyclicSleepPeriod.cs
  * 
  * Copyright (c) 2008, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -25,19 +25,30 @@
  */
 using System;
 using System.Text;
+using MSchwarz.IO;
 
 namespace MSchwarz.Net.Zigbee
 {
-	public enum SleepModeType : byte
+	public class CyclicSleepPeriod : AtCommand
 	{
-		Disabled = 0x00,
-		PinHibernate = 0x01,
-		PinDoze = 0x02,
-		Reserved = 0x03,
-		CyclicSleepRemote = 0x04,
-		CyclicSleepRemotePinWakeUp = 0x05,
+		public CyclicSleepPeriod()
+			: base("SP")
+		{
+		}
 
-		[Obsolete("Sleep Coordinator - for backwards compatibility w/ v1.x6 only; otherwise, use CE command.", true)]
-		SleepCoordinator = 0x06
+		public CyclicSleepPeriod(int msec)
+			: this()
+		{
+			int sp = msec / 10;
+
+			if (sp > 26800)
+				throw new ArgumentException("The maximum sleep period is 268 seconds.");
+
+			ByteWriter bw = new ByteWriter(ByteOrder.BigEndian);
+
+			bw.Write((ushort)sp);
+
+			this.Value = bw.GetBytes();
+		}
 	}
 }

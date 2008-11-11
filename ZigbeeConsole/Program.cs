@@ -121,14 +121,14 @@ namespace ZigbeeConsole
 					NodeDiscoverData ni = at.Data as NodeDiscoverData;
 					if (ni != null)
 					{
-						ForceSample sample = new ForceSample();
-						AtRemoteCommand rcmd = new AtRemoteCommand(ni.Address16, ni.Address64, 0x00, sample, 0x02);
-						sender.SendPacket(rcmd.GetPacket());
-						Console.WriteLine("Sent ForceSample command...");
+						//ForceSample sample = new ForceSample();
+						//AtRemoteCommand rcmd = new AtRemoteCommand(ni.Address16, ni.Address64, 0x00, sample, 0x02);
+						//sender.SendPacket(rcmd.GetPacket());
+						//Console.WriteLine("Sending ForceSample command...");
 
 						ZigBeeTransmitRequest send = new ZigBeeTransmitRequest(0x01, ni.Address16, ni.Address64, Encoding.UTF8.GetBytes("" + DateTime.Now.Ticks));
 						sender.SendPacket(send.GetPacket());
-						Console.WriteLine("Sent ZigBeeTransmitRequest...");
+						Console.WriteLine("Sending ZigBeeTransmitRequest...");
 					}
 				}
 
