@@ -29,14 +29,27 @@ using MSchwarz.IO;
 
 namespace MSchwarz.Net.Zigbee
 {
-	public class ZigbeeReceivePacket : XBeeResponse
+	public class ZigBeeReceivePacket : XBeeResponse
 	{
 		private ushort _address16;
 		private ulong _address64;
 		private byte _options;
 		private byte[] _rfdata;
 
-		public ZigbeeReceivePacket(short length, ByteReader br)
+		#region Public Properties
+
+		// ...
+
+		public byte[] RFData
+		{
+			get { return _rfdata; }
+		}
+
+		// ...
+
+		#endregion
+
+		public ZigBeeReceivePacket(short length, ByteReader br)
 			: base(br)
 		{
 			_address64 = br.ReadUInt64();

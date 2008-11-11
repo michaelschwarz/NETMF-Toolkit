@@ -32,24 +32,20 @@ namespace MSchwarz.Net.Zigbee
     public class ZigBeeTransmitRequest : XBeeRequest
     {
         private byte _frameID;
-        private ulong _address64;
         private ushort _address16;
+		private ulong _address64;
         private byte _broadcastRadius = 0x00;
         private byte _options = 0x00;
         private byte[] _value;
 
-        public ZigBeeTransmitRequest(byte frameID, ulong address64, ushort address16, string data)
+		public ZigBeeTransmitRequest(byte frameID, ushort address16, ulong address64, byte[] data)
         {
             this.ApiID = XBeeApiType.ZigBeeTransmitRequest;
             _frameID = frameID;
-            _address64 = address64;
             _address16 = address16;
+			_address64 = address64;
 
-#if(MF)
-			_value = Encoding.UTF8.GetBytes(data);
-#else
-            _value = Encoding.ASCII.GetBytes(data);
-#endif
+			_value = data;
         }
 
         public override byte[] GetBytes()

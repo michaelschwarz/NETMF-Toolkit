@@ -56,7 +56,7 @@ namespace MSchwarz.Net.Zigbee
 
 		#endregion
 
-		public NodeIdentification(ByteReader br)
+		public NodeIdentification(short length, ByteReader br)
             : base(br)
         {
             _address64 = br.ReadUInt64();

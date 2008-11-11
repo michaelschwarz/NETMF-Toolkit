@@ -41,7 +41,7 @@ namespace MSchwarz.Net.Zigbee
         private ushort _sensorD;
         private ushort _temperature;
 
-        public XBeeSensorRead(ByteReader br)
+		public XBeeSensorRead(short length, ByteReader br)
             : base(br)
         {
             _address64 = br.ReadUInt64();
