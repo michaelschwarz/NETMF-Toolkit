@@ -31,27 +31,29 @@ namespace MSchwarz.Net.Zigbee
 {
 	public class ZigbeeReceivePacket : XBeeResponse
 	{
-		private ulong _address64;
 		private ushort _address16;
+		private ulong _address64;
 		private byte _options;
+		private byte[] _rfdata;
 
-		public ZigbeeReceivePacket(ByteReader br)
+		public ZigbeeReceivePacket(short length, ByteReader br)
 			: base(br)
 		{
+			_address64 = br.ReadUInt64();
+			_address16 = br.ReadUInt16();
+			_options = br.ReadByte();
+
+			_rfdata = br.ReadBytes(length - 12);
 		}
 
 		public override string ToString()
 		{
 			string s = "";
 
-			//s += "\taddress64 = " + _address64 + "\r\n";
-			//s += "\taddress16 = " + _address16 + "\r\n";
-			//s += "\toptions   = " + _options + "\r\n";
-
-			//for (int i = 2; i < _payload.Length; i++)
-			//    s += _payload[i].ToString("X2") + "-";
-
-			//s += Encoding.ASCII.GetString(_payload);
+			s += "\taddress64 = " + _address64 + "\r\n";
+			s += "\taddress16 = " + _address16 + "\r\n";
+			s += "\toptions   = " + _options.ToString("X2") + "\r\n";
+			s += "\tvalue     = " + ByteUtil.PrintBytes(_rfdata);
 
 			return s;
 		}
