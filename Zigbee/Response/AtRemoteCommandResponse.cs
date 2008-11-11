@@ -74,8 +74,12 @@ namespace MSchwarz.Net.Zigbee
 
 				switch (_command)
 				{
+					case "DB": _data = new ReceivedSignalStrengthData(); break;
 					case "ND": _data = new NodeDiscoverData(); break;
 					case "NI": _data = new NodeIdentifierData(); break;
+					case "SM": _data = new SleepModeData(); break;
+					case "SP": _data = new CyclicSleepPeriodData(); break;
+					case "ST": _data = new TimeBeforeSleepData(); break;
 					case "%V": _data = new SupplyVoltageData(); break;
 				}
 

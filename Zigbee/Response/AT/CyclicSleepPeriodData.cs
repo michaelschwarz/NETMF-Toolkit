@@ -1,5 +1,5 @@
 ﻿/* 
- * SleepModeType.cs
+ * CyclicSleepPeriodData.cs
  * 
  * Copyright (c) 2008, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -25,19 +25,24 @@
  */
 using System;
 using System.Text;
+using MSchwarz.IO;
 
 namespace MSchwarz.Net.Zigbee
 {
-	public enum SleepModeType : byte
+	public class CyclicSleepPeriodData : IAtCommandData
 	{
-		Disabled = 0x00,
-		PinHibernate = 0x01,
-		PinDoze = 0x02,
-		Reserved = 0x03,
-		CyclicSleepRemote = 0x04,
-		CyclicSleepRemotePinWakeUp = 0x05,
+		private int _msec;
+ 
+		public void Fill(byte[] value)
+		{
+			ByteReader br = new ByteReader(value, ByteOrder.BigEndian);
 
-		[Obsolete("Sleep Coordinator - for backwards compatibility w/ v1.x6 only; otherwise, use CE command.", true)]
-		SleepCoordinator = 0x06
+			_msec = br.ReadUInt16() * 10;
+		}
+
+		public override string ToString()
+		{
+			return _msec + " msec";
+		}
 	}
 }

@@ -111,7 +111,7 @@ namespace MSchwarz.Net.Zigbee
 			{
 				if (bytesToRead == 0)
 				{
-					Thread.Sleep(200);
+					Thread.Sleep(20);
 				}
 				else
 				{

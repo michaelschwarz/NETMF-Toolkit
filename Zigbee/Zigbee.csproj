@@ -51,6 +51,7 @@
     <Compile Include="Request\AT\ApplyChanges.cs" />
     <Compile Include="Request\AT\ApiEnable.cs" />
     <Compile Include="Request\AT\Channel.cs" />
+    <Compile Include="Request\AT\CyclicSleepPeriod.cs" />
     <Compile Include="Request\AT\InterfaceDataRate.cs" />
     <Compile Include="Request\AT\TimeBeforeSleep.cs" />
     <Compile Include="Request\AT\SleepMode.cs" />
@@ -67,6 +68,9 @@
     <Compile Include="Response\AtCommandResponse.cs" />
     <Compile Include="Enums\AtCommandStatus.cs" />
     <Compile Include="Response\AtRemoteCommandResponse.cs" />
+    <Compile Include="Response\AT\SleepModeData.cs" />
+    <Compile Include="Response\AT\TimeBeforeSleepData.cs" />
+    <Compile Include="Response\AT\CyclicSleepPeriodData.cs" />
     <Compile Include="Response\AT\ReceivedSignalStrengthData.cs" />
     <Compile Include="Response\AT\SupplyVoltageData.cs" />
     <Compile Include="Response\AT\NodeIdentifierData.cs" />
