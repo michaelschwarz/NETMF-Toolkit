@@ -121,7 +121,7 @@ namespace ZigbeeConsole
 
 			try
 			{
-				Console.WriteLine("COORDINATOR OnPacketReceived\r\n" + response);
+				Console.WriteLine("COORDINATOR OnPacketReceived [" + response.GetType().FullName + "]\r\n" + response);
 
 				AtCommandResponse at = response as AtCommandResponse;
 
@@ -132,7 +132,12 @@ namespace ZigbeeConsole
 					{
 						ZigBeeTransmitRequest send = new ZigBeeTransmitRequest(0x01, ni.Address16, ni.Address64, Encoding.UTF8.GetBytes("Hello from coordinator, " + DateTime.Now.ToShortTimeString()));
 						sender.SendPacket(send.GetPacket());
-						Console.WriteLine("Sent ZigBeeTransmitRequest");
+						Console.WriteLine("Sent ZigBeeTransmitRequest...");
+
+						ForceSample sample = new ForceSample();
+						AtRemoteCommand rcmd = new AtRemoteCommand(ni.Address16, ni.Address64, 0x00, sample, 0x02);
+						sender.SendPacket(rcmd.GetPacket());
+						Console.WriteLine("Sent ForceSample command...");
 					}
 				}
 
@@ -151,7 +156,7 @@ namespace ZigbeeConsole
 
 			try
 			{
-				Console.WriteLine("DEVICE OnPacketReceived\r\n" + response);
+				Console.WriteLine("DEVICE OnPacketReceived [" + response.GetType().FullName + "]\r\n" + response);
 
 				AtCommandResponse at = response as AtCommandResponse;
 

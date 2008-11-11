@@ -65,10 +65,6 @@ namespace MSchwarz.Net.Zigbee
 
             if (_analogChannelMask != 0x00)
             {
-                //light = parseIS(buf)["AI1"]
-                //temp = parseIS(buf)["AI2"]
-                //hum = parseIS(buf)["AI3"]
-
                 if ((_analogChannelMask & 0x01) == 0x01) _AD0 = br.ReadUInt16();
                 if ((_analogChannelMask & 0x02) == 0x02) _AD1 = br.ReadUInt16();
                 if ((_analogChannelMask & 0x04) == 0x04) _AD2 = br.ReadUInt16();
@@ -81,26 +77,29 @@ namespace MSchwarz.Net.Zigbee
         {
             string s = "";
 
-            s += _digitalChannelMask1.ToString("X2") + "-" + _digitalChannelMask2.ToString("X2");
-            s += "\r\n";
-            s += "AD0 = " + _AD0 + "\r\n";
-            s += "AD1 = " + _AD1 + "\r\n";
-            s += "AD2 = " + _AD2 + "\r\n";
-            s += "AD3 = " + _AD3 + "\r\n";
-            s += "supplyVoltage = " + _supplyVoltage + "\r\n";
+			if (_digitalChannelMask1 != 0x00 || _digitalChannelMask2 != 0x00)
+			{
+				s += "D1  = " + _digital1 + "\r\n";
+				s += "D2  = " + _digital2 + "\r\n";
+			}
 
-            s += "\r\n";
+			if ((_analogChannelMask & 0x01) == 0x01) s += "AD0 = " + _AD0 + "\r\n";
+			if ((_analogChannelMask & 0x02) == 0x02) s += "AD1 = " + _AD1 + "\r\n";
+			if ((_analogChannelMask & 0x04) == 0x04) s += "AD2 = " + _AD2 + "\r\n";
+			if ((_analogChannelMask & 0x08) == 0x08) s += "AD3 = " + _AD3 + "\r\n";
+			if ((_analogChannelMask & 0x10) == 0x10) s += "supplyVoltage = " + _supplyVoltage + "\r\n";
 
-            double mVanalog = (((float)_AD2) / 1023.0) * 1200.0;
-            double temp_C = (mVanalog - 500.0)/ 10.0 - 4.0;
-            double lux = (((float)_AD1)  / 1023.0) * 1200.0;
 
-	        mVanalog = (((float)_AD3) / 1023.0) * 1200.0;
-            double hum = ((mVanalog * (108.2 / 33.2)) - 0.16) / (5 * 0.0062 * 1000.0);
+			//double mVanalog = (((float)_AD2) / 1023.0) * 1200.0;
+			//double temp_C = (mVanalog - 500.0)/ 10.0 - 4.0;
+			//double lux = (((float)_AD1)  / 1023.0) * 1200.0;
 
-            s += "temperature = " + temp_C + "\r\n";
-            s += "light = " + lux + "\r\n";
-            s += "humidity = " + hum + "\r\n";
+			//mVanalog = (((float)_AD3) / 1023.0) * 1200.0;
+			//double hum = ((mVanalog * (108.2 / 33.2)) - 0.16) / (5 * 0.0062 * 1000.0);
+
+			//s += "temperature = " + temp_C + "\r\n";
+			//s += "light = " + lux + "\r\n";
+			//s += "humidity = " + hum + "\r\n";
 
             return s;
         }
