@@ -71,7 +71,7 @@
     <Compile Include="Response\XBeeSensorRead.cs" />
     <Compile Include="Enums\ZigBeeDeviceType.cs" />
     <Compile Include="Response\ZigBeeIODataSample.cs" />
-    <Compile Include="Response\ZigbeeReceivePacket.cs" />
+    <Compile Include="Response\ZigBeeReceivePacket.cs" />
     <Compile Include="XBee.cs" />
     <Compile Include="XBeeApiType.cs" />
     <Compile Include="XBeeChecksum.cs" />

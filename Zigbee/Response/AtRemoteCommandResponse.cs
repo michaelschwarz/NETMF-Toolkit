@@ -54,7 +54,7 @@ namespace MSchwarz.Net.Zigbee
             get { return _value; }
         }
 
-        public AtRemoteCommandResponse(ByteReader br)
+		public AtRemoteCommandResponse(short length, ByteReader br)
             : base(br)
         {
             _frameID = br.ReadByte();
@@ -70,7 +70,7 @@ namespace MSchwarz.Net.Zigbee
 
 			if (br.AvailableBytes > 0)
 			{
-				_value = br.ReadBytes(br.AvailableBytes - 1);
+				_value = br.ReadBytes(length - 15);
 
 				switch (_command)
 				{

@@ -46,7 +46,7 @@ namespace MSchwarz.Net.Zigbee
         private ushort _AD3;
         private ushort _supplyVoltage;
 
-        public ZigBeeIODataSample(ByteReader br)
+		public ZigBeeIODataSample(short length, ByteReader br)
             : base(br)
         {
             _address64 = br.ReadUInt64();

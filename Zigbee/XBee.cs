@@ -122,10 +122,6 @@ namespace MSchwarz.Net.Zigbee
 
 					int bytesRead = _serialPort.Read(bytes, 0, bytesToRead);
 
-#if(!MF)
-					Console.WriteLine(bytesRead + " bytes");
-#endif
-
 					for (int i = 0; i < bytesRead; i++)
 					{
 						if (_isEscapeEnabled && XBeePacket.IsSpecialByte(bytes[i]))
@@ -161,7 +157,7 @@ namespace MSchwarz.Net.Zigbee
 							if (br.AvailableBytes > length)
 							{
 								// verify checksum
-								CheckFrame(br);
+								CheckFrame(length, br);
 
 								if (bytes.Length - (1 + 2 + length + 1) > 0)
 								{
@@ -181,7 +177,7 @@ namespace MSchwarz.Net.Zigbee
 			}
 		}
 
-		void CheckFrame(ByteReader br)
+		void CheckFrame(short length, ByteReader br)
         {
             XBeeApiType apiId = (XBeeApiType)br.Peek();
             XBeeResponse res = null;
@@ -189,22 +185,22 @@ namespace MSchwarz.Net.Zigbee
             switch (apiId)
             {
                 case XBeeApiType.ATCommandResponse:
-                    res = new AtCommandResponse(br);
+                    res = new AtCommandResponse(length, br);
                     break;
                 case XBeeApiType.NodeIdentificationIndicator:
-                    res = new NodeIdentification(br);
+					res = new NodeIdentification(length, br);
                     break;
                 case XBeeApiType.ZigBeeReceivePacket:
-                    res = new ZigbeeReceivePacket(br);
+					res = new ZigBeeReceivePacket(length, br);
                     break;
                 case XBeeApiType.XBeeSensorReadIndicator:
-                    res = new XBeeSensorRead(br);
+					res = new XBeeSensorRead(length, br);
                     break;
                 case XBeeApiType.RemoteCommandResponse:
-                    res = new AtRemoteCommandResponse(br);
+					res = new AtRemoteCommandResponse(length, br);
                     break;
                 case XBeeApiType.ZigBeeIODataSampleRxIndicator:
-                    res = new ZigBeeIODataSample(br);
+					res = new ZigBeeIODataSample(length, br);
                     break;
             }
 
@@ -221,11 +217,8 @@ namespace MSchwarz.Net.Zigbee
         public bool SendPacket(XBeePacket packet)
         {
             byte[] bytes = packet.GetBytes();
-#if(!MF)
-			Console.WriteLine(ByteUtil.PrintBytes(bytes));
-#endif
 
-            _serialPort.Write(bytes, 0, bytes.Length);
+			_serialPort.Write(bytes, 0, bytes.Length);
 
             return true;
         }
