@@ -288,8 +288,8 @@ namespace MSchwarz.IO
 #endif
         }
 
-        public virtual string ReadString(byte terminator)
-        {
+		public virtual string ReadString(byte terminator)
+		{
             string s = "";
 
             while (true)

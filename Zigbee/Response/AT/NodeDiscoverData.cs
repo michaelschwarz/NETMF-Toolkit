@@ -75,7 +75,7 @@ namespace MSchwarz.Net.Zigbee
             _addr16 = nd.ReadUInt16();
             _addr64 = nd.ReadUInt64();
 
-            _ni = nd.ReadString((int)nd.AvailableBytes - 8);
+            _ni = nd.ReadString((byte)0x00);	// (int)nd.AvailableBytes - 8);
 
 			_parent16 = nd.ReadUInt16();
 			_deviceType = nd.ReadByte();

@@ -144,6 +144,7 @@ namespace MSchwarz.Net.Zigbee
 					if (_readBuffer.Length > 4)
 					{
 						_readBuffer.Position = 0;
+
 						if ((byte)_readBuffer.ReadByte() == XBeePacket.PACKET_STARTBYTE)
 						{
 							bytes = _readBuffer.ToArray();

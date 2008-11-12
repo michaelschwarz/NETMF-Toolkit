@@ -37,7 +37,7 @@ namespace MSchwarz.Net.Zigbee
 		{
 			ByteReader nd = new ByteReader(value, ByteOrder.BigEndian);
 
-			if(nd.AvailableBytes > 0)
+			if (nd.AvailableBytes > 0)
 				_ni = nd.ReadString((int)nd.AvailableBytes);
 		}
 
