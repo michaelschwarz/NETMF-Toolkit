@@ -167,15 +167,14 @@ namespace MSchwarz.Net.Zigbee
 
 								checksum.Compute();
 
+#if(DEBUG && !MF)
+								Console.WriteLine("Received " + ByteUtil.PrintBytes(bytes));
+#endif
 								if (checksum.Verify(bytes[length + 3]))
-								{
 									CheckFrame(length, br);
-								}
 
 								if (bytes.Length - (1 + 2 + length + 1) > 0)
-								{
 									_readBuffer.Write(bytes, 1 + 2 + length + 1, bytes.Length - (1 + 2 + length + 1));
-								}
 							}
 							else
 							{
@@ -238,6 +237,10 @@ namespace MSchwarz.Net.Zigbee
         public bool SendPacket(XBeePacket packet)
         {
             byte[] bytes = packet.GetBytes();
+
+#if(DEBUG && !MF)
+			Console.WriteLine("Sending " + ByteUtil.PrintBytes(bytes) + "...");
+#endif
 
 			_serialPort.Write(bytes, 0, bytes.Length);
 

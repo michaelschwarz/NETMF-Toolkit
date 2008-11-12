@@ -87,7 +87,7 @@ namespace ZigbeeConsole
 				//xbee.SendPacket(new Channel().GetPacket());
 				//xbee.SendPacket(new ReceivedSignalStrength().GetPacket());
 
-				Thread.Sleep(10 * 1000);
+				Thread.Sleep(1 * 1000);
 
 				while (true)
 				{
@@ -121,11 +121,12 @@ namespace ZigbeeConsole
 					NodeDiscoverData ni = at.Data as NodeDiscoverData;
 					if (ni != null)
 					{
-						Console.WriteLine(ni.NodeIdentifier + "#");
-
 						if (ni.NodeIdentifier == "XBEE_SENSOR")
 						{
-							XBeeSensorSample sample = new XBeeSensorSample();
+							//XBeeSensorRead sample = new XBeeSensorRead();
+							ForceSample sample = new ForceSample();
+							//NodeIdentifier sample = new NodeIdentifier();
+							//SupplyVoltage sample = new SupplyVoltage();
 							AtRemoteCommand rcmd = new AtRemoteCommand(ni.Address16, ni.Address64, 0x00, sample, 0x02);
 							sender.SendPacket(rcmd.GetPacket());
 							Console.WriteLine("Sending ForceSample command...");
