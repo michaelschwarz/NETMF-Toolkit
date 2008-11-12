@@ -157,8 +157,20 @@ namespace MSchwarz.Net.Zigbee
 
 							if (br.AvailableBytes > length)
 							{
-								// verify checksum
-								CheckFrame(length, br);
+								//TODO: verify checksum
+
+								XBeeChecksum checksum = new XBeeChecksum();
+								for (int i = 0; i < length; i++)
+								{
+									checksum.AddByte(bytes[i + 3]);
+								}
+
+								checksum.Compute();
+
+								if (checksum.Verify(bytes[length + 3]))
+								{
+									CheckFrame(length, br);
+								}
 
 								if (bytes.Length - (1 + 2 + length + 1) > 0)
 								{
