@@ -51,6 +51,7 @@
     <Compile Include="Request\AT\ApplyChanges.cs" />
     <Compile Include="Request\AT\ApiEnable.cs" />
     <Compile Include="Request\AT\Channel.cs" />
+    <Compile Include="Request\AT\XBeeSensorSample.cs" />
     <Compile Include="Request\AT\CyclicSleepPeriod.cs" />
     <Compile Include="Request\AT\InterfaceDataRate.cs" />
     <Compile Include="Request\AT\TimeBeforeSleep.cs" />

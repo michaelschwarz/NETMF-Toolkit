@@ -125,7 +125,7 @@ namespace ZigbeeConsole
 
 						if (ni.NodeIdentifier == "XBEE_SENSOR")
 						{
-							ForceSample sample = new ForceSample();
+							XBeeSensorSample sample = new XBeeSensorSample();
 							AtRemoteCommand rcmd = new AtRemoteCommand(ni.Address16, ni.Address64, 0x00, sample, 0x02);
 							sender.SendPacket(rcmd.GetPacket());
 							Console.WriteLine("Sending ForceSample command...");
