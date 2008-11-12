@@ -54,6 +54,9 @@
     <Compile Include="..\Zigbee\Enums\ZigBeeDeviceType.cs">
       <Link>Enums\ZigBeeDeviceType.cs</Link>
     </Compile>
+    <Compile Include="..\Zigbee\Enums\ZigBeeReceiveOptionType.cs">
+      <Link>Enums\ZigBeeReceiveOptionType.cs</Link>
+    </Compile>
     <Compile Include="..\Zigbee\Request\AtCommand.cs">
       <Link>Request\AtCommand.cs</Link>
     </Compile>
@@ -74,6 +77,9 @@
     </Compile>
     <Compile Include="..\Zigbee\Request\AT\CyclicSleepPeriod.cs">
       <Link>Request\AT\CyclicSleepPeriod.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\DeviceTypeIdentifier.cs">
+      <Link>Request\AT\DeviceTypeIdentifier.cs</Link>
     </Compile>
     <Compile Include="..\Zigbee\Request\AT\FirmwareVersion.cs">
       <Link>Request\AT\FirmwareVersion.cs</Link>
@@ -99,6 +105,9 @@
     <Compile Include="..\Zigbee\Request\AT\ReceivedSignalStrength.cs">
       <Link>Request\AT\ReceivedSignalStrength.cs</Link>
     </Compile>
+    <Compile Include="..\Zigbee\Request\AT\RestoreDefaults.cs">
+      <Link>Request\AT\RestoreDefaults.cs</Link>
+    </Compile>
     <Compile Include="..\Zigbee\Request\AT\SleepMode.cs">
       <Link>Request\AT\SleepMode.cs</Link>
     </Compile>
@@ -110,6 +119,12 @@
     </Compile>
     <Compile Include="..\Zigbee\Request\AT\TimeBeforeSleep.cs">
       <Link>Request\AT\TimeBeforeSleep.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\Write.cs">
+      <Link>Request\AT\Write.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\WriteBindingTable.cs">
+      <Link>Request\AT\WriteBindingTable.cs</Link>
     </Compile>
     <Compile Include="..\Zigbee\Request\AT\XBeeSensorSample.cs">
       <Link>Request\AT\XBeeSensorSample.cs</Link>
@@ -125,6 +140,9 @@
     </Compile>
     <Compile Include="..\Zigbee\Response\AT\CyclicSleepPeriodData.cs">
       <Link>Response\AT\CyclicSleepPeriodData.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\AT\ForceSampleData.cs">
+      <Link>Response\AT\ForceSampleData.cs</Link>
     </Compile>
     <Compile Include="..\Zigbee\Response\AT\IAtCommandData.cs">
       <Link>Response\AT\IAtCommandData.cs</Link>

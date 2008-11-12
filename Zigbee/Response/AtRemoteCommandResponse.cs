@@ -75,6 +75,7 @@ namespace MSchwarz.Net.Zigbee
 				switch (_command)
 				{
 					case "DB": _data = new ReceivedSignalStrengthData(); break;
+					case "IS": _data = new ForceSampleData(); break;
 					case "ND": _data = new NodeDiscoverData(); break;
 					case "NI": _data = new NodeIdentifierData(); break;
 					case "SM": _data = new SleepModeData(); break;
@@ -95,7 +96,9 @@ namespace MSchwarz.Net.Zigbee
 				"status  " + this.Status;
 
 			if (_data != null)
-				s += "\r\n" + "value\r\n" + _data;
+				s += "\r\nvalue\r\n" + _data;
+			//else
+				s += "\r\nvalue = " + ByteUtil.PrintBytes(_value);
 
 			return s;
         }

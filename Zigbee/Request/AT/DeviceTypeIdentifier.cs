@@ -1,5 +1,5 @@
 ﻿/* 
- * XBeeSensorRead.cs
+ * DeviceTypeIdentifier.cs
  * 
  * Copyright (c) 2008, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -29,43 +29,27 @@ using MSchwarz.IO;
 
 namespace MSchwarz.Net.Zigbee
 {
-	// TODO: not sure if this is the correct implementation
-
-    public class XBeeSensorRead : XBeeResponse
-    {
-        private ulong _address64;
-        private ushort _address16;
-        private byte _options;
-        private byte _sensors;
-        private ushort _sensorA;
-        private ushort _sensorB;
-        private ushort _sensorC;
-        private ushort _sensorD;
-        private ushort _temperature;
-
-		public XBeeSensorRead(short length, ByteReader br)
-            : base(br)
-        {
-            _address64 = br.ReadUInt64();
-            _address16 = br.ReadUInt16();
-            _options = br.ReadByte();
-
-            _sensors = br.ReadByte();
-            _sensorA = br.ReadUInt16();
-            _sensorB = br.ReadUInt16();
-            _sensorC = br.ReadUInt16();
-            _sensorD = br.ReadUInt16();
-            _temperature = br.ReadUInt16();
-        }
-
-		public override string ToString()
+	/// <summary>
+	/// Serial Interfacing: The AP command is used to
+	/// enable the RF module to operate using a framebased
+	/// API instead of using the default Transparent
+	/// (UART) mode.
+	/// </summary>
+	public class DeviceTypeIdentifier : AtCommand
+	{
+		public DeviceTypeIdentifier()
+			: base("DD")
 		{
-			string s = "Sensor A = " + _sensorA + "\r\n";
-			s += "Sensor B = " + _sensorB + "\r\n";
-			s += "Sensor C = " + _sensorC + "\r\n";
-			s += "Sensor D = " + _sensorD;
-
-			return s;
 		}
-    }
+
+		public DeviceTypeIdentifier(uint identifier)
+			: this()
+		{
+			ByteWriter br = new ByteWriter(ByteOrder.BigEndian);
+
+			br.Write(identifier);
+
+			this.Value = br.GetBytes();
+		}
+	}
 }

@@ -1,5 +1,5 @@
 ﻿/* 
- * ZigBeeIODataSample.cs
+ * ForceSampleData.cs
  * 
  * Copyright (c) 2008, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -29,71 +29,48 @@ using MSchwarz.IO;
 
 namespace MSchwarz.Net.Zigbee
 {
-    public class ZigBeeIODataSample : XBeeResponse
-    {
-        private ulong _address64;
-        private ushort _address16;
-        private byte _options;
-
-        private byte _numSamples;
-        private byte _digitalChannelMask1;
-        private byte _digitalChannelMask2;
-        private byte _analogChannelMask;
-        private byte _digital1;
-        private byte _digital2;
-        private ushort _AD0;
-        private ushort _AD1;
-        private ushort _AD2;
-        private ushort _AD3;
-        private ushort _supplyVoltage;
-
-		#region Public Properties
-
-		// ...
-
-		public ZigBeeReceiveOptionType ReceiveOption
+	public class ForceSampleData : IAtCommandData
+	{
+		private byte _numSamples;
+		private byte _digitalChannelMask1;
+		private byte _digitalChannelMask2;
+		private byte _analogChannelMask;
+		private byte _digital1;
+		private byte _digital2;
+		private ushort _AD0;
+		private ushort _AD1;
+		private ushort _AD2;
+		private ushort _AD3;
+		private ushort _supplyVoltage;
+ 
+		public void Fill(byte[] value)
 		{
-			get { return (ZigBeeReceiveOptionType)_options; }
+			ByteReader br = new ByteReader(value, ByteOrder.BigEndian);
+
+			_numSamples = br.ReadByte();
+			_digitalChannelMask1 = br.ReadByte();
+			_digitalChannelMask2 = br.ReadByte();
+			_analogChannelMask = br.ReadByte();
+
+			if (_digitalChannelMask1 != 0x00 || _digitalChannelMask2 != 0x00)
+			{
+				_digital1 = br.ReadByte();
+				_digital2 = br.ReadByte();
+			}
+
+			if (_analogChannelMask != 0x00)
+			{
+				if ((_analogChannelMask & 0x01) == 0x01) _AD0 = br.ReadUInt16();
+				if ((_analogChannelMask & 0x02) == 0x02) _AD1 = br.ReadUInt16();
+				if ((_analogChannelMask & 0x04) == 0x04) _AD2 = br.ReadUInt16();
+				if ((_analogChannelMask & 0x08) == 0x08) _AD3 = br.ReadUInt16();
+				if ((_analogChannelMask & 0x10) == 0x10) _supplyVoltage = br.ReadUInt16();
+			}
 		}
 
-		// ...
-
-		#endregion
-
-		public ZigBeeIODataSample(short length, ByteReader br)
-            : base(br)
-        {
-            _address64 = br.ReadUInt64();
-            _address16 = br.ReadUInt16();
-
-            _options = br.ReadByte();
-            
-			_numSamples = br.ReadByte();
-            _digitalChannelMask1 = br.ReadByte();
-            _digitalChannelMask2 = br.ReadByte();
-            _analogChannelMask = br.ReadByte();
-
-            if (_digitalChannelMask1 != 0x00 || _digitalChannelMask2 != 0x00)
-            {
-                _digital1 = br.ReadByte();
-                _digital2 = br.ReadByte();
-            }
-
-            if (_analogChannelMask != 0x00)
-            {
-                if ((_analogChannelMask & 0x01) == 0x01) _AD0 = br.ReadUInt16();
-                if ((_analogChannelMask & 0x02) == 0x02) _AD1 = br.ReadUInt16();
-                if ((_analogChannelMask & 0x04) == 0x04) _AD2 = br.ReadUInt16();
-                if ((_analogChannelMask & 0x08) == 0x08) _AD3 = br.ReadUInt16();
-                if ((_analogChannelMask & 0x10) == 0x10) _supplyVoltage = br.ReadUInt16();
-            }
-        }
-
-        public override string ToString()
-        {
-            string s = "";
-
-			s += "Receive Options = " + this.ReceiveOption + "\r\n";
+		public override string ToString()
+		{
+			string s = "";
 
 			if (_digitalChannelMask1 != 0x00 || _digitalChannelMask2 != 0x00)
 			{
@@ -105,7 +82,7 @@ namespace MSchwarz.Net.Zigbee
 			if ((_analogChannelMask & 0x02) == 0x02) s += "AD1 = " + _AD1 + "\r\n";
 			if ((_analogChannelMask & 0x04) == 0x04) s += "AD2 = " + _AD2 + "\r\n";
 			if ((_analogChannelMask & 0x08) == 0x08) s += "AD3 = " + _AD3 + "\r\n";
-			if ((_analogChannelMask & 0x10) == 0x10) s += "supplyVoltage = " + _supplyVoltage + "\r\n";
+			if ((_analogChannelMask & 0x10) == 0x10) s += "supplyVoltage = " + _supplyVoltage;
 
 #if(!MF && DEBUG)
 			double mVanalog = (((float)_AD2) / 1023.0) * 1200.0;
@@ -120,7 +97,7 @@ namespace MSchwarz.Net.Zigbee
 			s += "humidity = " + hum + "\r\n";
 #endif
 
-            return s;
-        }
-    }
+			return s;
+		}
+	}
 }

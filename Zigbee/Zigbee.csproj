@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Enums\ApiType.cs" />
+    <Compile Include="Enums\ZigBeeReceiveOptionType.cs" />
     <Compile Include="Enums\SleepModeType.cs" />
     <Compile Include="Enums\DiscoveryStatusType.cs" />
     <Compile Include="Enums\DeliveryStatusType.cs" />
@@ -51,6 +52,10 @@
     <Compile Include="Request\AT\ApplyChanges.cs" />
     <Compile Include="Request\AT\ApiEnable.cs" />
     <Compile Include="Request\AT\Channel.cs" />
+    <Compile Include="Request\AT\DeviceTypeIdentifier.cs" />
+    <Compile Include="Request\AT\RestoreDefaults.cs" />
+    <Compile Include="Request\AT\WriteBindingTable.cs" />
+    <Compile Include="Request\AT\Write.cs" />
     <Compile Include="Request\AT\XBeeSensorSample.cs" />
     <Compile Include="Request\AT\CyclicSleepPeriod.cs" />
     <Compile Include="Request\AT\InterfaceDataRate.cs" />
@@ -69,6 +74,7 @@
     <Compile Include="Response\AtCommandResponse.cs" />
     <Compile Include="Enums\AtCommandStatus.cs" />
     <Compile Include="Response\AtRemoteCommandResponse.cs" />
+    <Compile Include="Response\AT\ForceSampleData.cs" />
     <Compile Include="Response\AT\SleepModeData.cs" />
     <Compile Include="Response\AT\TimeBeforeSleepData.cs" />
     <Compile Include="Response\AT\CyclicSleepPeriodData.cs" />

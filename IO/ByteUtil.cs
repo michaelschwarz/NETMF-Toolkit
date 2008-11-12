@@ -57,7 +57,7 @@ namespace MSchwarz.IO
             {
 				s += bytes[i].ToString("X2");			// +"(" + (char)bytes[i] + ")";
 
-                if (++c == 10)
+                if (++c == 25)
                 {
                     s += "\r\n";
                     c = 0;
