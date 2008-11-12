@@ -111,6 +111,9 @@
     <Compile Include="..\Zigbee\Request\AT\TimeBeforeSleep.cs">
       <Link>Request\AT\TimeBeforeSleep.cs</Link>
     </Compile>
+    <Compile Include="..\Zigbee\Request\AT\XBeeSensorSample.cs">
+      <Link>Request\AT\XBeeSensorSample.cs</Link>
+    </Compile>
     <Compile Include="..\Zigbee\Request\ZigBeeTransmitRequest.cs">
       <Link>Request\ZigBeeTransmitRequest.cs</Link>
     </Compile>
