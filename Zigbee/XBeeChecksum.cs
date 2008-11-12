@@ -56,9 +56,9 @@ namespace MSchwarz.Net.Zigbee
             return (byte)_checksum;
         }
 
-        public bool Verify()
+        public bool Verify(byte checksum)
         {
-            return ((byte)_checksum == 0xff);
+			return (checksum == _checksum);
         }
     }
 }

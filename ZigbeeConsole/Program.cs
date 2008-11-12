@@ -44,8 +44,8 @@ namespace ZigbeeConsole
 			Thread thd1 = new Thread(new ThreadStart(RunCoordinator));
 			thd1.Start();
 
-			Thread thd2 = new Thread(new ThreadStart(RunDevice));
-			thd2.Start();
+			//Thread thd2 = new Thread(new ThreadStart(RunDevice));
+			//thd2.Start();
 
 			Console.ReadLine();
         }
