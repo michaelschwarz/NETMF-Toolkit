@@ -65,7 +65,7 @@ namespace MSchwarz.Net.Zigbee
 
 			s += "\taddress64 = " + _address64 + "\r\n";
 			s += "\taddress16 = " + _address16 + "\r\n";
-			s += "\toptions   = " + _options.ToString("X2") + "\r\n";
+			s += "\toptions   = " + ByteUtil.PrintByte(_options) + "\r\n";
 			s += "\tvalue     = " + ByteUtil.PrintBytes(_rfdata);
 
 			return s;

@@ -75,7 +75,7 @@ namespace ZigbeeConsole
 
 		static void RunCoordinator()
 		{
-			using (XBee xbee = new XBee("COM4", 9600))
+			using (XBee xbee = new XBee("COM5", 9600))
 			{
 				xbee.OnPacketReceived += new XBee.PacketReceivedHandler(xbeecoord_OnPacketReceived);
 				xbee.Open();
@@ -139,6 +139,13 @@ namespace ZigbeeConsole
 							Console.WriteLine("Sending ZigBeeTransmitRequest...");
 						}
 					}
+				}
+
+				ZigBeeReceivePacket zr = response as ZigBeeReceivePacket;
+
+				if (zr != null)
+				{
+					Console.WriteLine("ZigBee: " + Encoding.UTF8.GetString(zr.RFData));
 				}
 
 				Console.WriteLine("============================================================");
