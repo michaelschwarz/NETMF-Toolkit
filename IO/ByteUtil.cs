@@ -44,7 +44,11 @@ namespace MSchwarz.IO
 
         public static string PrintByte(byte b)
         {
-            return b.ToString("X2");
+#if(MF)
+			return b.ToString();
+#else
+			return b.ToString("X");
+#endif
         }
 
         public static string PrintBytes(byte[] bytes)
@@ -55,7 +59,7 @@ namespace MSchwarz.IO
 
             for (int i = 0; i < bytes.Length; i++)
             {
-				s += bytes[i].ToString("X2");			// +"(" + (char)bytes[i] + ")";
+				s += PrintByte(bytes[i]);
 
                 if (++c == 25)
                 {
@@ -64,8 +68,6 @@ namespace MSchwarz.IO
                 }
                 else
                     if (i < bytes.Length - 1) s += "-";
-
-                
             }
 
             return s;
