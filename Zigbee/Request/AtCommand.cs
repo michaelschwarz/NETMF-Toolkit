@@ -40,6 +40,12 @@ namespace MSchwarz.Net.Zigbee
 
         protected byte[] _value;
 
+		public byte FrameID
+		{
+			get { return _frameID; }
+			set { _frameID = value; }
+		}
+
         public string Command
         {
             get { return _command; }

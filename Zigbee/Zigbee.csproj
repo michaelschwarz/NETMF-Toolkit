@@ -74,6 +74,7 @@
     <Compile Include="Response\AtCommandResponse.cs" />
     <Compile Include="Enums\AtCommandStatus.cs" />
     <Compile Include="Response\AtRemoteCommandResponse.cs" />
+    <Compile Include="Response\AT\ApiEnableData.cs" />
     <Compile Include="Response\AT\ForceSampleData.cs" />
     <Compile Include="Response\AT\SleepModeData.cs" />
     <Compile Include="Response\AT\TimeBeforeSleepData.cs" />

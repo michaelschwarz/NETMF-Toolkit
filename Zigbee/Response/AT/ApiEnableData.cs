@@ -1,5 +1,5 @@
 ﻿/* 
- * ByteUtil.cs
+ * ApiEnableData.cs
  * 
  * Copyright (c) 2008, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -25,57 +25,33 @@
  */
 using System;
 using System.Text;
+using MSchwarz.IO;
 
-namespace MSchwarz.IO
+namespace MSchwarz.Net.Zigbee
 {
-    public class ByteUtil
-    {
-//#if(MF)
-		public static string GetString(byte[] bytes)
+	public class ApiEnableData : IAtCommandData
+	{
+		private byte _apiType;
+
+		#region Public Properties
+
+		public ApiType ApiType
 		{
-			return GetString(bytes, 0, bytes.Length);
+			get { return (ApiType)_apiType; }
 		}
 
-		public static string GetString(byte[] bytes, int offset, int length)
+		#endregion
+
+		public void Fill(byte[] value)
 		{
-			string s = "";
+			ByteReader br = new ByteReader(value, ByteOrder.BigEndian);
 
-			for(int i=offset; i<length && i<bytes.Length; i++)
-				s += (char)bytes[i];
-
-			return s;
+			_apiType = br.ReadByte();
 		}
-//#endif
 
-        public static string PrintByte(byte b)
-        {
-#if(MF)
-			return b.ToString();
-#else
-			return b.ToString("X");
-#endif
-        }
-
-        public static string PrintBytes(byte[] bytes)
-        {
-            string s = "";
-
-            int c = 0;
-
-            for (int i = 0; i < bytes.Length; i++)
-            {
-				s += PrintByte(bytes[i]);
-
-                if (++c == 25)
-                {
-                    s += "\r\n";
-                    c = 0;
-                }
-                else
-                    if (i < bytes.Length - 1) s += "-";
-            }
-
-            return s;
-        }
-    }
+		public override string ToString()
+		{
+			return this.ApiType + "";
+		}
+	}
 }

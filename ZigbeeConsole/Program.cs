@@ -52,18 +52,19 @@ namespace ZigbeeConsole
 
 		static void RunDevice()
 		{
-			using (XBee xbee = new XBee("COM5", 9600))
+			using (XBee xbee = new XBee("COM3", 9600, ApiType.Disabled))
 			{
-				xbee.OnPacketReceived += new XBee.PacketReceivedHandler(xbeedevice_OnPacketReceived);
 				xbee.Open();
+				xbee.SetNodeIdentifier("XBEEDEVICE");
 
-				xbee.SendPacket(new NodeIdentifier().GetPacket());
+				
+				//xbee.SendPacket(new NodeIdentifier().GetPacket());
 				//xbee.SendPacket(new NodeIdentifier("XBEE_DEVICE").GetPacket());
 				//xbee.SendPacket(new SupplyVoltage().GetPacket());
 				//xbee.SendPacket(new Channel().GetPacket());
 				//xbee.SendPacket(new ReceivedSignalStrength().GetPacket());
 
-				Thread.Sleep(10 * 1000);
+				//Thread.Sleep(10 * 1000);
 
 				while (true)
 				{
@@ -75,27 +76,24 @@ namespace ZigbeeConsole
 
 		static void RunCoordinator()
 		{
-			using (XBee xbee = new XBee("COM5", 9600))
+			using (XBee xbee = new XBee("COM6", 9600, ApiType.Enabled))
 			{
 				xbee.OnPacketReceived += new XBee.PacketReceivedHandler(xbeecoord_OnPacketReceived);
 				xbee.Open();
 
+				xbee.SetNodeIdentifier("COORDINATOR");
+				
 				//xbee.SendPacket(new InterfaceDataRate(115200).GetPacket());
-				xbee.SendPacket(new NodeIdentifier().GetPacket());
+				//xbee.SendPacket(new NodeIdentifier().GetPacket());
 				//xbee.SendPacket(new NodeIdentifier("XBEE_COORDINATOR").GetPacket());
 				//xbee.SendPacket(new SupplyVoltage().GetPacket());
 				//xbee.SendPacket(new Channel().GetPacket());
 				//xbee.SendPacket(new ReceivedSignalStrength().GetPacket());
 
-				Thread.Sleep(1 * 1000);
+				Thread.Sleep(5 * 1000);
 
 				while (true)
 				{
-					lock (ConsoleLock)
-					{
-						Console.WriteLine("COORDINATOR Sending NodeDiscover command...");
-					}
-
 					// discovering the network
 					//AtCommand at = new AtCommand("ND", new byte[0], 1);
 					xbee.SendPacket(new NodeDiscover().GetPacket());
