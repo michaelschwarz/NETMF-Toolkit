@@ -40,30 +40,39 @@ namespace MSchwarz.Net.Zigbee
         public const byte PACKET_XON = 0x11;
         public const byte PACKET_XOFF = 0x13;
 
-        private byte[] _packet;
+        private byte[] _bytes;
 
         public XBeePacket(byte[] bytes)
         {
-            ushort length = (ushort)bytes.Length;
+			_bytes = bytes;
+		}
+
+		private byte[] GetBytesInternal()
+		{
+            ushort length = (ushort)_bytes.Length;
 
             XBeeChecksum checksum = new XBeeChecksum();
-            checksum.AddBytes(bytes);
+            checksum.AddBytes(_bytes);
 
             ByteWriter bw = new ByteWriter(length + 1 /* start byte */ + 2 /* bytes for length */ + 1 /* checksum byte */, ByteOrder.BigEndian);
 
             bw.Write(PACKET_STARTBYTE);
             bw.Write(length);
-            bw.Write(bytes);
+            bw.Write(_bytes);
             bw.Write(checksum.Compute());
 
-            //_packet = EscapePacket(bw.GetBytes());
-            _packet = bw.GetBytes();
+			return bw.GetBytes();
         }
 
-        public byte[] GetBytes()
+		public byte[] GetBytes()
         {
-            return _packet;
+			return GetBytesInternal();
         }
+
+		public byte[] GetEscapedBytes()
+		{
+			return EscapePacket(GetBytesInternal());
+		}
 
         internal static bool IsSpecialByte(byte b)
         {
