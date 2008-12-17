@@ -44,8 +44,8 @@ namespace ZigbeeConsole
 			Thread thd1 = new Thread(new ThreadStart(RunCoordinator));
 			thd1.Start();
 
-			//Thread thd2 = new Thread(new ThreadStart(RunDevice));
-			//thd2.Start();
+			Thread thd2 = new Thread(new ThreadStart(RunDevice));
+			thd2.Start();
 
 			Console.ReadLine();
         }
@@ -55,8 +55,12 @@ namespace ZigbeeConsole
 			using (XBee xbee = new XBee("COM3", 9600, ApiType.Disabled))
 			{
 				xbee.Open();
-				xbee.SetNodeIdentifier("XBEEDEVICE");
 
+				if (xbee.EnterCommandMode())
+				{
+					xbee.SetNodeIdentifier("XBEEDEVICE");
+					xbee.ExitCommandMode();
+				}
 				
 				//xbee.SendPacket(new NodeIdentifier().GetPacket());
 				//xbee.SendPacket(new NodeIdentifier("XBEE_DEVICE").GetPacket());
@@ -76,12 +80,12 @@ namespace ZigbeeConsole
 
 		static void RunCoordinator()
 		{
-			using (XBee xbee = new XBee("COM6", 9600, ApiType.Enabled))
+			using (XBee xbee = new XBee("COM6", 9600))		//, ApiType.Enabled))
 			{
 				xbee.OnPacketReceived += new XBee.PacketReceivedHandler(xbeecoord_OnPacketReceived);
 				xbee.Open();
 
-				xbee.SetNodeIdentifier("COORDINATOR");
+				xbee.SetNodeIdentifier("XBEECOORDINATOR");
 				
 				//xbee.SendPacket(new InterfaceDataRate(115200).GetPacket());
 				//xbee.SendPacket(new NodeIdentifier().GetPacket());
@@ -97,8 +101,8 @@ namespace ZigbeeConsole
 					// discovering the network
 					//AtCommand at = new AtCommand("ND", new byte[0], 1);
 					xbee.SendPacket(new NodeDiscover().GetPacket());
-					
-					Thread.Sleep(20 * 1000);
+
+					Thread.Sleep(10 * 1000);
 				}
 			}
 		}
@@ -119,7 +123,7 @@ namespace ZigbeeConsole
 					NodeDiscoverData ni = at.Data as NodeDiscoverData;
 					if (ni != null)
 					{
-						if (ni.NodeIdentifier == "XBEE_SENSOR")
+						if (ni.NodeIdentifier == "XBEESENSOR")
 						{
 							//XBeeSensorRead sample = new XBeeSensorRead();
 							ForceSample sample = new ForceSample();
@@ -130,7 +134,7 @@ namespace ZigbeeConsole
 							Console.WriteLine("Sending ForceSample command...");
 						}
 
-						if (ni.NodeIdentifier == "XBEE_DEVICE")
+						if (ni.NodeIdentifier == "XBEEDEVICE")
 						{
 							ZigBeeTransmitRequest send = new ZigBeeTransmitRequest(0x01, ni.Address16, ni.Address64, Encoding.UTF8.GetBytes("" + DateTime.Now.Ticks));
 							sender.SendPacket(send.GetPacket());

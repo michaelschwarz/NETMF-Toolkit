@@ -106,7 +106,7 @@ namespace MSchwarz.Net.Zigbee
 
 			if (_apiType == ApiType.Unknown)
 			{
-				// detect the used API type or if using transparent AT mode
+				#region Detecting API or transparent AT mode
 
 				try
 				{
@@ -129,6 +129,8 @@ namespace MSchwarz.Net.Zigbee
 
 					_apiType = (at.Data as ApiEnableData).ApiType;
 				}
+
+				#endregion
 			}
 			else if (_apiType == ApiType.Enabled || _apiType == ApiType.EnabledWithEscaped)
 			{
@@ -142,7 +144,6 @@ namespace MSchwarz.Net.Zigbee
 			return true;
 		}
 	
-
 		void ReceiveData()
 		{
 			int bytesToRead = _serialPort.BytesToRead;
@@ -155,7 +156,7 @@ namespace MSchwarz.Net.Zigbee
 				}
 				else
 				{
-					byte[] bytes = new byte[1024];		// TODO: what is the maximum size of Zigbee packets?
+					byte[] bytes = new byte[1024];	// TODO: what is the maximum size of Zigbee packets?
 
 					if (_serialPort == null || !_serialPort.IsOpen)
 					{
@@ -306,7 +307,12 @@ namespace MSchwarz.Net.Zigbee
 
         public bool SendPacket(XBeePacket packet)
         {
-            byte[] bytes = packet.GetBytes();
+            byte[] bytes;
+
+			if (_apiType == ApiType.EnabledWithEscaped)
+				bytes = packet.GetEscapedBytes();
+			else
+				bytes = packet.GetBytes();
 
 #if(DEBUG && !MF)
 			Console.WriteLine("Sending " + ByteUtil.PrintBytes(bytes) + "...");
@@ -476,14 +482,15 @@ namespace MSchwarz.Net.Zigbee
 
 		public bool NetworkReset()
 		{
-			if (!EnterCommandMode())
-				return false;
+			//if (!EnterCommandMode())
+			//    return false;
 
 			SendCommand("ATNR");
 
 			bool res = GetResponse() == "OK";
 
-			return ExitCommandMode() || res;
+			//return ExitCommandMode() || res;
+			return res;
 		}
 
 		public void SetApiMode(ApiType apiType)
@@ -519,8 +526,9 @@ namespace MSchwarz.Net.Zigbee
 			switch (_apiType)
 			{
 				case ApiType.Disabled:
-					if (!EnterCommandMode())
-						return false;
+
+					//if (!EnterCommandMode())
+					//    return false;
 
 					SendCommand("ATNI" + identifier);
 					bool res = GetResponse() == "OK";
@@ -531,7 +539,7 @@ namespace MSchwarz.Net.Zigbee
 						res = GetResponse() == "OK";
 					}
 
-					ExitCommandMode();
+					//ExitCommandMode();
 
 					return res;
 
