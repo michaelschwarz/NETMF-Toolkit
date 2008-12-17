@@ -138,6 +138,9 @@
     <Compile Include="..\Zigbee\Response\AtRemoteCommandResponse.cs">
       <Link>Response\AtRemoteCommandResponse.cs</Link>
     </Compile>
+    <Compile Include="..\Zigbee\Response\AT\ApiEnableData.cs">
+      <Link>Response\AT\ApiEnableData.cs</Link>
+    </Compile>
     <Compile Include="..\Zigbee\Response\AT\CyclicSleepPeriodData.cs">
       <Link>Response\AT\CyclicSleepPeriodData.cs</Link>
     </Compile>

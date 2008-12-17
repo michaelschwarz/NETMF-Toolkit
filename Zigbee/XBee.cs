@@ -25,6 +25,7 @@
  */
 /*
  * MS	08-11-10	changed how data reading is working
+ * MS	08-12-17	
  * 
  * 
  */
@@ -43,19 +44,16 @@ namespace MSchwarz.Net.Zigbee
         private int _baudRate = 9600;
         private SerialPort _serialPort;
 		private MemoryStream _readBuffer = new MemoryStream();
-
-		private bool _isEscapeEnabled = false;
+		private ApiType _apiType = ApiType.Unknown;
+		
+		private byte _frameID = 0x00;
+		private bool _waitResponse = false;
+		private XBeeResponse _receivedPacket = null;
 
 		public delegate void PacketReceivedHandler(XBee sender, XBeeResponse response);
 		public event PacketReceivedHandler OnPacketReceived;
 
-        public XBee()
-        {
-
-        }
-
         public XBee(string port)
-            : this()
         {
             _port = port;
         }
@@ -66,6 +64,18 @@ namespace MSchwarz.Net.Zigbee
             _baudRate = baudRate;
         }
 
+		public XBee(string port, ApiType apiType)
+			: this(port)
+		{
+			_apiType = apiType;
+		}
+
+		public XBee(string port, int baudRate, ApiType apiType)
+			: this(port, baudRate)
+		{
+			_apiType = apiType;
+		}
+
         public bool Open(string port, int baudRate)
         {
             _port = port;
@@ -74,34 +84,64 @@ namespace MSchwarz.Net.Zigbee
             return Open();
         }
 
-        public bool Open()
-        {
-            try
-            {
-                if (_serialPort == null)
-                    _serialPort = new SerialPort(_port, _baudRate);
+		public bool Open()
+		{
+			try
+			{
+				if (_serialPort == null)
+					_serialPort = new SerialPort(_port, _baudRate);
 
-                if (!_serialPort.IsOpen)
-                {
-                    _serialPort.ReadTimeout = 2000;
-                    _serialPort.WriteTimeout = 2000;
+				if (!_serialPort.IsOpen)
+				{
+					_serialPort.ReadTimeout = 2000;
+					_serialPort.WriteTimeout = 2000;
 
-                    _serialPort.Open();
-                    
-					//_serialPort.Write("x");     // not sure if this is a bug or not, but if writing any character on init speeds up first command
-                }
+					_serialPort.Open();
+				}
+			}
+			catch (Exception)
+			{
+				return false;
+			}
 
+			if (_apiType == ApiType.Unknown)
+			{
+				// detect the used API type or if using transparent AT mode
+
+				try
+				{
+					if (EnterCommandMode())
+						ExitCommandMode();
+
+					// we need some msecs to wait before calling another EnterCommandMode
+					Thread.Sleep(1000);
+
+					_apiType = ApiType.Disabled;
+				}
+				catch (Exception)
+				{
+					// seems that we are using API
+
+					Thread thd = new Thread(new ThreadStart(this.ReceiveData));
+					thd.Start();
+
+					AtCommandResponse at = SendCommand(new ApiEnable()) as AtCommandResponse;
+
+					_apiType = (at.Data as ApiEnableData).ApiType;
+				}
+			}
+			else if (_apiType == ApiType.Enabled || _apiType == ApiType.EnabledWithEscaped)
+			{
 				Thread thd = new Thread(new ThreadStart(this.ReceiveData));
 				thd.Start();
+			}
 
-            }
-            catch (Exception ex)
-            {
-                return false;
-            }
+			if (_apiType == ApiType.Unknown)
+				throw new NotSupportedException("The API type could not be read or is configured wrong.");
 
-            return true;
-        }
+			return true;
+		}
+	
 
 		void ReceiveData()
 		{
@@ -118,73 +158,94 @@ namespace MSchwarz.Net.Zigbee
 					byte[] bytes = new byte[1024];		// TODO: what is the maximum size of Zigbee packets?
 
 					if (_serialPort == null || !_serialPort.IsOpen)
-						return;		// TODO: what?
-
-					int bytesRead = _serialPort.Read(bytes, 0, bytesToRead);
-
-					for (int i = 0; i < bytesRead; i++)
 					{
-						if (_isEscapeEnabled && XBeePacket.IsSpecialByte(bytes[i]))
-						{
-							if (bytes[i] == XBeePacket.PACKET_STARTBYTE)
-							{
-								_readBuffer.WriteByte(bytes[i]);
-							}
-							else if (bytes[i] == XBeePacket.PACKET_ESCAPE)
-							{
-								_readBuffer.WriteByte((byte)(0x20 ^ bytes[++i]));
-							}
-							else
-								throw new Exception("This special byte should not appear.");
-						}
-						else
-							_readBuffer.WriteByte(bytes[i]);
+						if (_serialPort == null)
+							_serialPort = new SerialPort(_port, _baudRate);
+
+						_serialPort.Open();
+
+						bytesToRead = _serialPort.BytesToRead;
+						_readBuffer.SetLength(0);
+						continue;
 					}
 
-					if (_readBuffer.Length > 4)
+					try
 					{
-						_readBuffer.Position = 0;
+						int bytesRead = _serialPort.Read(bytes, 0, bytesToRead);
 
-						if ((byte)_readBuffer.ReadByte() == XBeePacket.PACKET_STARTBYTE)
+						for (int i = 0; i < bytesRead; i++)
 						{
-							bytes = _readBuffer.ToArray();
-							_readBuffer.SetLength(0);
-
-							ByteReader br = new ByteReader(bytes, ByteOrder.BigEndian);
-
-							byte startByte = br.ReadByte();	// start byte
-							short length = br.ReadInt16();
-
-							if (br.AvailableBytes > length)
+							if (_apiType == ApiType.EnabledWithEscaped && XBeePacket.IsSpecialByte(bytes[i]))
 							{
-								//TODO: verify checksum
-
-								XBeeChecksum checksum = new XBeeChecksum();
-								for (int i = 0; i < length; i++)
+								if (bytes[i] == XBeePacket.PACKET_STARTBYTE)
 								{
-									checksum.AddByte(bytes[i + 3]);
+									_readBuffer.WriteByte(bytes[i]);
 								}
-
-								checksum.Compute();
-
-#if(DEBUG && !MF)
-								Console.WriteLine("Received " + ByteUtil.PrintBytes(bytes));
-#endif
-								if (checksum.Verify(bytes[length + 3]))
-									CheckFrame(length, br);
-
-								if (bytes.Length - (1 + 2 + length + 1) > 0)
-									_readBuffer.Write(bytes, 1 + 2 + length + 1, bytes.Length - (1 + 2 + length + 1));
+								else if (bytes[i] == XBeePacket.PACKET_ESCAPE)
+								{
+									_readBuffer.WriteByte((byte)(0x20 ^ bytes[++i]));
+								}
+								else
+									throw new Exception("This special byte should not appear.");
 							}
 							else
+								_readBuffer.WriteByte(bytes[i]);
+						}
+
+						if (_readBuffer.Length > 4)
+						{
+							_readBuffer.Position = 0;
+
+							if ((byte)_readBuffer.ReadByte() == XBeePacket.PACKET_STARTBYTE)
 							{
-								_readBuffer.Write(bytes, 0, bytes.Length);
+								bytes = _readBuffer.ToArray();
+								_readBuffer.SetLength(0);
+
+								ByteReader br = new ByteReader(bytes, ByteOrder.BigEndian);
+
+								byte startByte = br.ReadByte();	// start byte
+								short length = br.ReadInt16();
+
+								if (br.AvailableBytes > length)
+								{
+									//TODO: verify checksum
+
+									XBeeChecksum checksum = new XBeeChecksum();
+									for (int i = 0; i < length; i++)
+									{
+										checksum.AddByte(bytes[i + 3]);
+									}
+
+									checksum.Compute();
+
+#if(DEBUG && !MF)
+									Console.WriteLine("Received " + ByteUtil.PrintBytes(bytes));
+#endif
+									if (checksum.Verify(bytes[length + 3]))
+										CheckFrame(length, br);
+
+									if (bytes.Length - (1 + 2 + length + 1) > 0)
+										_readBuffer.Write(bytes, 1 + 2 + length + 1, bytes.Length - (1 + 2 + length + 1));
+								}
+								else
+								{
+									_readBuffer.Write(bytes, 0, bytes.Length);
+								}
 							}
+						}
+					}
+					catch (Exception)
+					{
+						_readBuffer.SetLength(0);
+
+						if (_serialPort != null && _serialPort.IsOpen)
+						{
+							bytesToRead = _serialPort.BytesToRead;
 						}
 					}
 				}
 
-				if(_serialPort != null && _serialPort.IsOpen)
+				if (_serialPort != null && _serialPort.IsOpen)
 					bytesToRead = _serialPort.BytesToRead;
 			}
 		}
@@ -224,8 +285,17 @@ namespace MSchwarz.Net.Zigbee
 					break;
             }
 
-			if (res != null && OnPacketReceived != null)
-				OnPacketReceived(this, res);
+			if (res != null)
+			{
+				if (_waitResponse && res is AtCommandResponse && (res as AtCommandResponse).FrameID == _frameID)
+				{
+					_receivedPacket = res;
+					_waitResponse = false;
+				}
+
+				if (OnPacketReceived != null)
+					OnPacketReceived(this, res);
+			}
 		}
 
         public void Close()
@@ -245,11 +315,242 @@ namespace MSchwarz.Net.Zigbee
 			_serialPort.Write(bytes, 0, bytes.Length);
 
             return true;
-        }
+		}
 
-        #region IDisposable Members
+		public XBeeResponse SendCommand(AtCommand cmd)
+		{
+			cmd.FrameID = ++_frameID;
+			_waitResponse = true;
 
-        public void Dispose()
+			SendPacket(cmd.GetPacket());
+
+			while (_waitResponse)		// TODO: && timeout
+			{
+
+
+				Thread.Sleep(10);
+			}
+
+			if (!_waitResponse)
+			{
+				return _receivedPacket;
+			}
+
+			return null;
+		}
+
+		public void SendCommand(string s)
+		{
+#if(!MF)
+			Console.WriteLine(s);
+#endif
+			byte[] bytes = Encoding.UTF8.GetBytes(s + "\r");
+			_serialPort.Write(bytes, 0, bytes.Length);
+		}
+
+		private string ReadTo(string value)
+		{
+			string textArrived = string.Empty;
+
+			// Arguments check
+			if (value == null)
+				throw new ArgumentNullException();
+
+			if (value.Length == 0)
+				throw new ArgumentException();
+
+			// This is for speed performance (in loops below)
+			byte[] byteValue = Encoding.UTF8.GetBytes(value);
+			int byteValueLen = byteValue.Length;
+
+			bool flag = false;
+			// +1 because of two byte characters
+			byte[] buffer = new byte[byteValueLen];
+
+			// Read until pattern or timeout
+			do
+			{
+				int bytesRead;
+				int bufferIndex = 0;
+				Array.Clear(buffer, 0, buffer.Length);
+
+				// Read data until the buffer size is less then pattern.Length
+				// or last char in pattern is received
+				do
+				{
+					bytesRead = _serialPort.Read(buffer, bufferIndex, 1);
+					bufferIndex += bytesRead;
+
+					// if nothing was read (timeout), we will return null
+					if (bytesRead <= 0)
+					{
+						return null;
+					}
+
+				}
+				while ((bufferIndex < byteValueLen)
+						&& (buffer[bufferIndex - 1] != byteValue[byteValueLen - 1]));
+
+				// Decode received bytes into chars and then into string
+				char[] charData = Encoding.UTF8.GetChars(buffer);
+
+				for (int i = 0; i < charData.Length; i++)
+					textArrived += charData[i];
+
+
+				flag = true;
+
+				// This is very important!! Bytes received can be zero-length string.
+				// For example 0x00, 0x65, 0x66, 0x67, 0x0A will be decoded as empty string.
+				/// So this condition is not a burden!
+				if (textArrived.Length > 0)
+				{
+					// check whether the end pattern is at the end
+					for (int i = 1; i <= value.Length; i++)
+					{
+						if (value[value.Length - i] != textArrived[textArrived.Length - i])
+						{
+							flag = false;
+							break;
+						}
+					}
+				}
+
+			} while (!flag);
+
+			// chop end pattern
+			if (textArrived.Length >= value.Length)
+				textArrived = textArrived.Substring(0, textArrived.Length - value.Length);
+
+			return textArrived;
+		}
+
+		public string GetResponse()
+		{
+			string s = ReadTo("\r");
+
+#if(!MF)
+			Console.WriteLine(s);
+#endif
+
+			return s;
+		}
+
+		private bool StrEndWith(string data, string pattern)
+		{
+			int dataLen = data.Length;
+			int patLen = pattern.Length;
+
+			if (dataLen < patLen || data.Substring(dataLen - patLen) != pattern)
+				return false;
+			else
+				return true;
+		}
+
+
+		#region XBee ZNet 2.5 Commands
+
+		public bool EnterCommandMode()
+		{
+			//if (_apiType != ApiType.Disabled)
+			//    throw new NotSupportedException("This command is not available when in API mode.");
+
+#if(!MF)
+			Console.WriteLine("+++");
+#endif
+
+			byte[] bytes = Encoding.UTF8.GetBytes("+++");
+			_serialPort.Write(bytes, 0, bytes.Length);
+
+			Thread.Sleep(1000);
+
+			return GetResponse() == "OK";
+		}
+
+		public bool ExitCommandMode()
+		{
+			SendCommand("ATCN");
+
+			return GetResponse() == "OK";
+		}
+
+		public bool NetworkReset()
+		{
+			if (!EnterCommandMode())
+				return false;
+
+			SendCommand("ATNR");
+
+			bool res = GetResponse() == "OK";
+
+			return ExitCommandMode() || res;
+		}
+
+		public void SetApiMode(ApiType apiType)
+		{
+			switch (apiType)
+			{
+				case ApiType.Disabled:
+					if (_apiType == ApiType.Enabled || _apiType == ApiType.EnabledWithEscaped)
+					{
+						AtCommand at = new ApiEnable(apiType);
+						at.FrameID = ++_frameID;
+
+						SendPacket(at.GetPacket());
+
+						while (true)
+						{
+						}
+					}
+					break;
+
+				case ApiType.Enabled:
+					if (_apiType == ApiType.Disabled)
+					{
+						
+
+					}
+					break;
+			}
+		}
+
+		public bool SetNodeIdentifier(string identifier)
+		{
+			switch (_apiType)
+			{
+				case ApiType.Disabled:
+					if (!EnterCommandMode())
+						return false;
+
+					SendCommand("ATNI" + identifier);
+					bool res = GetResponse() == "OK";
+
+					if (res)
+					{
+						SendCommand("ATWR");
+						res = GetResponse() == "OK";
+					}
+
+					ExitCommandMode();
+
+					return res;
+
+				case ApiType.Enabled:
+				case ApiType.EnabledWithEscaped:
+
+					SendPacket(new NodeIdentifier(identifier).GetPacket());
+
+					return true;
+			}
+
+			return false;
+		}
+
+		#endregion
+
+		#region IDisposable Members
+
+		public void Dispose()
         {
             Close();
 

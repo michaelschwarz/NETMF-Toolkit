@@ -43,6 +43,12 @@ namespace MSchwarz.Net.Zigbee
 		/// <summary>
 		/// API enabled (with escaped characters)
 		/// </summary>
-		EnabledWithEscaped = 0x02
+		EnabledWithEscaped = 0x02,
+
+		/// <summary>
+		/// The undefined value.
+		/// </summary>
+		Unknown = 0xff
+
 	}
 }

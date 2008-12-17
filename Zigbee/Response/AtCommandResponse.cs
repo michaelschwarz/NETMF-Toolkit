@@ -37,6 +37,11 @@ namespace MSchwarz.Net.Zigbee
         private byte[] _value;
 		private IAtCommandData _data = null;
 
+		public byte FrameID
+		{
+			get { return _frameID; }
+		}
+
         public string Command
         {
             get { return _command; }
@@ -84,6 +89,7 @@ namespace MSchwarz.Net.Zigbee
 					case "SP": _data = new CyclicSleepPeriodData(); break;
 					case "ST": _data = new TimeBeforeSleepData(); break;
 					case "%V": _data = new SupplyVoltageData(); break;
+					case "AP": _data = new ApiEnableData(); break;
 				}
 
 				if (_data != null && _value != null && _value.Length > 0)
