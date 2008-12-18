@@ -52,18 +52,19 @@ namespace ZigbeeConsole
 
 		static void RunDevice()
 		{
-			using (XBee xbee = new XBee("COM3", 9600, ApiType.Disabled))
+			using (XBee xbee = new XBee("COM3", 9600))
 			{
+				xbee.OnPacketReceived += new XBee.PacketReceivedHandler(xbeedevice_OnPacketReceived);
 				xbee.Open();
 
-				if (xbee.EnterCommandMode())
-				{
-					xbee.SetNodeIdentifier("XBEEDEVICE");
-					xbee.ExitCommandMode();
-				}
+				//if (xbee.EnterCommandMode())
+				//{
+				xbee.SetNodeIdentifier("XBEEDEVICE");
+				//    xbee.ExitCommandMode();
+				//}
 				
 				//xbee.SendPacket(new NodeIdentifier().GetPacket());
-				//xbee.SendPacket(new NodeIdentifier("XBEE_DEVICE").GetPacket());
+				//xbee.SendPacket(new NodeIdentifier("XBEEDEVICE").GetPacket());
 				//xbee.SendPacket(new SupplyVoltage().GetPacket());
 				//xbee.SendPacket(new Channel().GetPacket());
 				//xbee.SendPacket(new ReceivedSignalStrength().GetPacket());
@@ -89,7 +90,7 @@ namespace ZigbeeConsole
 				
 				//xbee.SendPacket(new InterfaceDataRate(115200).GetPacket());
 				//xbee.SendPacket(new NodeIdentifier().GetPacket());
-				//xbee.SendPacket(new NodeIdentifier("XBEE_COORDINATOR").GetPacket());
+				//xbee.SendPacket(new NodeIdentifier("XBEECOORDINATOR").GetPacket());
 				//xbee.SendPacket(new SupplyVoltage().GetPacket());
 				//xbee.SendPacket(new Channel().GetPacket());
 				//xbee.SendPacket(new ReceivedSignalStrength().GetPacket());
