@@ -330,11 +330,20 @@ namespace MSchwarz.Net.Zigbee
 
 			SendPacket(cmd.GetPacket());
 
-			while (_waitResponse)		// TODO: && timeout
+			int c = 0;
+
+			while (_waitResponse && ++c < 200)
 			{
-
-
 				Thread.Sleep(10);
+			}
+
+			if (c == 200)
+			{
+#if(MF)
+				throw new Exception("Could not receive response.");
+#else
+				throw new TimeoutException("Could not receive response.");
+#endif
 			}
 
 			if (!_waitResponse)
@@ -458,12 +467,8 @@ namespace MSchwarz.Net.Zigbee
 
 		public bool EnterCommandMode()
 		{
-			//if (_apiType != ApiType.Disabled)
-			//    throw new NotSupportedException("This command is not available when in API mode.");
-
-#if(!MF)
-			Console.WriteLine("+++");
-#endif
+			if (_apiType != ApiType.Disabled)
+				throw new NotSupportedException("While using API mode entering command mode is not available.");
 
 			byte[] bytes = Encoding.UTF8.GetBytes("+++");
 			_serialPort.Write(bytes, 0, bytes.Length);
@@ -475,6 +480,9 @@ namespace MSchwarz.Net.Zigbee
 
 		public bool ExitCommandMode()
 		{
+			if (_apiType != ApiType.Disabled)
+				throw new NotSupportedException("While using API mode entering command mode is not available.");
+
 			SendCommand("ATCN");
 
 			return GetResponse() == "OK";
@@ -482,15 +490,20 @@ namespace MSchwarz.Net.Zigbee
 
 		public bool NetworkReset()
 		{
-			//if (!EnterCommandMode())
-			//    return false;
+			if (_apiType == ApiType.Disabled)
+			{
+				SendCommand("ATNR");
+				return GetResponse() == "OK";
+			}
+			else
+			{
+				AtCommandResponse res = SendCommand(new NetworkReset()) as AtCommandResponse;
 
-			SendCommand("ATNR");
+				if (res == null)
+					return false;
 
-			bool res = GetResponse() == "OK";
-
-			//return ExitCommandMode() || res;
-			return res;
+				return (res.Status == AtCommandStatus.Ok);
+			}
 		}
 
 		public void SetApiMode(ApiType apiType)
@@ -546,9 +559,12 @@ namespace MSchwarz.Net.Zigbee
 				case ApiType.Enabled:
 				case ApiType.EnabledWithEscaped:
 
-					SendPacket(new NodeIdentifier(identifier).GetPacket());
+					AtCommandResponse atres = SendCommand(new NodeIdentifier(identifier)) as AtCommandResponse;
 
-					return true;
+					if (atres == null)
+						return false;
+
+					return (atres.Status == AtCommandStatus.Ok);
 			}
 
 			return false;
