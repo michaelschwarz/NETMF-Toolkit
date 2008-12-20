@@ -84,7 +84,7 @@ namespace MSchwarz.Net.Zigbee
 					case "%V": _data = new SupplyVoltageData(); break;
 				}
 
-				if (_data != null)
+				if (_data != null && _value.Length > 0)
 					_data.Fill(_value);
 			}
         }

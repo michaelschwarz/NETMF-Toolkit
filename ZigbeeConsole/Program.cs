@@ -44,8 +44,8 @@ namespace ZigbeeConsole
 			Thread thd1 = new Thread(new ThreadStart(RunCoordinator));
 			thd1.Start();
 
-			Thread thd2 = new Thread(new ThreadStart(RunDevice));
-			thd2.Start();
+			//Thread thd2 = new Thread(new ThreadStart(RunDevice));
+			//thd2.Start();
 
 			Console.ReadLine();
         }
@@ -124,7 +124,7 @@ namespace ZigbeeConsole
 					NodeDiscoverData ni = at.Data as NodeDiscoverData;
 					if (ni != null)
 					{
-						if (ni.NodeIdentifier == "XBEESENSOR")
+						if (ni.NodeIdentifier == "XBEE_SENSOR" || ni.NodeIdentifier == "DEVICE2" || ni.NodeIdentifier == "XBEESENSOR")
 						{
 							//XBeeSensorRead sample = new XBeeSensorRead();
 							ForceSample sample = new ForceSample();

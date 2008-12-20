@@ -332,12 +332,12 @@ namespace MSchwarz.Net.Zigbee
 
 			int c = 0;
 
-			while (_waitResponse && ++c < 200)
+			while (_waitResponse && ++c < 300)
 			{
 				Thread.Sleep(10);
 			}
 
-			if (c == 200)
+			if (c >= 300)
 			{
 #if(MF)
 				throw new Exception("Could not receive response.");
