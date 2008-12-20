@@ -52,7 +52,7 @@ namespace MSchwarz.IO
 #if(MF)
 			return b.ToString();
 #else
-			return b.ToString("X");
+			return b.ToString("X2");
 #endif
         }
 
