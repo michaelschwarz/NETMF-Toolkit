@@ -81,12 +81,14 @@ namespace ZigbeeConsole
 
 		static void RunCoordinator()
 		{
-			using (XBee xbee = new XBee("COM6", 9600))		//, ApiType.Enabled))
+			using (XBee xbee = new XBee("COM3", 9600, ApiType.Disabled))
 			{
-				xbee.OnPacketReceived += new XBee.PacketReceivedHandler(xbeecoord_OnPacketReceived);
+				//xbee.OnPacketReceived += new XBee.PacketReceivedHandler(xbeecoord_OnPacketReceived);
 				xbee.Open();
 
+				xbee.EnterCommandMode();
 				xbee.SetNodeIdentifier("XBEECOORDINATOR");
+				xbee.ExitCommandMode();
 				
 				//xbee.SendPacket(new InterfaceDataRate(115200).GetPacket());
 				//xbee.SendPacket(new NodeIdentifier().GetPacket());
