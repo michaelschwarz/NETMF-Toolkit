@@ -135,6 +135,8 @@ namespace MSchwarz.Net.Zigbee
 			else if (_apiType == ApiType.Enabled || _apiType == ApiType.EnabledWithEscaped)
 			{
 				Thread thd = new Thread(new ThreadStart(this.ReceiveData));
+                thd.Name = "Receive Data Thread";
+                thd.IsBackground = true;
 				thd.Start();
 			}
 
