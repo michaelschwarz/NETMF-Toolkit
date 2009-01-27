@@ -369,36 +369,29 @@ namespace MSchwarz.Net.Zigbee
 		{
 			string textArrived = string.Empty;
 
-			// Arguments check
 			if (value == null)
 				throw new ArgumentNullException();
 
 			if (value.Length == 0)
 				throw new ArgumentException();
 
-			// This is for speed performance (in loops below)
 			byte[] byteValue = Encoding.UTF8.GetBytes(value);
 			int byteValueLen = byteValue.Length;
 
 			bool flag = false;
-			// +1 because of two byte characters
 			byte[] buffer = new byte[byteValueLen];
 
-			// Read until pattern or timeout
 			do
 			{
 				int bytesRead;
 				int bufferIndex = 0;
 				Array.Clear(buffer, 0, buffer.Length);
 
-				// Read data until the buffer size is less then pattern.Length
-				// or last char in pattern is received
 				do
 				{
 					bytesRead = _serialPort.Read(buffer, bufferIndex, 1);
 					bufferIndex += bytesRead;
 
-					// if nothing was read (timeout), we will return null
 					if (bytesRead <= 0)
 					{
 						return null;
@@ -408,21 +401,15 @@ namespace MSchwarz.Net.Zigbee
 				while ((bufferIndex < byteValueLen)
 						&& (buffer[bufferIndex - 1] != byteValue[byteValueLen - 1]));
 
-				// Decode received bytes into chars and then into string
 				char[] charData = Encoding.UTF8.GetChars(buffer);
 
 				for (int i = 0; i < charData.Length; i++)
 					textArrived += charData[i];
 
-
 				flag = true;
 
-				// This is very important!! Bytes received can be zero-length string.
-				// For example 0x00, 0x65, 0x66, 0x67, 0x0A will be decoded as empty string.
-				/// So this condition is not a burden!
 				if (textArrived.Length > 0)
 				{
-					// check whether the end pattern is at the end
 					for (int i = 1; i <= value.Length; i++)
 					{
 						if (value[value.Length - i] != textArrived[textArrived.Length - i])
@@ -435,7 +422,6 @@ namespace MSchwarz.Net.Zigbee
 
 			} while (!flag);
 
-			// chop end pattern
 			if (textArrived.Length >= value.Length)
 				textArrived = textArrived.Substring(0, textArrived.Length - value.Length);
 
@@ -471,11 +457,6 @@ namespace MSchwarz.Net.Zigbee
 		{
 			if (_apiType != ApiType.Disabled && _apiType != ApiType.Unknown)
 				throw new NotSupportedException("While using API mode entering command mode is not available.");
-
-			//byte[] bytes = Encoding.UTF8.GetBytes("+++");
-			//_serialPort.Write(bytes, 0, bytes.Length);
-
-			//Thread.Sleep(1000);
 
 			SendCommand("+++");
 
