@@ -467,13 +467,17 @@ namespace MSchwarz.Net.Zigbee
 
 		public bool EnterCommandMode()
 		{
-			if (_apiType != ApiType.Disabled)
+			if (_apiType != ApiType.Disabled && _apiType != ApiType.Unknown)
 				throw new NotSupportedException("While using API mode entering command mode is not available.");
 
-			byte[] bytes = Encoding.UTF8.GetBytes("+++");
-			_serialPort.Write(bytes, 0, bytes.Length);
+			//byte[] bytes = Encoding.UTF8.GetBytes("+++");
+			//_serialPort.Write(bytes, 0, bytes.Length);
 
-			Thread.Sleep(1000);
+			//Thread.Sleep(1000);
+
+			SendCommand("+++");
+
+			Thread.Sleep(2500);
 
 			return GetResponse() == "OK";
 		}
