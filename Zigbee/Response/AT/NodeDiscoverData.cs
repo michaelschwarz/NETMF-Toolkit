@@ -29,21 +29,21 @@ using MSchwarz.IO;
 
 namespace MSchwarz.Net.Zigbee
 {
-	public class NodeDiscoverData : IAtCommandData
-	{
+    public class NodeDiscoverData : IAtCommandData
+    {
         private const byte terminationCharacter = 0x00;
 
         public ushort Address16 { get; private set; }
-		public ulong Address64 { get; private set; }
-		public string NodeIdentifier { get; private set; }
+        public ulong Address64 { get; private set; }
+        public string NodeIdentifier { get; private set; }
         public ushort ParentAddress { get; private set; }
         public ZigBeeDeviceType DeviceType { get; private set; }
         public byte Status { get; private set; }
         public ushort ProfileID { get; private set; }
         public ushort ManufacturerID { get; private set; }
 
-		public void Fill(byte[] frameData)
-		{
+        public void Fill(byte[] frameData)
+        {
             using (ByteReader reader = new ByteReader(frameData, ByteOrder.BigEndian))
             {
                 Address16 = reader.ReadUInt16();
@@ -55,10 +55,10 @@ namespace MSchwarz.Net.Zigbee
                 ProfileID = reader.ReadUInt16();
                 ManufacturerID = reader.ReadUInt16();
             }
-		}
+        }
 
-		public override string ToString()
-		{
+        public override string ToString()
+        {
 #if(MF)
             return "Address: " + Address16.ToString() + ", Serial: " + Address64.ToString() + 
                    ", ID: " + NodeIdentifier + ", Type: " + DeviceType.ToString();
@@ -66,6 +66,6 @@ namespace MSchwarz.Net.Zigbee
             return string.Format("Address: {0:X}, Serial: {1:X}, ID: {2}, Type: {3}",
                 Address16, Address64, NodeIdentifier, DeviceType.ToString());
 #endif
-		}
-	}
+        }
+    }
 }
