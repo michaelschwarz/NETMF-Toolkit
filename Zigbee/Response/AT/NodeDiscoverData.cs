@@ -21,77 +21,51 @@
  * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * BL 09-01-28  Update for .NET 3.0
  * 
  */
-using System;
-using System.Text;
 using MSchwarz.IO;
 
 namespace MSchwarz.Net.Zigbee
 {
 	public class NodeDiscoverData : IAtCommandData
 	{
-		private ulong _addr64;
-		private string _ni;
-		private ushort _parent16;
-		private byte _deviceType;
-		private byte _sourceAction;
-		private ushort _profileID;
-		private ushort _manufactureID;
-
-		#region Public Properties
+        private const byte terminationCharacter = 0x00;
 
         public ushort Address16 { get; private set; }
+		public ulong Address64 { get; private set; }
+		public string NodeIdentifier { get; private set; }
+        public ushort ParentAddress { get; private set; }
+        public ZigBeeDeviceType DeviceType { get; private set; }
+        public byte Status { get; private set; }
+        public ushort ProfileID { get; private set; }
+        public ushort ManufacturerID { get; private set; }
 
-		public ulong Address64
+		public void Fill(byte[] frameData)
 		{
-			get { return _addr64; }
-		}
-
-		public string NodeIdentifier
-		{
-			get { return _ni; }
-		}
-
-		// ...
-
-		public ZigBeeDeviceType DeviceType
-		{
-			get { return (ZigBeeDeviceType)_deviceType; }
-		}
-
-		// ...
-
-		#endregion
-
-		public void Fill(byte[] value)
-		{
-			ByteReader nd = new ByteReader(value, ByteOrder.BigEndian);
-
-            Address16 = nd.ReadUInt16();
-            _addr64 = nd.ReadUInt64();
-
-            _ni = nd.ReadString((byte)0x00);	// (int)nd.AvailableBytes - 8);
-
-			_parent16 = nd.ReadUInt16();
-			_deviceType = nd.ReadByte();
-			_sourceAction = nd.ReadByte();
-			_profileID = nd.ReadUInt16();
-			_manufactureID = nd.ReadUInt16();
+            using (ByteReader reader = new ByteReader(frameData, ByteOrder.BigEndian))
+            {
+                Address16 = reader.ReadUInt16();
+                Address64 = reader.ReadUInt64();
+                NodeIdentifier = reader.ReadString(terminationCharacter);
+                ParentAddress = reader.ReadUInt16();
+                DeviceType = (ZigBeeDeviceType)reader.ReadByte();
+                Status = reader.ReadByte();
+                ProfileID = reader.ReadUInt16();
+                ManufacturerID = reader.ReadUInt16();
+            }
 		}
 
 		public override string ToString()
 		{
-			string s = @"                    MY " + Address16 + @"
-                 SH SL " + _addr64 + @"
-                    NI " + _ni + @"
-PARENT_NETWORK ADDRESS {3}
-           DEVICE_TYPE {4}
-                STATUS {5}
-            PROFILE_ID {6}
-       MANUFACTURER_ID {7}";
-
-			return s;
+#if(MF)
+            return "Address: " + Address16.ToString() + ", Serial: " + Address64.ToString() + 
+                   ", ID: " + NodeIdentifier + ", Type: " + DeviceType.ToString();
+#else
+            return string.Format("Address: {0:X}, Serial: {1:X}, ID: {2}, Type: {3}",
+                Address16, Address64, NodeIdentifier, DeviceType.ToString());
+#endif
 		}
 	}
 }
