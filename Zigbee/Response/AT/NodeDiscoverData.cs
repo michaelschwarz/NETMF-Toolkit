@@ -1,7 +1,7 @@
 ﻿/* 
  * NodeDiscoverData.cs
  * 
- * Copyright (c) 2008, Michael Schwarz (http://www.schwarz-interactive.de)
+ * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -22,7 +22,9 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
- * BL 09-01-28  Update for .NET 3.0
+ * BL	09-01-28	update for .NET 3.0
+ * 
+ * 
  * 
  */
 using MSchwarz.IO;
