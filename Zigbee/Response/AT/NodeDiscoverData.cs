@@ -31,7 +31,6 @@ namespace MSchwarz.Net.Zigbee
 {
 	public class NodeDiscoverData : IAtCommandData
 	{
-		private ushort _addr16;
 		private ulong _addr64;
 		private string _ni;
 		private ushort _parent16;
@@ -42,10 +41,7 @@ namespace MSchwarz.Net.Zigbee
 
 		#region Public Properties
 
-		public ushort Address16
-		{
-			get { return _addr16; }
-		}
+        public ushort Address16 { get; private set; }
 
 		public ulong Address64
 		{
@@ -72,7 +68,7 @@ namespace MSchwarz.Net.Zigbee
 		{
 			ByteReader nd = new ByteReader(value, ByteOrder.BigEndian);
 
-            _addr16 = nd.ReadUInt16();
+            Address16 = nd.ReadUInt16();
             _addr64 = nd.ReadUInt64();
 
             _ni = nd.ReadString((byte)0x00);	// (int)nd.AvailableBytes - 8);
@@ -86,7 +82,7 @@ namespace MSchwarz.Net.Zigbee
 
 		public override string ToString()
 		{
-			string s = @"                    MY " + _addr16 + @"
+			string s = @"                    MY " + Address16 + @"
                  SH SL " + _addr64 + @"
                     NI " + _ni + @"
 PARENT_NETWORK ADDRESS {3}
