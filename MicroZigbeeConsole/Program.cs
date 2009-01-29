@@ -25,7 +25,7 @@
  */
 using System;
 using Microsoft.SPOT;
-using MSchwarz.Net.Zigbee;
+using MSchwarz.Net.XBee;
 using System.Threading;
 
 namespace MicroZigbeeConsole

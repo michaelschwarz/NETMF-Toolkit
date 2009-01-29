@@ -31,7 +31,7 @@ using System;
 using System.Text;
 using MSchwarz.IO;
 
-namespace MSchwarz.Net.Zigbee
+namespace MSchwarz.Net.XBee
 {
     public class AtCommand : XBeeRequest
     {

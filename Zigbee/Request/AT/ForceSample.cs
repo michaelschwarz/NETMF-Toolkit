@@ -26,7 +26,7 @@
 using System;
 using System.Text;
 
-namespace MSchwarz.Net.Zigbee
+namespace MSchwarz.Net.XBee
 {
 	/// <summary>
 	/// IO Settings: The IS command is used to force

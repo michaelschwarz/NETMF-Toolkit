@@ -27,7 +27,7 @@ using System;
 using System.Text;
 using MSchwarz.IO;
 
-namespace MSchwarz.Net.Zigbee
+namespace MSchwarz.Net.XBee
 {
 	/// <summary>
 	/// Serial Interfacing: The AP command is used to

@@ -26,7 +26,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using MSchwarz.Net.Zigbee;
+using MSchwarz.Net.XBee;
 using System.Threading;
 using System.IO;
 using System.Drawing;
