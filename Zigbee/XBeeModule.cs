@@ -1,7 +1,7 @@
 ﻿/* 
- * InterfaceDataRate.cs
+ * XBeeModule.cs
  * 
- * Copyright (c) 2008, Michael Schwarz (http://www.schwarz-interactive.de)
+ * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -21,38 +21,32 @@
  * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * MS   09-01-29    inital version
+ * 
+ * 
  * 
  */
 using System;
+using System.Collections.Generic;
 using System.Text;
+using System.IO.Ports;
 
 namespace MSchwarz.Net.XBee
 {
-	public class InterfaceDataRate : AtCommand
-	{
-		public InterfaceDataRate()
-			: base("BD")
-		{
-		}
+    public class XBeeModule : IDisposable
+    {
+        public XBeeModule(SerialPort port)
+        {
+        }
 
-		public InterfaceDataRate(int baudRate)
-			: this()
-		{
-			byte baudRateValue = 0x80;
+        #region IDisposable Members
 
-			switch(baudRate)
-			{
-				case 1200:	baudRateValue = 0x00; break;
-				case 2400:	baudRateValue = 0x01; break;
-				case 4800:	baudRateValue = 0x02; break;
-				case 9600:	baudRateValue = 0x03; break;
-				case 19200:	baudRateValue = 0x04; break;
-				case 38400:	baudRateValue = 0x05; break;
-				case 57600:	baudRateValue = 0x06; break;
-				case 115200:baudRateValue = 0x07; break;
-			}
+        public void Dispose()
+        {
+            throw new NotImplementedException();
+        }
 
-			this.Value = new byte[] { baudRateValue };
-		}
-	}
+        #endregion
+    }
 }

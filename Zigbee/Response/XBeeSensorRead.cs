@@ -27,7 +27,7 @@ using System;
 using System.Text;
 using MSchwarz.IO;
 
-namespace MSchwarz.Net.Zigbee
+namespace MSchwarz.Net.XBee
 {
 	// TODO: not sure if this is the correct implementation
 

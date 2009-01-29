@@ -93,6 +93,7 @@
     <Compile Include="XBee.cs" />
     <Compile Include="Enums\XBeeApiType.cs" />
     <Compile Include="XBeeChecksum.cs" />
+    <Compile Include="XBeeModule.cs" />
     <Compile Include="XBeePacket.cs" />
     <Compile Include="XBeeReader.cs" />
     <Compile Include="XBeeRequest.cs" />

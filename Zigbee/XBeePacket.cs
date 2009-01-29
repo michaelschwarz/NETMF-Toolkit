@@ -31,7 +31,7 @@ using MSchwarz.IO;
 using System.Collections.Generic;
 #endif
 
-namespace MSchwarz.Net.Zigbee
+namespace MSchwarz.Net.XBee
 {
     public class XBeePacket
     {

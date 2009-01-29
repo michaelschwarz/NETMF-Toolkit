@@ -29,11 +29,13 @@
  */
 using MSchwarz.IO;
 
-namespace MSchwarz.Net.Zigbee
+namespace MSchwarz.Net.XBee
 {
     public class NodeDiscoverData : IAtCommandData
     {
         private const byte terminationCharacter = 0x00;
+
+        #region Public Properties
 
         public ushort Address16 { get; private set; }
         public ulong Address64 { get; private set; }
@@ -43,6 +45,8 @@ namespace MSchwarz.Net.Zigbee
         public byte Status { get; private set; }
         public ushort ProfileID { get; private set; }
         public ushort ManufacturerID { get; private set; }
+
+        #endregion
 
         public void Fill(byte[] frameData)
         {

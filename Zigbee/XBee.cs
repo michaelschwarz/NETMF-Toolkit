@@ -36,7 +36,7 @@ using System.IO.Ports;
 using System.IO;
 using MSchwarz.IO;
 
-namespace MSchwarz.Net.Zigbee
+namespace MSchwarz.Net.XBee
 {
     public class XBee : IDisposable
     {
