@@ -452,7 +452,6 @@ namespace MSchwarz.Net.Zigbee
 				return true;
 		}
 
-
 		#region XBee ZNet 2.5 Commands
 
 		public bool EnterCommandMode()
