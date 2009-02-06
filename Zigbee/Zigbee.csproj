@@ -8,8 +8,8 @@
     <ProjectGuid>{712410B3-03CB-4771-9AFE-75CA1C65EC3E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Zigbee</RootNamespace>
-    <AssemblyName>Zigbee</AssemblyName>
+    <RootNamespace>MSchwarz.Net.XBee</RootNamespace>
+    <AssemblyName>XBee</AssemblyName>
     <TargetFrameworkVersion>v3.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SccProjectName>SAK</SccProjectName>
