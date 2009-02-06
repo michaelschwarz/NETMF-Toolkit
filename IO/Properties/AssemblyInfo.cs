@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Michael Schwarz")]
 [assembly: AssemblyProduct("IO Library")]
-[assembly: AssemblyCopyright("Copyright ©  2008, Michael Schwarz")]
+[assembly: AssemblyCopyright("Copyright ©  2009, Michael Schwarz")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
