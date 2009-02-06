@@ -8,7 +8,7 @@
     <ProjectGuid>{43C6F30A-3EFA-45E1-ACF8-3D42C74BDC72}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DNS</RootNamespace>
+    <RootNamespace>MSchwarz.Net.Dns</RootNamespace>
     <AssemblyName>DNS</AssemblyName>
     <TargetFrameworkVersion>v3.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
