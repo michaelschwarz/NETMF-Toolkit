@@ -23,12 +23,11 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  * MS   09-01-29    inital version
- * 
+ * MS   09-02-06    fixed .NET MF support
  * 
  * 
  */
 using System;
-using System.Collections.Generic;
 using System.Text;
 using System.IO.Ports;
 
