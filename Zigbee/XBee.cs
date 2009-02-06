@@ -26,7 +26,7 @@
 /*
  * MS	08-11-10	changed how data reading is working
  * BL   09-01-27    fixed MicroZigbee build
- * 
+ * MS   09-02-06    fixed work item 3636 when first character is not the startbyte
  * 
  */
 using System;
@@ -201,42 +201,61 @@ namespace MSchwarz.Net.XBee
 						{
 							_readBuffer.Position = 0;
 
-							if ((byte)_readBuffer.ReadByte() == XBeePacket.PACKET_STARTBYTE)
-							{
-								bytes = _readBuffer.ToArray();
-								_readBuffer.SetLength(0);
+                            if ((byte)_readBuffer.ReadByte() == XBeePacket.PACKET_STARTBYTE)
+                            {
+                                bytes = _readBuffer.ToArray();
+                                _readBuffer.SetLength(0);
 
-								ByteReader br = new ByteReader(bytes, ByteOrder.BigEndian);
+                                ByteReader br = new ByteReader(bytes, ByteOrder.BigEndian);
 
-								byte startByte = br.ReadByte();	// start byte
-								short length = br.ReadInt16();
+                                byte startByte = br.ReadByte();	// start byte
+                                short length = br.ReadInt16();
 
-								if (br.AvailableBytes > length)
-								{
-									//TODO: verify checksum
+                                if (br.AvailableBytes > length)
+                                {
+                                    //TODO: verify checksum
 
-									XBeeChecksum checksum = new XBeeChecksum();
-									for (int i = 0; i < length; i++)
-									{
-										checksum.AddByte(bytes[i + 3]);
-									}
+                                    XBeeChecksum checksum = new XBeeChecksum();
+                                    for (int i = 0; i < length; i++)
+                                    {
+                                        checksum.AddByte(bytes[i + 3]);
+                                    }
 
-									checksum.Compute();
+                                    checksum.Compute();
 
 #if(DEBUG && !MF)
-									Console.WriteLine("Received " + ByteUtil.PrintBytes(bytes));
+                                    Console.WriteLine("Received " + ByteUtil.PrintBytes(bytes));
 #endif
-									if (checksum.Verify(bytes[length + 3]))
-										CheckFrame(length, br);
+                                    if (checksum.Verify(bytes[length + 3]))
+                                        CheckFrame(length, br);
 
-									if (bytes.Length - (1 + 2 + length + 1) > 0)
-										_readBuffer.Write(bytes, 1 + 2 + length + 1, bytes.Length - (1 + 2 + length + 1));
-								}
-								else
-								{
-									_readBuffer.Write(bytes, 0, bytes.Length);
-								}
-							}
+                                    if (bytes.Length - (1 + 2 + length + 1) > 0)
+                                        _readBuffer.Write(bytes, 1 + 2 + length + 1, bytes.Length - (1 + 2 + length + 1));
+                                }
+                                else
+                                {
+                                    _readBuffer.Write(bytes, 0, bytes.Length);
+                                }
+                            }
+                            else
+                            {
+                                int discardCount = 0;
+                                _readBuffer.Position = 0;
+
+                                while ((byte)_readBuffer.ReadByte() != XBeePacket.PACKET_STARTBYTE 
+                                    && (_readBuffer.Position < _readBuffer.Length))
+                                {
+                                    discardCount++;
+                                }
+
+                                if (discardCount > 0)
+                                {
+                                    bytes = _readBuffer.ToArray();
+
+                                    _readBuffer.SetLength(0);
+                                    _readBuffer.Write(bytes, discardCount, bytes.Length - discardCount);
+                                }
+                            }
 						}
 					}
 					catch (Exception)
