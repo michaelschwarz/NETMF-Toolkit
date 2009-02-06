@@ -23,6 +23,11 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  */
+/*
+ * MS   09-02-06    fixed work item 3711
+ * 
+ * 
+ */
 using System;
 using System.Text;
 using MSchwarz.IO;
@@ -64,7 +69,7 @@ namespace MSchwarz.Net.XBee
 				if ((_analogChannelMask & 0x02) == 0x02) _AD1 = br.ReadUInt16();
 				if ((_analogChannelMask & 0x04) == 0x04) _AD2 = br.ReadUInt16();
 				if ((_analogChannelMask & 0x08) == 0x08) _AD3 = br.ReadUInt16();
-				if ((_analogChannelMask & 0x10) == 0x10) _supplyVoltage = br.ReadUInt16();
+                if ((_analogChannelMask & 0x80) == 0x80) _supplyVoltage = br.ReadUInt16();
 			}
 		}
 
