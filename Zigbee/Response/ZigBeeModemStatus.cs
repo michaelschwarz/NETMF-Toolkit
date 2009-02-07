@@ -1,5 +1,5 @@
 ﻿/* 
- * XBeeResponse.cs
+ * ZigBeeModemStatus.cs
  * 
  * Copyright (c) 2008, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -23,35 +23,39 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  * 
- * PH   09-01-28    added received time
+ * PH   09-01-28    inital version
  * 
  */
-using System;
-using System.Text;
 using MSchwarz.IO;
 
 namespace MSchwarz.Net.XBee
 {
-    public abstract class XBeeResponse
-    {
-        private XBeeApiType _apiId;
-        private DateTime _dtRcv;
+	public class ZigBeeModemStatus : XBeeResponse
+	{
+		private byte _modemStatus;
 
-        public XBeeResponse(ByteReader br)
-        {
-            _apiId = (XBeeApiType)br.ReadByte();
-            _dtRcv = DateTime.Now;
-        }
+		#region Public Properties
 
-        public XBeeApiType ApiID
-        {
-            get { return _apiId; }
-            set { _apiId = value; }
-        }
+		// ...
 
-        public DateTime DateTimeReceived
-        {
-            get { return _dtRcv; }
-        }
-    }
+        public ZigBeeModemStatusType ModemStatus
+		{
+            get { return (ZigBeeModemStatusType)_modemStatus; }
+		}
+		
+		// ...
+
+		#endregion
+
+		public ZigBeeModemStatus(short length, ByteReader br)
+			: base(br)
+		{
+            _modemStatus = br.ReadByte();
+		}
+
+		public override string ToString()
+		{
+            return ModemStatus.ToString();
+		}
+	}
 }

@@ -87,7 +87,7 @@ namespace MSchwarz.Net.XBee
 			if ((_analogChannelMask & 0x02) == 0x02) s += "AD1 = " + _AD1 + "\r\n";
 			if ((_analogChannelMask & 0x04) == 0x04) s += "AD2 = " + _AD2 + "\r\n";
 			if ((_analogChannelMask & 0x08) == 0x08) s += "AD3 = " + _AD3 + "\r\n";
-			if ((_analogChannelMask & 0x10) == 0x10) s += "supplyVoltage = " + _supplyVoltage;
+			if ((_analogChannelMask & 0x80) == 0x80) s += "supplyVoltage = " + _supplyVoltage;
 
 #if(!MF && DEBUG)
 			double mVanalog = (((float)_AD2) / 1023.0) * 1200.0;

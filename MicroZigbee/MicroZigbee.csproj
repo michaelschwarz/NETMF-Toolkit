@@ -54,6 +54,9 @@
     <Compile Include="..\Zigbee\Enums\ZigBeeDeviceType.cs">
       <Link>Enums\ZigBeeDeviceType.cs</Link>
     </Compile>
+    <Compile Include="..\Zigbee\Enums\ZigBeeModemStatusType.cs">
+      <Link>Enums\ZigBeeModemStatusType.cs</Link>
+    </Compile>
     <Compile Include="..\Zigbee\Enums\ZigBeeReceiveOptionType.cs">
       <Link>Enums\ZigBeeReceiveOptionType.cs</Link>
     </Compile>
@@ -176,6 +179,9 @@
     </Compile>
     <Compile Include="..\Zigbee\Response\ZigBeeIODataSample.cs">
       <Link>Response\ZigBeeIODataSample.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\ZigBeeModemStatus.cs">
+      <Link>Response\ZigBeeModemStatus.cs</Link>
     </Compile>
     <Compile Include="..\Zigbee\Response\ZigbeeReceivePacket.cs">
       <Link>Response\ZigbeeReceivePacket.cs</Link>

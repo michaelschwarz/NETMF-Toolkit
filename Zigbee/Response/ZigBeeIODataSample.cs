@@ -52,28 +52,36 @@ namespace MSchwarz.Net.XBee
         private ushort _AD3;
         private ushort _supplyVoltage;
 
-		#region Public Properties
+        #region Public Properties
 
-		// ...
+        public ulong Address64 { get { return _address64; } }
+        public ushort Address16 { get { return _address16; } }
+        public ZigBeeReceiveOptionType ReceiveOption { get { return (ZigBeeReceiveOptionType)_options; } }
+        public byte NrSamples { get { return _numSamples; } }
+        public byte DigitalMask1 { get { return _digitalChannelMask1; } }
+        public byte DigitalMask2 { get { return _digitalChannelMask2; } }
+        public byte AnalogMask { get { return _analogChannelMask; } }
+        public byte Digital1 { get { return _digital1; } }
+        public byte Digital2 { get { return _digital2; } }
+        public ushort AD0 { get { return _AD0; } }
+        public ushort AD1 { get { return _AD1; } }
+        public ushort AD2 { get { return _AD2; } }
+        public ushort AD3 { get { return _AD3; } }
 
-		public ZigBeeReceiveOptionType ReceiveOption
-		{
-			get { return (ZigBeeReceiveOptionType)_options; }
-		}
+        // return value is always Supply Voltage so I scaled it to real value
+        private int SupplyVoltage { get { return _supplyVoltage * 1200 / 1024; } }
 
-		// ...
+        #endregion
 
-		#endregion
-
-		public ZigBeeIODataSample(short length, ByteReader br)
+        public ZigBeeIODataSample(short length, ByteReader br)
             : base(br)
         {
             _address64 = br.ReadUInt64();
             _address16 = br.ReadUInt16();
 
             _options = br.ReadByte();
-            
-			_numSamples = br.ReadByte();
+
+            _numSamples = br.ReadByte();
             _digitalChannelMask1 = br.ReadByte();
             _digitalChannelMask2 = br.ReadByte();
             _analogChannelMask = br.ReadByte();
@@ -98,31 +106,31 @@ namespace MSchwarz.Net.XBee
         {
             string s = "";
 
-			s += "Receive Options = " + this.ReceiveOption + "\r\n";
+            s += "Receive Options = " + this.ReceiveOption + "\r\n";
 
-			if (_digitalChannelMask1 != 0x00 || _digitalChannelMask2 != 0x00)
-			{
-				s += "D1  = " + _digital1 + "\r\n";
-				s += "D2  = " + _digital2 + "\r\n";
-			}
+            if (DigitalMask1 != 0x00 || DigitalMask2 != 0x00)
+            {
+                s += "D1  = " + Digital1 + "\r\n";
+                s += "D2  = " + Digital2 + "\r\n";
+            }
 
-			if ((_analogChannelMask & 0x01) == 0x01) s += "AD0 = " + _AD0 + "\r\n";
-			if ((_analogChannelMask & 0x02) == 0x02) s += "AD1 = " + _AD1 + "\r\n";
-			if ((_analogChannelMask & 0x04) == 0x04) s += "AD2 = " + _AD2 + "\r\n";
-			if ((_analogChannelMask & 0x08) == 0x08) s += "AD3 = " + _AD3 + "\r\n";
-			if ((_analogChannelMask & 0x10) == 0x10) s += "supplyVoltage = " + _supplyVoltage + "\r\n";
+            if ((_analogChannelMask & 0x01) == 0x01) s += "AD0 = " + AD0 + "\r\n";
+            if ((_analogChannelMask & 0x02) == 0x02) s += "AD1 = " + AD1 + "\r\n";
+            if ((_analogChannelMask & 0x04) == 0x04) s += "AD2 = " + AD2 + "\r\n";
+            if ((_analogChannelMask & 0x08) == 0x08) s += "AD3 = " + AD3 + "\r\n";
+            if ((_analogChannelMask & 0x80) == 0x80) s += "supplyVoltage = " + SupplyVoltage + "mV\r\n";
 
 #if(!MF && DEBUG)
-			double mVanalog = (((float)_AD2) / 1023.0) * 1200.0;
-			double temp_C = (mVanalog - 500.0) / 10.0 - 4.0;
-			double lux = (((float)_AD1) / 1023.0) * 1200.0;
+            //double mVanalog = (((float)_AD2) / 1023.0) * 1200.0;
+            //double temp_C = (mVanalog - 500.0) / 10.0 - 4.0;
+            //double lux = (((float)_AD1) / 1023.0) * 1200.0;
 
-			mVanalog = (((float)_AD3) / 1023.0) * 1200.0;
-			double hum = ((mVanalog * (108.2 / 33.2)) - 0.16) / (5 * 0.0062 * 1000.0);
+            //mVanalog = (((float)_AD3) / 1023.0) * 1200.0;
+            //double hum = ((mVanalog * (108.2 / 33.2)) - 0.16) / (5 * 0.0062 * 1000.0);
 
-			s += "\r\n\r\ntemperature = " + temp_C + " °C\r\n";
-			s += "light = " + lux + " lux\r\n";
-			s += "humidity = " + hum + "\r\n";
+            //s += "\r\n\r\ntemperature = " + temp_C + " °C\r\n";
+            //s += "light = " + lux + " lux\r\n";
+            //s += "humidity = " + hum + "\r\n";
 #endif
 
             return s;

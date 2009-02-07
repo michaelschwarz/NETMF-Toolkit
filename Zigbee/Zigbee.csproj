@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Enums\ApiType.cs" />
+    <Compile Include="Enums\ZigBeeModemStatusType.cs" />
     <Compile Include="Enums\ZigBeeReceiveOptionType.cs" />
     <Compile Include="Enums\SleepModeType.cs" />
     <Compile Include="Enums\DiscoveryStatusType.cs" />
@@ -84,6 +85,7 @@
     <Compile Include="Response\AT\NodeIdentifierData.cs" />
     <Compile Include="Response\AT\IAtCommandData.cs" />
     <Compile Include="Response\AT\NodeDiscoverData.cs" />
+    <Compile Include="Response\ZigBeeModemStatus.cs" />
     <Compile Include="Response\ZigBeeTransmitStatus.cs" />
     <Compile Include="Response\NodeIdentification.cs" />
     <Compile Include="Response\XBeeSensorRead.cs" />
