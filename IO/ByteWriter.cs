@@ -289,7 +289,10 @@ namespace MSchwarz.IO
             if (_stream != null)
             {
                 _stream.Close();
+
+#if (!WindowsCE)
                 _stream.Dispose();
+#endif
                 _stream = null;
             }
             

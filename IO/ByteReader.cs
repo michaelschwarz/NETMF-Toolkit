@@ -283,8 +283,10 @@ namespace MSchwarz.IO
 				s += c;
 			}
 			return s;
+#elif (WindowsCE)
+            return _encoding.GetString(bytes, 0, bytes.Length);
 #else
-			return _encoding.GetString(bytes);
+            return _encoding.GetString(bytes);
 #endif
         }
 

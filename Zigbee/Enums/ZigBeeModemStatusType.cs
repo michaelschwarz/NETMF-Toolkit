@@ -1,5 +1,5 @@
 ﻿/* 
- * XBeeResponse.cs
+ * ApiType.cs
  * 
  * Copyright (c) 2008, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -21,37 +21,22 @@
  * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
  * 
- * 
- * PH   09-01-28    added received time
+ * PH   09-01-28    initial version
  * 
  */
-using System;
-using System.Text;
-using MSchwarz.IO;
-
 namespace MSchwarz.Net.XBee
 {
-    public abstract class XBeeResponse
-    {
-        private XBeeApiType _apiId;
-        private DateTime _dtRcv;
-
-        public XBeeResponse(ByteReader br)
-        {
-            _apiId = (XBeeApiType)br.ReadByte();
-            _dtRcv = DateTime.Now;
-        }
-
-        public XBeeApiType ApiID
-        {
-            get { return _apiId; }
-            set { _apiId = value; }
-        }
-
-        public DateTime DateTimeReceived
-        {
-            get { return _dtRcv; }
-        }
-    }
+	public enum ZigBeeModemStatusType : byte
+	{
+        HardwareReset = 0x00,
+        WatchdogTimerReset = 0x01,
+        Associated = 0x02,
+        Disassociated = 0x03,
+        SynchronizationLost = 0x04,
+        // (Beacon-enabled only)
+        CoordinatorRealignment = 0x05,
+        CoordinatorStarted = 0x06
+	}
 }
