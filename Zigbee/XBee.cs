@@ -260,16 +260,17 @@ namespace MSchwarz.Net.XBee
                         bytesToRead = _serialPort.BytesToRead;
                 }
             }
+#if(!MF)
             catch (ThreadAbortException ex)
             {
-#if(!MF)
+
                 // Display a message to the console.
                 Console.WriteLine("{0} : DisplayMessage thread terminating - {1}",
                     DateTime.Now.ToString("HH:mm:ss.ffff"),
                     (string)ex.ExceptionState);
-#endif
             }
-		}
+#endif
+        }
 
         public void StopReceiveData()
         {
