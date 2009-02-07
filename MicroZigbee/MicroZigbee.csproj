@@ -135,6 +135,9 @@
     <Compile Include="..\Zigbee\Request\ZigBeeTransmitRequest.cs">
       <Link>Request\ZigBeeTransmitRequest.cs</Link>
     </Compile>
+    <Compile Include="..\Zigbee\Request\ZNetTxRequest.cs">
+      <Link>Request\ZNetTxRequest.cs</Link>
+    </Compile>
     <Compile Include="..\Zigbee\Response\AtCommandResponse.cs">
       <Link>Response\AtCommandResponse.cs</Link>
     </Compile>

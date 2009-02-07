@@ -81,14 +81,14 @@ namespace ZigbeeConsole
 
 		static void RunCoordinator()
 		{
-			using (XBee xbee = new XBee("COM3", 9600, ApiType.Disabled))
+			using (XBee xbee = new XBee("COM4", 9600, ApiType.Enabled))
 			{
-				//xbee.OnPacketReceived += new XBee.PacketReceivedHandler(xbeecoord_OnPacketReceived);
+				xbee.OnPacketReceived += new XBee.PacketReceivedHandler(xbeecoord_OnPacketReceived);
 				xbee.Open();
 
-				xbee.EnterCommandMode();
-				xbee.SetNodeIdentifier("XBEECOORDINATOR");
-				xbee.ExitCommandMode();
+                //xbee.EnterCommandMode();
+                //xbee.SetNodeIdentifier("XBEECOORDINATOR");
+                //xbee.ExitCommandMode();
 				
 				//xbee.SendPacket(new InterfaceDataRate(115200).GetPacket());
 				//xbee.SendPacket(new NodeIdentifier().GetPacket());
@@ -97,16 +97,18 @@ namespace ZigbeeConsole
 				//xbee.SendPacket(new Channel().GetPacket());
 				//xbee.SendPacket(new ReceivedSignalStrength().GetPacket());
 
-				Thread.Sleep(5 * 1000);
+                //Thread.Sleep(20 * 1000);
 
-				while (true)
+                while (true)
 				{
 					// discovering the network
 					//AtCommand at = new AtCommand("ND", new byte[0], 1);
-					xbee.SendPacket(new NodeDiscover().GetPacket());
-
-					Thread.Sleep(10 * 1000);
+                    //xbee.SendPacket(new NodeDiscover().GetPacket());
+                    Thread.Sleep(10 * 1000);
 				}
+
+                xbee.StopReceiveData();
+                Console.WriteLine("stopped receiving thread");
 			}
 		}
 

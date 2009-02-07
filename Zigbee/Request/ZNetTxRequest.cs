@@ -22,12 +22,15 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
+ * 
+ * MS   09-02-07    included ZNetTxRequest in this project
+ * 
  */
 using System;
 using System.Text;
 using MSchwarz.IO;
 
-namespace MSchwarz.Net.Zigbee
+namespace MSchwarz.Net.XBee
 {
     public class ZNetTxRequest : XBeeRequest
     {

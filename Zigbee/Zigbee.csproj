@@ -72,6 +72,7 @@
     <Compile Include="Request\AT\NodeIdentifier.cs" />
     <Compile Include="Request\AT\NodeDiscover.cs" />
     <Compile Include="Request\ZigBeeTransmitRequest.cs" />
+    <Compile Include="Request\ZNetTxRequest.cs" />
     <Compile Include="Response\AtCommandResponse.cs" />
     <Compile Include="Enums\AtCommandStatus.cs" />
     <Compile Include="Response\AtRemoteCommandResponse.cs" />

@@ -23,7 +23,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  * BL	09-01-28	update for .NET 3.0
- * 
+ * MS   09-02-07    changed back to non .NET 3.0 compiler options to support old VS
  * 
  * 
  */
@@ -35,16 +35,56 @@ namespace MSchwarz.Net.XBee
     {
         private const byte terminationCharacter = 0x00;
 
+        private ushort _addr16;
+        private ulong _addr64;
+        private string _ni;
+        private ushort _parent16;
+        private byte _deviceType;
+        private byte _sourceAction;
+        private ushort _profileID;
+        private ushort _manufactureID;
+
         #region Public Properties
 
-        public ushort Address16 { get; private set; }
-        public ulong Address64 { get; private set; }
-        public string NodeIdentifier { get; private set; }
-        public ushort ParentAddress { get; private set; }
-        public ZigBeeDeviceType DeviceType { get; private set; }
-        public byte Status { get; private set; }
-        public ushort ProfileID { get; private set; }
-        public ushort ManufacturerID { get; private set; }
+        public ushort Address16
+        {
+            get { return _addr16; }
+        }
+
+        public ulong Address64
+        {
+            get { return _addr64; }
+        }
+
+        public string NodeIdentifier
+        {
+            get { return _ni; }
+        }
+
+        public ushort ParentAddress
+        {
+            get { return _parent16; }
+        }
+
+        public ZigBeeDeviceType DeviceType
+        {
+            get { return (ZigBeeDeviceType)_deviceType; }
+        }
+
+        public byte Status
+        {
+            get { return _sourceAction; }
+        }
+
+        public ushort ProfileID
+        {
+            get { return _profileID; }
+        }
+
+        public ushort ManufacturerID
+        {
+            get { return _manufactureID; }
+        }
 
         #endregion
 
@@ -52,14 +92,14 @@ namespace MSchwarz.Net.XBee
         {
             using (ByteReader reader = new ByteReader(frameData, ByteOrder.BigEndian))
             {
-                Address16 = reader.ReadUInt16();
-                Address64 = reader.ReadUInt64();
-                NodeIdentifier = reader.ReadString(terminationCharacter);
-                ParentAddress = reader.ReadUInt16();
-                DeviceType = (ZigBeeDeviceType)reader.ReadByte();
-                Status = reader.ReadByte();
-                ProfileID = reader.ReadUInt16();
-                ManufacturerID = reader.ReadUInt16();
+                _addr16 = reader.ReadUInt16();
+                _addr64 = reader.ReadUInt64();
+                _ni = reader.ReadString(terminationCharacter);
+                _parent16 = reader.ReadUInt16();
+                _deviceType = reader.ReadByte();
+                _sourceAction = reader.ReadByte();
+                _profileID = reader.ReadUInt16();
+                _manufactureID = reader.ReadUInt16();
             }
         }
 
