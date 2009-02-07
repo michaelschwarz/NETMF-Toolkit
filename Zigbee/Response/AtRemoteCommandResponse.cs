@@ -1,7 +1,7 @@
 ﻿/* 
  * AtRemoteCommandResponse.cs
  * 
- * Copyright (c) 2008, Michael Schwarz (http://www.schwarz-interactive.de)
+ * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -22,6 +22,8 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
+ * MS   09-02-07    added support for Windows CE
+ * 
  */
 using System;
 using System.Text;
@@ -37,7 +39,7 @@ namespace MSchwarz.Net.XBee
         private string _command;
         private byte _status;
         private byte[] _value;
-		private IAtCommandData _data = null;
+        private IAtCommandData _data = null;
 
         public string Command
         {
@@ -46,7 +48,7 @@ namespace MSchwarz.Net.XBee
 
         public AtCommandStatus Status
         {
-			get { return (AtCommandStatus)_status; }
+            get { return (AtCommandStatus)_status; }
         }
 
         public byte[] Value
@@ -54,7 +56,7 @@ namespace MSchwarz.Net.XBee
             get { return _value; }
         }
 
-		public AtRemoteCommandResponse(short length, ByteReader br)
+        public AtRemoteCommandResponse(short length, ByteReader br)
             : base(br)
         {
             _frameID = br.ReadByte();
@@ -63,44 +65,47 @@ namespace MSchwarz.Net.XBee
 
 #if(MF)
 			_command = ByteUtil.GetString(br.ReadBytes(2));
+#elif(WindowsCE)
+            byte[] tempArr = br.ReadBytes(2);
+			_command = Encoding.ASCII.GetString(tempArr,0,tempArr.Length);
 #else
-			_command = Encoding.ASCII.GetString(br.ReadBytes(2));
+            _command = Encoding.ASCII.GetString(br.ReadBytes(2));
 #endif
             _status = br.ReadByte();
 
-			if (br.AvailableBytes > 0)
-			{
-				_value = br.ReadBytes(length - 15);
+            if (br.AvailableBytes > 0)
+            {
+                _value = br.ReadBytes(length - 15);
 
-				switch (_command)
-				{
-					case "DB": _data = new ReceivedSignalStrengthData(); break;
-					case "IS": _data = new ForceSampleData(); break;
-					case "ND": _data = new NodeDiscoverData(); break;
-					case "NI": _data = new NodeIdentifierData(); break;
-					case "SM": _data = new SleepModeData(); break;
-					case "SP": _data = new CyclicSleepPeriodData(); break;
-					case "ST": _data = new TimeBeforeSleepData(); break;
-					case "%V": _data = new SupplyVoltageData(); break;
-				}
+                switch (_command)
+                {
+                    case "DB": _data = new ReceivedSignalStrengthData(); break;
+                    case "IS": _data = new ForceSampleData(); break;
+                    case "ND": _data = new NodeDiscoverData(); break;
+                    case "NI": _data = new NodeIdentifierData(); break;
+                    case "SM": _data = new SleepModeData(); break;
+                    case "SP": _data = new CyclicSleepPeriodData(); break;
+                    case "ST": _data = new TimeBeforeSleepData(); break;
+                    case "%V": _data = new SupplyVoltageData(); break;
+                }
 
-				if (_data != null && _value.Length > 0)
-					_data.Fill(_value);
-			}
+                if (_data != null && _value.Length > 0)
+                    _data.Fill(_value);
+            }
         }
 
         public override string ToString()
         {
-			string s = 
-				"remote command " + _command + "\r\n" +
-				"status  " + this.Status;
+            string s =
+                "remote command " + _command + "\r\n" +
+                "status  " + this.Status;
 
-			if (_data != null)
-				s += "\r\nvalue\r\n" + _data;
-			//else
-				s += "\r\nvalue = " + ByteUtil.PrintBytes(_value);
+            if (_data != null)
+                s += "\r\nvalue\r\n" + _data;
+            //else
+            s += "\r\nvalue = " + ByteUtil.PrintBytes(_value);
 
-			return s;
+            return s;
         }
     }
 }
