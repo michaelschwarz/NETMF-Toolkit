@@ -1,31 +1,7 @@
-﻿/* 
- * Program.cs		(Demo Application)
- * 
- * Copyright (c) 2008, Michael Schwarz (http://www.schwarz-interactive.de)
- *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without
- * restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or
- * sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
- * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR
- * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
- * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- * 
- */
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using MSchwarz.Net.Web;
 
 namespace HttpConsole
 {
@@ -33,6 +9,63 @@ namespace HttpConsole
 	{
 		static void Main(string[] args)
 		{
+            using (HttpServer http = new HttpServer(8080, new MyHttpHandler()))
+            {
+                http.Start();
+
+                Console.ReadLine();
+
+                Console.WriteLine("Shutting down http server...");
+            }
+
+            Console.WriteLine("Done.");
 		}
 	}
+
+    class MyHttpHandler : IHttpHandler
+    {
+        #region IHttpHandler Members
+
+        public void ProcessRequest(HttpContext context)
+        {
+#if(DEBUG)
+            Console.WriteLine(context.Request.RawUrl);
+#endif
+
+            Console.WriteLine(context.Request.Connection);
+            context.Response.Connection = context.Request.Connection;
+
+            switch(context.Request.RawUrl)
+            {
+                case "/test.aspx":
+                    context.Response.Write("<html><head><script type=\"text/javascript\" src=\"/scripts/test.js\"></script></head><body><form action=\"/test.aspx\" method=\"post\"><input type=\"text\" name=\"txtbox1\"/><input type=\"submit\" value=\"Post\"/></form></body></html>");
+                    break;
+
+                case "/scripts/test.js":
+                    context.Response.Write(@"
+var c = 0;
+function test() {
+    var x = new ActiveXObject(""Microsoft.XMLHTTP"");
+    x.onreadystatechange = function() {
+        if(x.readyState == 4) {
+            window.status = x.responseText;
+            if(++c < 100) setTimeout(test, 1);
+        }
+    }
+    x.open(""POST"", ""/test.ajax?"" + c, true);
+    x.send("""");
+}
+setTimeout(test, 1000);
+");
+                    break;
+
+                default:
+                    context.Response.Write("<html><body>" + DateTime.Now + "<br/><b>" + context.Request.RawUrl + "</b><br/><br/></body></html>");
+                    break;
+            }
+        }
+
+        #endregion
+    }
+
 }
