@@ -269,6 +269,10 @@ namespace MSchwarz.Net.XBee
                     DateTime.Now.ToString("HH:mm:ss.ffff"),
                     (string)ex.ExceptionState);
             }
+#else
+            catch(Exception)
+            {
+            }
 #endif
         }
 
