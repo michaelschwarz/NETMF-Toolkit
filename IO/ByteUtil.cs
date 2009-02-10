@@ -22,6 +22,9 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
+ * MS   09-02-10    added hex methods
+ * 
+ * 
  */
 using System;
 using System.Text;
@@ -54,6 +57,28 @@ namespace MSchwarz.IO
 #else
 			return b.ToString("X2");
 #endif
+        }
+
+        public static string BytesToHex(byte[] b)
+        {
+            string res = "";
+
+            for (int i = 0; i < b.Length; i++)
+                res += ByteToHex(b[i]);
+
+            return res;
+        }
+
+        public static string ByteToHex(byte b)
+        {
+            const string hex = "0123456789ABCDEF";
+            
+            int lowByte = b & 0x0F;
+            int highByte = (b & 0xF0) >> 4;
+            
+            return new string(
+                new char[] { hex[highByte], hex[lowByte] }
+            );
         }
 
         public static string PrintBytes(byte[] bytes)
