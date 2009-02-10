@@ -26,7 +26,6 @@
 /*
  * MS   09-02-06    fixed work item 3711
  * 
- * 
  */
 using System;
 using System.Text;
@@ -69,7 +68,7 @@ namespace MSchwarz.Net.XBee
         public ushort AD3 { get { return _AD3; } }
 
         // return value is always Supply Voltage so I scaled it to real value
-        private int SupplyVoltage { get { return _supplyVoltage * 1200 / 1024; } }
+        public int SupplyVoltage { get { return _supplyVoltage * 1200 / 1024; } }
 
         #endregion
 
