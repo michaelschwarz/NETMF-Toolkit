@@ -99,12 +99,12 @@ namespace ZigbeeConsole
 
                 //Thread.Sleep(20 * 1000);
 
-                while (true)
+                //while (true)
 				{
 					// discovering the network
 					//AtCommand at = new AtCommand("ND", new byte[0], 1);
                     //xbee.SendPacket(new NodeDiscover().GetPacket());
-                    Thread.Sleep(10 * 1000);
+                    Thread.Sleep(60 * 1000);
 				}
 
                 xbee.StopReceiveData();
