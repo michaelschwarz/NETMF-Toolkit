@@ -50,6 +50,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="root\index.htm" />
+    <Content Include="root\ms.jpg" />
     <Content Include="root\test.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
