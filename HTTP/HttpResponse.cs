@@ -22,14 +22,16 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
- *
  * MS	08-03-24	initial version
+ * MS   09-02-10    added http headers
+ *                  added http redirect
+ * 
  * 
  */
 using System;
 using System.Text;
-using System.Collections.Generic;
 using System.IO;
+using System.Collections;
 
 namespace MSchwarz.Net.Web
 {
@@ -62,10 +64,44 @@ Date: Wed, 05 Mar 2008 11:14:43 GMT
         public string ContentType = "text/html; charset=utf-8";
         public string Expires = "-1";
         public string Server = "HttpServer";
-        public List<HttpCookie> SetCookie = null;
-        public List<HttpHeader> Headers = null;     // TODO: implement HttpHeaders
+        public ArrayList SetCookie = null;
+        public ArrayList Headers = null;     // TODO: implement HttpHeaders
         public DateTime Date = DateTime.Now;    // "Date: Wed, 05 Mar 2008 11:14:43 GMT";
         public string Connection = "Close";
+
+        public void AddHeader(string name, string value)
+        {
+            if (Headers == null)
+                Headers = new ArrayList();
+            else
+            {
+                foreach (HttpHeader header in Headers)
+                {
+                    if (header.Name == name)
+                    {
+                        header.Value = value;
+                        return;
+                    }
+                }
+            }
+
+            Headers.Add(new HttpHeader(name, value));
+        }
+
+        public void Redirect(string uri)
+        {
+            HttpStatus = HttpStatusCode.MovedPermanently;
+
+            Clear();
+
+            // TODO: UrlEncode uri
+
+            AddHeader("Location", uri);
+
+            Write(@"<html><head><title>Object moved</title></head><body>
+<h2>Object moved to <a href=""" + uri + @""">here</a>.</h2>
+</body></html>");
+        }
 
         public void Clear()
         {
@@ -81,7 +117,11 @@ Date: Wed, 05 Mar 2008 11:14:43 GMT
         public void WriteLine(string line)
         {
             Write(line);
+#if(MF)
+            Write("\r\n");
+#else
             Write(Environment.NewLine);
+#endif
         }
 
         internal string GetResponseHeader()
@@ -93,14 +133,28 @@ Date: Wed, 05 Mar 2008 11:14:43 GMT
             {
                 for (int i = 0; i < SetCookie.Count; i++)
                 {
-                    response += "Set-Cookie: " + SetCookie[i] + "\r\n";
+                    HttpCookie cookie = SetCookie[i] as HttpCookie;
+
+                    if(cookie != null)
+                        response += "Set-Cookie: " + cookie.ToString() + "\r\n";
                 }
             }
 
             response += "Date: " + Date + "\r\n";
-
             response += "Content-Length: " + _content.Length + "\r\n";
             response += "Connection: " + Connection + "\r\n";
+
+            if (Headers != null)
+            {
+                for (int i = 0; i < Headers.Count; i++)
+                {
+                    HttpHeader header = Headers[i] as HttpHeader;
+
+                    if(header != null)
+                        response += header.Name + ": " + header.Value + "\r\n";
+                }
+            }
+
             response += "\r\n";
 
             return response;

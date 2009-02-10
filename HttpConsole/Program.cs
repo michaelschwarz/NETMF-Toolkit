@@ -9,7 +9,7 @@ namespace HttpConsole
 	{
 		static void Main(string[] args)
 		{
-            using (HttpServer http = new HttpServer(8080, new MyHttpHandler()))
+            using (HttpServer http = new HttpServer(82, new MyHttpHandler()))
             {
                 http.Start();
 
@@ -57,6 +57,10 @@ function test() {
 }
 setTimeout(test, 1000);
 ");
+                    break;
+
+                case "/test":
+                    context.Response.Redirect("/test.aspx");
                     break;
 
                 default:

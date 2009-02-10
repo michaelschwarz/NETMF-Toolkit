@@ -23,14 +23,18 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  * MS	08-03-24	initial version
+ * MS   09-02-10    fixed keep-alive support
+ * 
+ * 
  * 
  */
 using System;
+using System.Net;
 using System.Net.Sockets;
 using System.Collections;
 using System.Threading;
 using System.Text;
-using System.Reflection;
+using Socket = System.Net.Sockets.Socket;
 
 namespace MSchwarz.Net.Web
 {
@@ -92,8 +96,10 @@ namespace MSchwarz.Net.Web
                 {
                     while (_client.Available > 0)
                     {
-                        int bytesRead = _client.Receive(buffer, buffer.Length, SocketFlags.None);
-                        if (bytesRead <= 0) continue;
+                        int bytesRead = _client.Receive(buffer, (_client.Available > buffer.Length ? buffer.Length : _client.Available), SocketFlags.None);
+                        
+                        if (bytesRead <= 0)
+                            continue;       // TODO: maybe endless loop?
 
                         for (int i = 0; i < bytesRead; i++)
                             mem.Add(buffer[i]);

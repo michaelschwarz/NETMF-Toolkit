@@ -23,11 +23,13 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  * MS	08-03-24	initial version
+ * MS   09-02-10    fixed MF support
  * 
  */
 using System;
-using System.Net.Sockets;
 using System.Net;
+using System.Net.Sockets;
+using Socket = System.Net.Sockets.Socket;
 
 namespace MSchwarz.Net
 {

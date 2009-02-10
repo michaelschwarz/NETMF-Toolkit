@@ -1,0 +1,79 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
+  <PropertyGroup>
+    <AssemblyName>MicroHTTP</AssemblyName>
+    <OutputType>Library</OutputType>
+    <RootNamespace>MicroHTTP</RootNamespace>
+    <ProjectTypeGuids>{b69e3092-b931-443c-abe7-7e7b65f2a37f};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{1CC369CA-5686-445E-805A-B9B02578799F}</ProjectGuid>
+    <TargetFrameworkVersion>v3.0</TargetFrameworkVersion>
+    <NetMfTargetsBaseDir Condition="'$(NetMfTargetsBaseDir)'==''">$(MSBuildExtensionsPath)\Microsoft\.NET Micro Framework\</NetMfTargetsBaseDir>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;MF</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <Import Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
+  <ItemGroup>
+    <Compile Include="..\HTTP\Enums\HttpStatusCode.cs">
+      <Link>Enums\HttpStatusCode.cs</Link>
+    </Compile>
+    <Compile Include="..\HTTP\Helper\NetworkHelper.cs">
+      <Link>Helper\NetworkHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\HTTP\HttpContext.cs">
+      <Link>HttpContext.cs</Link>
+    </Compile>
+    <Compile Include="..\HTTP\HttpCookie.cs">
+      <Link>HttpCookie.cs</Link>
+    </Compile>
+    <Compile Include="..\HTTP\HttpHeader.cs">
+      <Link>HttpHeader.cs</Link>
+    </Compile>
+    <Compile Include="..\HTTP\HttpRequest.cs">
+      <Link>HttpRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\HTTP\HttpResponse.cs">
+      <Link>HttpResponse.cs</Link>
+    </Compile>
+    <Compile Include="..\HTTP\HttpServer.cs">
+      <Link>HttpServer.cs</Link>
+    </Compile>
+    <Compile Include="..\HTTP\HttpServerUtility.cs">
+      <Link>HttpServerUtility.cs</Link>
+    </Compile>
+    <Compile Include="..\HTTP\IHttpHandler.cs">
+      <Link>IHttpHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\HTTP\ProcessClientRequest.cs">
+      <Link>ProcessClientRequest.cs</Link>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.SPOT.IO" />
+    <Reference Include="Microsoft.SPOT.Native" />
+    <Reference Include="Microsoft.SPOT.Net" />
+    <Reference Include="System" />
+    <Reference Include="System.IO" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+</Project>

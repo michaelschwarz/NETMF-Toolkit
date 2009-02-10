@@ -23,10 +23,11 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  * MS	08-03-24	initial version
+ * MS   09-02-10    added GetHeaderValue
+ * 
  * 
  */
 using System;
-using System.Collections.Generic;
 
 namespace MSchwarz.Net.Web
 {
@@ -59,5 +60,19 @@ Connection: Keep-Alive
         public string[] UserLanguages;
         public string Referer;
         public byte[] Content = null;
+
+        public string GetHeaderValue(string name)
+        {
+            if (Headers == null)
+                return null;
+
+            for (int i = 0; i < Headers.Length; i++)
+            {
+                if (Headers[i].Name == name)
+                    return Headers[i].Value;
+            }
+
+            return null;
+        }
     }
 }

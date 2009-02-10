@@ -22,6 +22,9 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
+ * MS   09-02-10    added MT support
+ * 
+ * 
  */
 using System;
 using System.Text;
@@ -29,7 +32,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Collections;
 using System.Threading;
-
+using Socket = System.Net.Sockets.Socket;
 namespace MSchwarz.Net.Web
 {
 	public class HttpServer : IDisposable
@@ -61,11 +64,13 @@ namespace MSchwarz.Net.Web
             _address = Address;
         }
 
+#if(!MF)
         public HttpServer(IPAddress Address, IHttpHandler Handler)
             : this(Handler)
         {
             _address = Address;
         }
+#endif
 
         public bool Start()
         {
@@ -74,7 +79,9 @@ namespace MSchwarz.Net.Web
                 _stopThreads = false;
 
                 _thdWorker = new Thread(new ThreadStart(RemoveWorkerThreads));
+#if(!MF)
                 _thdWorker.Name = "Worker Thread";
+#endif
                 _thdWorker.Start();
 
                 _listenSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -82,7 +89,9 @@ namespace MSchwarz.Net.Web
                 _listenSocket.Listen(1000);         // TODO: check what value is good
 
                 _thdListener = new Thread(new ThreadStart(ListenerThread));
+#if(!MF)
                 _thdListener.Name = "Listener Thread";
+#endif
                 _thdListener.Start();
             }
 
@@ -159,7 +168,9 @@ namespace MSchwarz.Net.Web
             ProcessClientRequest pcr = new ProcessClientRequest(ref client, _httpHandler);
 
             Thread thd = new Thread(new ThreadStart(pcr.ProcessRequest));
+#if(!MF)
             thd.Name = "Client Worker Process";
+#endif
             thd.Start();
 
             lock (_workerThreads)

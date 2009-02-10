@@ -24,14 +24,18 @@
  * 
  */
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace MSchwarz.Net.Web
 {
     public class HttpHeader
     {
-        public string Field;
+        public string Name;
         public string Value;
+
+        public HttpHeader(string name, string value)
+        {
+            Name = name;
+            Value = value;
+        }
     }
 }
