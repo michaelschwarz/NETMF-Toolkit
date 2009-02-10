@@ -85,6 +85,8 @@ namespace MSchwarz.Net.Web
                 _thdWorker.Start();
 
                 _listenSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+                // TODO: check if there is already a binding for the IPEndPoint
                 _listenSocket.Bind(new IPEndPoint(_address, _port));
                 _listenSocket.Listen(1000);         // TODO: check what value is good
 
