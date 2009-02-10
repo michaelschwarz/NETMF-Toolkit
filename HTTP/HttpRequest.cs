@@ -25,7 +25,6 @@
  * MS	08-03-24	initial version
  * MS   09-02-10    added GetHeaderValue
  * 
- * 
  */
 using System;
 
@@ -51,6 +50,7 @@ Connection: Keep-Alive
         public string Connection;
         public HttpCookie[] Cookies;
         public HttpHeader[] Headers;
+        public HttpParameter[] Params;
         public string HttpMethod;
         public string RawUrl;
         public string HttpVersion;
@@ -60,6 +60,25 @@ Connection: Keep-Alive
         public string[] UserLanguages;
         public string Referer;
         public byte[] Content = null;
+
+        public string this[string name]
+        {
+            get
+            {
+                if (Params == null || Params.Length == 0)
+                    return null;
+
+                for (int i = 0; i < Params.Length; i++)
+                {
+                    if (Params[i].Name == name)
+                        return Params[i].Value;
+                }
+
+                return null;
+            }
+        }
+
+
 
         public string GetHeaderValue(string name)
         {

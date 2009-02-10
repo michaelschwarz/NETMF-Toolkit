@@ -48,6 +48,9 @@
     <Compile Include="..\HTTP\HttpHeader.cs">
       <Link>HttpHeader.cs</Link>
     </Compile>
+    <Compile Include="..\HTTP\HttpParameter.cs">
+      <Link>HttpParameter.cs</Link>
+    </Compile>
     <Compile Include="..\HTTP\HttpRequest.cs">
       <Link>HttpRequest.cs</Link>
     </Compile>
@@ -75,5 +78,11 @@
     <Reference Include="System" />
     <Reference Include="System.IO" />
     <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MicroIO\MicroIO.csproj">
+      <Project>{A009B2CC-E9A5-4B53-A132-56F25E4D0CB9}</Project>
+      <Name>MicroIO</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>
