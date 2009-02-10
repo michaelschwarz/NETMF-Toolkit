@@ -114,6 +114,11 @@ Date: Wed, 05 Mar 2008 11:14:43 GMT
             _content.Write(b, 0, b.Length);
         }
 
+        public void Write(byte[] bytes)
+        {
+            _content.Write(bytes, 0, bytes.Length);
+        }
+
         public void WriteLine(string line)
         {
             Write(line);
