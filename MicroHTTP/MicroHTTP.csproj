@@ -36,6 +36,9 @@
     <Compile Include="..\HTTP\Enums\HttpStatusCode.cs">
       <Link>Enums\HttpStatusCode.cs</Link>
     </Compile>
+    <Compile Include="..\HTTP\Enums\LogEventType.cs">
+      <Link>Enums\LogEventType.cs</Link>
+    </Compile>
     <Compile Include="..\HTTP\Helper\NetworkHelper.cs">
       <Link>Helper\NetworkHelper.cs</Link>
     </Compile>
@@ -65,6 +68,9 @@
     </Compile>
     <Compile Include="..\HTTP\IHttpHandler.cs">
       <Link>IHttpHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\HTTP\LogAccess.cs">
+      <Link>LogAccess.cs</Link>
     </Compile>
     <Compile Include="..\HTTP\ProcessClientRequest.cs">
       <Link>ProcessClientRequest.cs</Link>

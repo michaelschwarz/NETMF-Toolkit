@@ -42,15 +42,17 @@ namespace MSchwarz.Net.Web
     {
         private Socket _client;
         private IHttpHandler _handler;
+        private HttpServer _server;
         private bool _receiving = false;
         private int _bufferSize = 256;
         private int _timeOut = 1000;
         private int _sleepTime = 100;
-
-        public ProcessClientRequest(ref Socket Client, IHttpHandler Handler)
+        
+        public ProcessClientRequest(ref Socket Client, IHttpHandler Handler, HttpServer Server)
         {
             _client = Client;
             _handler = Handler;
+            _server = Server;
         }
 
 		public int Send(Byte[] data)
@@ -133,12 +135,28 @@ namespace MSchwarz.Net.Web
             }
         }
 
+        //internal NameValueCollection ParseQueryString(string queryString)
+        //{
+        //    NameValueCollection nameValueCollection = new NameValueCollection();
+        //    string[] parts = queryString.Split('&');
+
+        //    foreach (string part in parts)
+        //    {
+        //        string[] nameValue = part.Split('=');
+        //        nameValueCollection.Add(nameValue[0], HttpServerUtility.UrlDecode(nameValue[1]));
+        //    }
+
+        //    return nameValueCollection;
+        //}
+
         internal void ProcessRequest()
         {
             using (_client)
             {
                 while (true)
                 {
+                    DateTime begin = DateTime.Now;
+
                     byte[] bytes = Receive();
 
                     // TODO: check if this is a keep-alive connection
@@ -146,6 +164,8 @@ namespace MSchwarz.Net.Web
                     {
                         break;
                     }
+
+                    LogAccess log = new LogAccess();
 
                     #region Fill Request Object
 
@@ -244,6 +264,13 @@ namespace MSchwarz.Net.Web
 
                     #endregion
 
+                    log.ClientIP = (_client.RemoteEndPoint as IPEndPoint).Address;
+                    log.BytesReceived = bytes.Length;
+                    log.Date = begin;
+                    log.Method = request.HttpMethod;
+                    log.RawUri = request.RawUrl;
+                    log.UserAgent = request.UserAgent;
+
                     request.Content = body;
 
                     HttpContext ctx = new HttpContext();
@@ -255,9 +282,19 @@ namespace MSchwarz.Net.Web
 
                     if (ctx != null && ctx.Response != null)
                     {
-                        if (Send(ctx.Response.GetResponseHeaderBytes()) >= 0 &&
-                            Send(ctx.Response.GetResponseBytes()) >= 0)
+                        int bytesSent = Send(ctx.Response.GetResponseHeaderBytes()) + Send(ctx.Response.GetResponseBytes());
+
+                        log.BytesSent = bytesSent;
+#if(!MF)
+                        log.Duration = (int)(DateTime.Now - log.Date).TotalMilliseconds;
+#endif
+
+                        _server.RaiseLogAccess(log);
+
+                        if ( bytesSent > 0)
                         {
+                            
+
                             if (ctx.Response.Connection.ToLower() == "keep-alive")
                             {
                                 Thread.Sleep(10);

@@ -12,6 +12,7 @@ namespace HttpConsole
 		{
             using (HttpServer http = new HttpServer(82, new MyHttpHandler(Path.Combine(Environment.CurrentDirectory, "..\\..\\root"))))
             {
+                http.OnLogAccess += new HttpServer.LogAccessHandler(http_OnLogAccess);
                 http.Start();
 
                 Console.ReadLine();
@@ -20,6 +21,11 @@ namespace HttpConsole
 
             Console.WriteLine("Done.");
 		}
+
+        static void http_OnLogAccess(LogAccess data)
+        {
+            Console.WriteLine(data.ClientIP + "\t" + data.RawUri + "\t" + data.Method + "\t" + data.Duration + " msec\t" + data.BytesReceived + " bytes\t" + data.BytesSent + " bytes");
+        }
 	}
 
     class MyHttpHandler : IHttpHandler
@@ -58,8 +64,12 @@ namespace HttpConsole
                     context.Response.Redirect("/test.aspx");
                     break;
 
+                case "/test2.aspx":
+                    context.Response.Write("<html><head><body>" + Encoding.UTF8.GetString(context.Request.Content) + "</body></html>");
+                    break;
+
                 case "/test.aspx":
-                    context.Response.Write("<html><head><script type=\"text/javascript\" src=\"/scripts/test.js\"></script></head><body><form action=\"/test.aspx\" method=\"post\"><input type=\"text\" name=\"txtbox1\"/><input type=\"submit\" value=\"Post\"/></form></body></html>");
+                    context.Response.Write("<html><head><script type=\"text/javascript\" src=\"/scripts/test.js\"></script></head><body><form action=\"/test2.aspx\" method=\"post\"><input type=\"text\" id=\"txtbox1\" name=\"txtbox1\"/><input type=\"submit\" value=\"Post\"/></form></body></html>");
                     break;
 
                 case "/scripts/test.js":
@@ -69,21 +79,24 @@ function test() {
     var x = new ActiveXObject(""Microsoft.XMLHTTP"");
     x.onreadystatechange = function() {
         if(x.readyState == 4) {
-            window.status = x.responseText;
-            if(++c < 100) setTimeout(test, 1);
+            document.getElementById('txtbox1').value = x.responseText;
+            if(++c < 10)
+                setTimeout(test, 1);
         }
     }
-    x.open(""POST"", ""/test.ajax?"" + c, true);
-    x.send("""");
+    x.open(""POST"", ""/test.ajax"", true);
+    x.send("""" + c);
 }
-setTimeout(test, 1000);
+setTimeout(test, 100);
 ");
                     break;
 
-               
+                case "/test.ajax":
+                    context.Response.Write("ajax = " + Encoding.UTF8.GetString(context.Request.Content));
+                    break;
 
                 default:
-                    context.Response.Write("<html><body>" + DateTime.Now + "<br/><b>" + context.Request.RawUrl + "</b><br/><br/></body></html>");
+                    context.Response.Write("<html><body>" + DateTime.Now + "<br/><b>" + context.Request.RawUrl + "</b><br/><br/><a href=\"index.htm\">Demo</a> <a href=\"test\">Redirect, AJAX and Form Test</a></body></html>");
                     break;
             }
         }
