@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Enums\HttpStatusCode.cs" />
+    <Compile Include="Enums\LogEventType.cs" />
     <Compile Include="HttpContext.cs" />
     <Compile Include="HttpCookie.cs" />
     <Compile Include="HttpHeader.cs" />
@@ -51,6 +52,7 @@
     <Compile Include="Helper\NetworkHelper.cs" />
     <Compile Include="HttpServerUtility.cs" />
     <Compile Include="IHttpHandler.cs" />
+    <Compile Include="LogAccess.cs" />
     <Compile Include="ProcessClientRequest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -47,6 +47,13 @@ namespace MSchwarz.Net.Web
         private bool _stopThreads = true;
         private const int _maxWorkers = 8;
 
+        public delegate void LogEventHandler(LogEventType ev, string text);
+        public delegate void LogAccessHandler(LogAccess data);
+
+        public event LogEventHandler OnLogEvent;
+        public event LogAccessHandler OnLogAccess;
+
+
         public HttpServer(IHttpHandler Handler)
         {
             _httpHandler = Handler;
@@ -167,7 +174,7 @@ namespace MSchwarz.Net.Web
                 Thread.Sleep(100);
             }
 
-            ProcessClientRequest pcr = new ProcessClientRequest(ref client, _httpHandler);
+            ProcessClientRequest pcr = new ProcessClientRequest(ref client, _httpHandler, this);
 
             Thread thd = new Thread(new ThreadStart(pcr.ProcessRequest));
 #if(!MF)
@@ -203,6 +210,22 @@ namespace MSchwarz.Net.Web
                 }
 
                 Thread.Sleep(1000);
+            }
+        }
+
+        private void RaiseLogEvent(LogEventType ev, string message)
+        {
+            if (OnLogEvent != null)
+            {
+                OnLogEvent(ev, message);
+            }
+        }
+
+        internal void RaiseLogAccess(LogAccess data)
+        {
+            if (OnLogAccess != null)
+            {
+                OnLogAccess(data);
             }
         }
 
