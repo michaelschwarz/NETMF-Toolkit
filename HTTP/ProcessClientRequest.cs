@@ -35,6 +35,8 @@ using System.Collections;
 using System.Threading;
 using System.Text;
 using Socket = System.Net.Sockets.Socket;
+using System.Diagnostics;
+using System.IO;
 
 namespace MSchwarz.Net.Web
 {
@@ -45,8 +47,7 @@ namespace MSchwarz.Net.Web
         private HttpServer _server;
         private bool _receiving = false;
         private int _bufferSize = 256;
-        private int _timeOut = 1000;
-        private int _sleepTime = 100;
+        private DateTime _begin;
         
         public ProcessClientRequest(ref Socket Client, IHttpHandler Handler, HttpServer Server)
         {
@@ -57,14 +58,16 @@ namespace MSchwarz.Net.Web
 
 		public int Send(Byte[] data)
         {
-            if (_client == null || data == null || data.Length <= 0 || _receiving)
+            if (_client == null || data == null || data.Length <= 0)
                 return -1;
 
             try
             {
                 if (_client.Poll(100, SelectMode.SelectWrite))
                 {
-                    return _client.Send(data);
+                    int bytesSent = _client.Send(data);
+
+                    return bytesSent;
                 }
             }
             catch (SocketException)
@@ -83,228 +86,195 @@ namespace MSchwarz.Net.Web
             return -1;
         }
 
-        public byte[] Receive()
+        private void RaiseError(HttpStatusCode httpStatusCode)
         {
-            try
+ 	        throw new NotImplementedException();
+        } 
+
+        private void Close()
+        {
+            if (_client != null)
             {
-                int cnt = 0;
-                _receiving = true;
-
-                ArrayList mem = new ArrayList();
-
-                byte[] buffer = new byte[_bufferSize];
-
-                while (cnt < (_timeOut / _sleepTime))
-                {
-                    while (_client.Available > 0)
-                    {
-                        int bytesRead = _client.Receive(buffer, (_client.Available > buffer.Length ? buffer.Length : _client.Available), SocketFlags.None);
-                        
-                        if (bytesRead <= 0)
-                            continue;       // TODO: maybe endless loop?
-
-                        for (int i = 0; i < bytesRead; i++)
-                            mem.Add(buffer[i]);
-                    }
-
-                    Thread.Sleep(_sleepTime);
-
-                    if (mem.Count > 0 && _client.Available == 0)
-                    {
-                        _receiving = false;
-
-                        byte[] res = new byte[mem.Count];
-                        for (int i = 0; i < mem.Count; i++)
-                            res[i] = (byte)mem[i];
-
-                        return res;
-                    }
-                    else
-                    {
-                        cnt++;
-                    }
-                }
-
-                _receiving = false;
-                return null;
-            }
-            catch
-            {
-                _receiving = false;
-                return null;
+                _client.Close();
+                _client = null;
             }
         }
-
-        //internal NameValueCollection ParseQueryString(string queryString)
-        //{
-        //    NameValueCollection nameValueCollection = new NameValueCollection();
-        //    string[] parts = queryString.Split('&');
-
-        //    foreach (string part in parts)
-        //    {
-        //        string[] nameValue = part.Split('=');
-        //        nameValueCollection.Add(nameValue[0], HttpServerUtility.UrlDecode(nameValue[1]));
-        //    }
-
-        //    return nameValueCollection;
-        //}
 
         internal void ProcessRequest()
         {
             using (_client)
             {
-                while (true)
+                while(true)
                 {
-                    DateTime begin = DateTime.Now;
-
-                    byte[] bytes = Receive();
-
-                    // TODO: check if this is a keep-alive connection
-                    if (bytes == null || bytes.Length == 0)
+                    try
                     {
-                        break;
-                    }
+                        _receiving = true;
+                        _begin = DateTime.Now;
 
-                    LogAccess log = new LogAccess();
+                        string requestHeader = "";
+                        MemoryStream requestBody = null;
 
-                    #region Fill Request Object
+                        int avail = 0;
+                        byte[] buffer = new byte[_bufferSize];
+                        DateTime maxWait = _begin.AddMilliseconds(3000);
 
-                    HttpRequest request = new HttpRequest();
-                    ArrayList a = new ArrayList();
-                    string ss = "";
-                    byte[] body = null;
+                        // wait some seconds to receive the first bytes
 
-                    for (int i = 0; i < bytes.Length; i++)
-                    {
-                        if ((int)bytes[i] == 10)
+                        do
                         {
-                            if (i > 4)
+                            try
                             {
-                                if (bytes[i - 3] == 13 && bytes[i - 2] == 10 && bytes[i - 1] == 13)
-                                {
-                                    body = new byte[bytes.Length - i - 1];
-                                    for (int c = 0; c < body.Length; c++)
-                                    {
-                                        body[c] = bytes[c + i + 1];
-                                    }
-#if(!MF && DEBUG)
-                                    Console.WriteLine(Encoding.UTF8.GetString(body));
-#endif
+                                avail = _client.Available;
+                            }
+                            catch
+                            {
+                                break;
+                            }
+                        }
+                        while (avail == 0 && DateTime.Now <= maxWait);
+
+                        
+                        ArrayList header = new ArrayList();
+                        bool isHeader = true;
+
+                        try
+                        {
+                            while (_client.Poll(300, SelectMode.SelectRead))
+                            {
+                                avail = _client.Available;
+                                if (avail == 0)
                                     break;
-                                }
-                            }
-
-                            if (a.Count == 0)
-                            {
-                                string[] httpreq = ss.Split(' ');
-
-                                request.HttpMethod = httpreq[0];
-                                request.RawUrl = httpreq[1];
-                                request.HttpVersion = httpreq[2];
-                            }
-                            else if (ss != null && ss.Length > 0)
-                            {
-                                string[] header = ss.Split(':');
-
-                                if (header.Length > 1)
-                                {
-                                    string headervalue = ss.Substring(header[0].Length + 1).TrimStart();
-                                    switch (header[0])
-                                    {
-                                        case "Accept-Language":
-                                            request.UserLanguages = new string[] { headervalue };     // TODO: split in array
-                                            break;
-
-                                        case "Connection":
-                                            request.Connection = headervalue;
-                                            break;
-
-                                        case "User-Agent":
-                                            request.UserAgent = headervalue;
-                                            break;
-
-                                        case "Host":
-                                            request.UserHostName = headervalue;
-                                            break;
-
-                                        case "Referer":
-                                            request.Referer = headervalue;
-                                            break;
-
-                                        case "Cookie":
-                                            request.Cookies = HttpCookie.FromHttpHeader(headervalue);
-                                            break;
-
-                                        case "Content-Type":
-                                            request.ContentType = headervalue;
-                                            break;
-
-                                        case "Content-Length":
-                                            request.ContentLength = int.Parse(headervalue);
-                                            break;
-                                    }
-
-                                }
-                            }
-
-                            a.Add(ss);
-                            ss = "";
-
-                            continue;
-                        }
-                        else if ((int)bytes[i] == 13)
-                        {
-                            continue;
-                        }
-                        else
-                        {
-                            ss += (char)bytes[i];
-                        }
-                    }
-
-                    #endregion
-
-                    log.ClientIP = (_client.RemoteEndPoint as IPEndPoint).Address;
-                    log.BytesReceived = bytes.Length;
-                    log.Date = begin;
-                    log.Method = request.HttpMethod;
-                    log.RawUri = request.RawUrl;
-                    log.UserAgent = request.UserAgent;
-
-                    request.Content = body;
-
-                    HttpContext ctx = new HttpContext();
-                    ctx.Request = request;
-                    ctx.Response = new HttpResponse();
-
-                    _handler.ProcessRequest(ctx);
-
-
-                    if (ctx != null && ctx.Response != null)
-                    {
-                        int bytesSent = Send(ctx.Response.GetResponseHeaderBytes()) + Send(ctx.Response.GetResponseBytes());
-
-                        log.BytesSent = bytesSent;
-#if(!MF)
-                        log.Duration = (int)(DateTime.Now - log.Date).TotalMilliseconds;
+#if(MF)
+                                Array.Clear(buffer, 0, buffer.Length);
 #endif
 
-                        _server.RaiseLogAccess(log);
+                                int bytesRead = _client.Receive(buffer, avail > buffer.Length ? buffer.Length : avail, SocketFlags.None);
 
-                        if ( bytesSent > 0)
-                        {
-                            
+#if(MF)
+                                requestHeader += new string(Encoding.UTF8.GetChars(buffer));
+#else
+                                requestHeader += new string(Encoding.UTF8.GetChars(buffer, 0, bytesRead));
+#endif
 
-                            if (ctx.Response.Connection.ToLower() == "keep-alive")
-                            {
-                                Thread.Sleep(10);
-                                continue;
+                                int lineBegin = 0;
+                                int lineEnd = 0;
+
+                                while (isHeader)
+                                {
+                                    lineEnd = requestHeader.IndexOf("\r\n", lineBegin);
+
+                                    if (lineEnd < 0)
+                                    {
+                                        if (lineBegin + 2 < requestHeader.Length)
+                                            requestHeader = requestHeader.Substring(lineBegin);
+                                        break;
+                                    }
+
+                                    header.Add(requestHeader.Substring(lineBegin, lineEnd - lineBegin));
+
+                                    if (header[header.Count - 1].ToString().Length == 0)
+                                        isHeader = false;
+
+                                    lineBegin = lineEnd + 2;
+                                }
                             }
                         }
+                        catch
+                        {
+                            break;
+                        }
+
+                        
+                        if (header.Count == 0)
+                        {
+                            RaiseError(HttpStatusCode.BadRequest);
+                            break;
+                        }
+
+                        // GET /index.htm HTTP/1.1
+                        string[] httpRequest = header[0].ToString().Split(' ');
+                        bool isHttpPost = false;
+
+                        if (httpRequest.Length != 3)
+                        {
+                            RaiseError(HttpStatusCode.BadRequest);
+                            break;
+                        }
+
+                        if (httpRequest[0] != "GET" && httpRequest[0] != "POST")
+                        {
+                            RaiseError(HttpStatusCode.MethodNotAllowed);
+                            break;
+                        }
+
+                        if (httpRequest[0] == "POST")
+                            isHttpPost = true;
+
+                        if (httpRequest[2] != "HTTP/1.1")        // HTTP/1.0 is not used any more
+                        {
+                            RaiseError(HttpStatusCode.HttpVersionNotSupported);
+                            break;
+                        }
+
+
+                        HttpRequest request = new HttpRequest();
+                        request.HttpMethod = httpRequest[0];
+                        request.RawUrl = httpRequest[1];
+                        request.HttpVersion = httpRequest[2];
+
+
+
+
+
+
+
+
+                        //log.ClientIP = (_client.RemoteEndPoint as IPEndPoint).Address;
+                        //log.BytesReceived = bytes.Length;
+                        //log.Date = begin;
+                        //log.Method = request.HttpMethod;
+                        //log.RawUri = request.RawUrl;
+                        //log.UserAgent = request.UserAgent;
+
+                        //request.Content = body;
+
+                        HttpContext ctx = new HttpContext();
+                        ctx.Request = request;
+                        ctx.Response = new HttpResponse();
+
+                        _handler.ProcessRequest(ctx);
+
+
+                        if (ctx != null && ctx.Response != null)
+                        {
+                            int bytesSent = Send(ctx.Response.GetResponseHeaderBytes()) + Send(ctx.Response.GetResponseBytes());
+
+                            //log.BytesSent = bytesSent;
+#if(!MF)
+                            //log.Duration = (int)(DateTime.Now - log.Date).TotalMilliseconds;
+#endif
+
+                            //_server.RaiseLogAccess(log);
+
+                            if (bytesSent > 0)
+                            {
+                                if (ctx.Response.Connection.ToLower() == "keep-alive")
+                                {
+                                    Thread.Sleep(10);
+                                    continue;
+                                }
+                            }
+                        }
+                    }
+                    catch(Exception)
+                    {
+
                     }
 
                     break;
                 }
+
+                Close();
             }
         }
     }

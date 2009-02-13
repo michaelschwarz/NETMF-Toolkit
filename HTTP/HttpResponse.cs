@@ -32,6 +32,7 @@ using System;
 using System.Text;
 using System.IO;
 using System.Collections;
+using System.Diagnostics;
 
 namespace MSchwarz.Net.Web
 {
@@ -161,6 +162,10 @@ Date: Wed, 05 Mar 2008 11:14:43 GMT
             }
 
             response += "\r\n";
+
+#if(MF)
+            Microsoft.SPOT.Debug.Print(response);
+#endif
 
             return response;
         }
