@@ -57,6 +57,11 @@ namespace MicroHTTPConsole
                         context.Response.WriteLine(htmlfoot);
                         break;
 
+                    case "/ms.jpg":
+                        context.Response.ContentType = "image/jpeg";
+                        context.Response.Write(Resources.GetBytes(Resources.BinaryResources.ms_jpg));
+                        break;
+
                     case "/testpost":
                         context.Response.WriteLine(htmlhead);
                         context.Response.WriteLine(new String(Encoding.UTF8.GetChars(context.Request.Content)));
