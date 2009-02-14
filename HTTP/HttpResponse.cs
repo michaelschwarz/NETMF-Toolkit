@@ -132,7 +132,7 @@ Date: Wed, 05 Mar 2008 11:14:43 GMT
 
         internal string GetResponseHeader()
         {
-            string response = HttpVersion + " " + (int)HttpStatus + HttpStatusHelper.GetHttpStatusFromCode(HttpStatus) + "\r\nContent-Type: " + ContentType + "\r\n"
+            string response = HttpVersion + " " + (int)HttpStatus + " " + HttpStatusHelper.GetHttpStatusFromCode(HttpStatus) + "\r\nContent-Type: " + ContentType + "\r\n"
                 + "Expires: " + Expires + "\r\nServer: " + Server + "\r\n";
 
             if (SetCookie != null)
@@ -165,7 +165,10 @@ Date: Wed, 05 Mar 2008 11:14:43 GMT
 
 #if(MF)
             Microsoft.SPOT.Debug.Print(response);
+#elif(DEBUG)
+            Console.WriteLine(response);
 #endif
+
 
             return response;
         }

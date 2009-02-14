@@ -65,7 +65,7 @@ namespace HttpConsole
                     break;
 
                 case "/test2.aspx":
-                    context.Response.Write("<html><head><body>" + Encoding.UTF8.GetString(context.Request.Content) + "</body></html>");
+                    context.Response.Write("<html><head><body>" + Encoding.UTF8.GetString(context.Request.Body) + "</body></html>");
                     break;
 
                 case "/test.aspx":
@@ -92,7 +92,7 @@ setTimeout(test, 100);
                     break;
 
                 case "/test.ajax":
-                    context.Response.Write("ajax = " + Encoding.UTF8.GetString(context.Request.Content));
+                    context.Response.Write("ajax = " + Encoding.UTF8.GetString(context.Request.Body));
                     break;
 
                 default:
