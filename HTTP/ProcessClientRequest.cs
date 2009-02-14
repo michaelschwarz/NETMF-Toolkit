@@ -150,11 +150,19 @@ namespace MSchwarz.Net.Web
 
                                 int bytesRead = _client.Receive(buffer, avail > buffer.Length ? buffer.Length : avail, SocketFlags.None);
 
+                                int c = requestHeader.Length;
+
 #if(MF)
                                 requestHeader += new string(Encoding.UTF8.GetChars(buffer));
 #else
                                 requestHeader += new string(Encoding.UTF8.GetChars(buffer, 0, bytesRead));
 #endif
+
+                                if (!isHeader)
+                                {
+                                    requestBody.Write(buffer, 0, bytesRead);
+                                    continue;
+                                }
 
                                 int lineBegin = 0;
                                 int lineEnd = 0;
@@ -167,13 +175,27 @@ namespace MSchwarz.Net.Web
                                     {
                                         if (lineBegin + 2 < requestHeader.Length)
                                             requestHeader = requestHeader.Substring(lineBegin);
+                                        
+
                                         break;
                                     }
 
-                                    header.Add(requestHeader.Substring(lineBegin, lineEnd - lineBegin));
+                                    if(lineEnd -lineBegin > 0)
+                                        header.Add(requestHeader.Substring(lineBegin, lineEnd - lineBegin));
 
                                     if (header[header.Count - 1].ToString().Length == 0)
+                                    {
                                         isHeader = false;
+
+                                        // TODO: find the end of the header in the buffer and write it to requestBody
+
+                                        lineBegin += 2;
+
+                                        requestBody = new MemoryStream();
+                                        requestBody.Write(buffer, lineBegin -c, bytesRead - lineBegin +c );
+
+                                        break;
+                                    }
 
                                     lineBegin = lineEnd + 2;
                                 }
@@ -222,6 +244,16 @@ namespace MSchwarz.Net.Web
                         request.RawUrl = httpRequest[1];
                         request.HttpVersion = httpRequest[2];
 
+                        request.Headers = new HttpHeader[header.Count - 2];
+                        for(int i=1; i<header.Count -1; i++)
+                        {
+                            string h = header[i].ToString();
+                            int hsep = h.IndexOf(": ");
+                            request.Headers[i-1] = new HttpHeader(h.Substring(0, hsep), h.Substring(hsep + 2));
+                        }
+
+                        if(requestBody != null)
+                            request.Body = requestBody.ToArray();
 
 
 
@@ -242,6 +274,8 @@ namespace MSchwarz.Net.Web
                         ctx.Request = request;
                         ctx.Response = new HttpResponse();
 
+                        ctx.Response.Connection = request.GetHeaderValue("Connection");
+
                         _handler.ProcessRequest(ctx);
 
 
@@ -258,11 +292,11 @@ namespace MSchwarz.Net.Web
 
                             if (bytesSent > 0)
                             {
-                                if (ctx.Response.Connection.ToLower() == "keep-alive")
-                                {
-                                    Thread.Sleep(10);
-                                    continue;
-                                }
+                                //if (ctx.Response.Connection.ToLower() == "keep-alive")
+                                //{
+                                //    Thread.Sleep(10);
+                                //    continue;
+                                //}
                             }
                         }
                     }

@@ -47,7 +47,7 @@ Connection: Keep-Alive
         public string ContentEncoding;
         public int ContentLength;
         public string ContentType;
-        public string Connection;
+        public string Connection = "Close";
         public HttpCookie[] Cookies;
         public HttpHeader[] Headers;
         public HttpParameter[] Params;
@@ -59,7 +59,7 @@ Connection: Keep-Alive
         public string UserHostName;
         public string[] UserLanguages;
         public string Referer;
-        public byte[] Content = null;
+        public byte[] Body = null;
 
         public string this[string name]
         {

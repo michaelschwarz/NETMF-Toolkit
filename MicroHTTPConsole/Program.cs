@@ -64,7 +64,7 @@ namespace MicroHTTPConsole
 
                     case "/testpost":
                         context.Response.WriteLine(htmlhead);
-                        context.Response.WriteLine(new String(Encoding.UTF8.GetChars(context.Request.Content)));
+                        context.Response.WriteLine(new String(Encoding.UTF8.GetChars(context.Request.Body)));
                         context.Response.WriteLine(htmlfoot);
                         break;
 
