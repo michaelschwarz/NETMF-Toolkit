@@ -96,7 +96,15 @@ setTimeout(test, 100);
                     break;
 
                 default:
-                    context.Response.Write("<html><body>" + DateTime.Now + "<br/><b>" + context.Request.RawUrl + "</b><br/><br/><a href=\"index.htm\">Demo</a> <a href=\"test\">Redirect, AJAX and Form Test</a></body></html>");
+                    context.Response.Write("<html><body>" + DateTime.Now + "<br/><b>RawUrl: " + context.Request.RawUrl + "</b><br/>");
+
+                    if (context.Request.Params != null && context.Request.Params.Length > 0)
+                    {
+                        foreach (HttpParameter p in context.Request.Params)
+                            context.Response.Write(p.Name + " = " + p.Value + "<br/>");
+                    }
+
+                    context.Response.Write("<br/><a href=\"index.htm\">Demo</a> <a href=\"test\">Redirect, AJAX and Form Test</a></body></html>");
                     break;
             }
         }

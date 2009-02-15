@@ -60,6 +60,7 @@ Connection: Keep-Alive
         public string[] UserLanguages;
         public string Referer;
         public byte[] Body = null;
+        public string QueryString;
 
         public string this[string name]
         {

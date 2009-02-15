@@ -45,9 +45,10 @@ namespace MSchwarz.Net.Web
         private Socket _client;
         private IHttpHandler _handler;
         private HttpServer _server;
-        private bool _receiving = false;
         private int _bufferSize = 256;
         private DateTime _begin;
+
+        private const long MAX_BYTE_PER_REQUEST = 100 * 1024;   // 100 KB
         
         public ProcessClientRequest(ref Socket Client, IHttpHandler Handler, HttpServer Server)
         {
@@ -88,7 +89,15 @@ namespace MSchwarz.Net.Web
 
         private void RaiseError(HttpStatusCode httpStatusCode)
         {
- 	        throw new NotImplementedException();
+            HttpResponse res = new HttpResponse();
+
+            res.HttpStatus = httpStatusCode;
+            res.RaiseError();
+
+            Send(res.GetResponseHeaderBytes());
+            Send(res.GetResponseBytes());
+
+            Close();
         } 
 
         private void Close()
@@ -108,7 +117,6 @@ namespace MSchwarz.Net.Web
                 {
                     try
                     {
-                        _receiving = true;
                         _begin = DateTime.Now;
 
                         string requestHeader = "";
@@ -116,10 +124,11 @@ namespace MSchwarz.Net.Web
 
                         int avail = 0;
                         byte[] buffer = new byte[_bufferSize];
+
+                        #region Wait for first byte
+
+                        // wait maxWait unil first byte arrives
                         DateTime maxWait = _begin.AddMilliseconds(3000);
-
-                        // wait some seconds to receive the first bytes
-
                         do
                         {
                             try
@@ -133,7 +142,10 @@ namespace MSchwarz.Net.Web
                         }
                         while (avail == 0 && DateTime.Now <= maxWait);
 
-                        
+                        #endregion
+
+                        #region Reading http request header and body
+
                         ArrayList header = new ArrayList();
                         bool isHeader = true;
 
@@ -145,6 +157,7 @@ namespace MSchwarz.Net.Web
                                 if (avail == 0)
                                     break;
 #if(MF)
+                                // set all bytes to null byte (strings are ending with null byte in MF)
                                 Array.Clear(buffer, 0, buffer.Length);
 #endif
 
@@ -160,6 +173,12 @@ namespace MSchwarz.Net.Web
 
                                 if (!isHeader)
                                 {
+                                    if (bytesRead + requestBody.Length > MAX_BYTE_PER_REQUEST)
+                                    {
+                                        RaiseError(HttpStatusCode.RequestEntitiyTooLarge);
+                                        return;
+                                    }
+
                                     requestBody.Write(buffer, 0, bytesRead);
                                     continue;
                                 }
@@ -176,18 +195,14 @@ namespace MSchwarz.Net.Web
                                         if (lineBegin + 2 < requestHeader.Length)
                                             requestHeader = requestHeader.Substring(lineBegin);
                                         
-
                                         break;
                                     }
 
-                                    if(lineEnd -lineBegin > 0)
+                                    if (lineEnd - lineBegin > 0)
                                         header.Add(requestHeader.Substring(lineBegin, lineEnd - lineBegin));
-
-                                    if (header[header.Count - 1].ToString().Length == 0)
+                                    else
                                     {
                                         isHeader = false;
-
-                                        // TODO: find the end of the header in the buffer and write it to requestBody
 
                                         lineBegin += 2;
 
@@ -206,11 +221,12 @@ namespace MSchwarz.Net.Web
                             break;
                         }
 
-                        
+                        #endregion
+
                         if (header.Count == 0)
                         {
                             RaiseError(HttpStatusCode.BadRequest);
-                            break;
+                            return;
                         }
 
                         // GET /index.htm HTTP/1.1
@@ -220,29 +236,41 @@ namespace MSchwarz.Net.Web
                         if (httpRequest.Length != 3)
                         {
                             RaiseError(HttpStatusCode.BadRequest);
-                            break;
+                            return;
                         }
 
                         if (httpRequest[0] != "GET" && httpRequest[0] != "POST")
                         {
                             RaiseError(HttpStatusCode.MethodNotAllowed);
-                            break;
+                            return;
                         }
 
                         if (httpRequest[0] == "POST")
+                        {
                             isHttpPost = true;
+                        }
+                        else
+                        {
+                            if (requestBody != null && requestBody.Length > 0)
+                            {
+                                RaiseError(HttpStatusCode.BadRequest);
+                                return;
+                            }
+                        }
 
                         if (httpRequest[2] != "HTTP/1.1")        // HTTP/1.0 is not used any more
                         {
                             RaiseError(HttpStatusCode.HttpVersionNotSupported);
-                            break;
+                            return;
                         }
 
 
+        
                         HttpRequest request = new HttpRequest();
                         request.HttpMethod = httpRequest[0];
                         request.RawUrl = httpRequest[1];
                         request.HttpVersion = httpRequest[2];
+
 
                         request.Headers = new HttpHeader[header.Count - 2];
                         for(int i=1; i<header.Count -1; i++)
@@ -250,10 +278,54 @@ namespace MSchwarz.Net.Web
                             string h = header[i].ToString();
                             int hsep = h.IndexOf(": ");
                             request.Headers[i-1] = new HttpHeader(h.Substring(0, hsep), h.Substring(hsep + 2));
+
+                            switch (request.Headers[i - 1].Name)
+                            {
+                                case "User-Agent":
+                                    request.UserAgent = request.Headers[i - 1].Value;
+                                    break;
+                                case "Connection":
+                                    request.Connection = request.Headers[i - 1].Value;
+                                    break;
+                            }
                         }
 
-                        if(requestBody != null)
+                        if (requestBody != null && requestBody.Length > 0)
+                        {
                             request.Body = requestBody.ToArray();
+
+                            // TODO: parse MIME content
+                        }
+                        else if(httpRequest[1].IndexOf("?") >= 0)
+                        {
+                            string queryString = httpRequest[1].Substring(httpRequest[1].IndexOf("?") + 1);
+
+                            if (queryString != null && queryString.Length > 0)
+                            {
+                                ArrayList ps = new ArrayList();
+
+                                foreach (string param in queryString.Split('&'))
+                                {
+                                    string[] keyvalue = param.Split('=');
+
+                                    HttpParameter p = new HttpParameter();
+                                    p.Name = keyvalue[0];
+
+                                    if (keyvalue.Length == 2)
+                                        p.Value = HttpServerUtility.UrlDecode(keyvalue[1]);
+
+                                    ps.Add(p);
+                                }
+
+                                request.Params = new HttpParameter[ps.Count];
+
+                                for (int i = 0; i < ps.Count; i++)
+                                    request.Params[i] = ps[i] as HttpParameter;
+                            }
+
+                        }
+
+
 
 
 
