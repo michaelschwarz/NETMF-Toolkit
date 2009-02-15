@@ -95,12 +95,20 @@ Date: Wed, 05 Mar 2008 11:14:43 GMT
 
             Clear();
 
-            // TODO: UrlEncode uri
-
             AddHeader("Location", uri);
 
             Write(@"<html><head><title>Object moved</title></head><body>
 <h2>Object moved to <a href=""" + uri + @""">here</a>.</h2>
+</body></html>");
+        }
+
+        public void RaiseError()
+        {
+
+            Clear();
+
+            Write(@"<html><head><title>Error</title></head><body>
+<h2>" + (int)HttpStatus + " " + HttpStatusHelper.GetHttpStatusFromCode(HttpStatus) + @"</h2>
 </body></html>");
         }
 
