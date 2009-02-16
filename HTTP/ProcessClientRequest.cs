@@ -224,6 +224,9 @@ namespace MSchwarz.Net.Web
                                     lineBegin = lineEnd + 2;
                                 }
                             }
+
+                            if (bytesReceived == 0)
+                                break;
                         }
                         catch
                         {
@@ -278,12 +281,12 @@ namespace MSchwarz.Net.Web
                         request.HttpVersion = httpRequest[2];
 
 
-                        request.Headers = new HttpHeader[header.Count - 2];
-                        for(int i=1; i<header.Count -1; i++)
+                        request.Headers = new HttpHeader[header.Count - 1];
+                        for(int i=0; i<header.Count -1; i++)
                         {
-                            string h = header[i].ToString();
+                            string h = header[i +1].ToString();
                             int hsep = h.IndexOf(": ");
-                            request.Headers[i-1] = new HttpHeader(h.Substring(0, hsep), h.Substring(hsep + 2));
+                            request.Headers[i] = new HttpHeader(h.Substring(0, hsep), h.Substring(hsep + 2));
                         }
 
                         if (requestBody != null && requestBody.Length > 0)
@@ -365,7 +368,7 @@ namespace MSchwarz.Net.Web
                     }
                     catch(Exception ex)
                     {
-                        RaiseError(HttpStatusCode.ServiceUnavailable, ex.Message);
+                        RaiseError(HttpStatusCode.InternalServerError, ex.Message);
                         return;
                     }
                     break;
