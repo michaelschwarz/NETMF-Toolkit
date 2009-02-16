@@ -45,7 +45,7 @@ namespace MSchwarz.Net.Web
         private Thread _thdListener;
         private Thread _thdWorker;
         private bool _stopThreads = true;
-        private const int _maxWorkers = 8;
+        private const int _maxWorkers = 256;        // for AJAX enabled web sites we need a higher max worker process count
 
         public delegate void LogEventHandler(LogEventType ev, string text);
         public delegate void LogAccessHandler(LogAccess data);
@@ -171,7 +171,7 @@ namespace MSchwarz.Net.Web
                 if (workerCount < _maxWorkers)
                     break;
 
-                Thread.Sleep(100);
+                Thread.Sleep(10);
             }
 
             ProcessClientRequest pcr = new ProcessClientRequest(ref client, _httpHandler, this);
@@ -180,6 +180,7 @@ namespace MSchwarz.Net.Web
 #if(!MF)
             thd.Name = "Client Worker Process";
 #endif
+
             thd.Start();
 
             lock (_workerThreads)
@@ -200,16 +201,13 @@ namespace MSchwarz.Net.Web
                         {
                             if (((Thread)_workerThreads[i]).ThreadState == ThreadState.Stopped)
                             {
-#if(!MF && DEBUG)
-                                Console.WriteLine("Removing worker thread " + i + ".");
-#endif
                                 _workerThreads.RemoveAt(i);
                             }
                         }
                     }
                 }
 
-                Thread.Sleep(1000);
+                Thread.Sleep(300);
             }
         }
 

@@ -1,18 +1,37 @@
-﻿using System;
+﻿/* 
+ * LogAccess.cs
+ * 
+ * Copyright (c) 2008, Michael Schwarz (http://www.schwarz-interactive.de)
+ *
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+ * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+ * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * 
+ * 
+ * 
+ */
+using System;
 using System.Net;
 
 namespace MSchwarz.Net.Web
 {
     public struct LogAccess
     {
-        /*
-         * #Software: Microsoft Internet Information Services 7.0
-         * #Version: 1.0
-         * #Date: 2008-12-08 09:36:54
-         * #Fields: date time s-ip cs-method cs-uri-stem cs-uri-query s-port cs-username c-ip cs(User-Agent) cs(Referer) sc-status sc-substatus sc-win32-status sc-bytes cs-bytes time-taken
-         * 2008-12-08 09:36:59 80.190.178.106 GET /livecust.aspx - 80 - 80.190.178.106 Mozilla/4.0+(compatible;+MSIE+7.0;+Windows+NT+6.0;+WOW64;+SLCC1;+.NET+CLR+2.0.50727;+.NET+CLR+3.5.30729;+.NET+CLR+3.0.30618) - 500 0 0 4784 662 63
-         */
-
         /// <summary>
         /// Date and time
         /// </summary>
@@ -82,12 +101,12 @@ namespace MSchwarz.Net.Web
         /// <summary>
         /// sc-bytes
         /// </summary>
-        public int BytesSent;
+        public long BytesSent;
 
         /// <summary>
         /// cs-bytes
         /// </summary>
-        public int BytesReceived;
+        public long BytesReceived;
 
         /// <summary>
         /// time-taken

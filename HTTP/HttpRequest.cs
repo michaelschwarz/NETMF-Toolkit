@@ -32,35 +32,23 @@ namespace MSchwarz.Net.Web
 {
     public class HttpRequest
     {
-        /*
-GET / HTTP/1.1
-Accept: *\/*
-Accept-Language: en-us
-UA-CPU: x86
-Accept-Encoding: gzip, deflate
-User-Agent: Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 2.0.50727)
-Host: localhost:12000
-Connection: Keep-Alive
-        */
-        
-        public string[] AcceptTypes;
-        public string ContentEncoding;
-        public int ContentLength;
-        public string ContentType;
-        public string Connection = "Close";
+        private string _httpMethod;
+        private string _rawUrl;
+        private string _httpVersion;
+
+        private string _path;
+        private string _queryString;
+
+        private string _userHostAddress;
+
+
         public HttpCookie[] Cookies;
         public HttpHeader[] Headers;
         public HttpParameter[] Params;
-        public string HttpMethod;
-        public string RawUrl;
-        public string HttpVersion;
-        public string UserAgent;
-        public string UserHostAddress;
-        public string UserHostName;
-        public string[] UserLanguages;
-        public string Referer;
+        
         public byte[] Body = null;
-        public string QueryString;
+
+        #region Public Properties
 
         public string this[string name]
         {
@@ -79,7 +67,123 @@ Connection: Keep-Alive
             }
         }
 
+        public string UserAgent
+        {
+            get
+            {
+                return this["User-Agent"];
+            }
+        }
 
+        public string[] AcceptTypes
+        {
+            get
+            {
+                string accept = this["Accept"];
+
+                if (accept == null)
+                    return null;
+
+                string[] acceptTypes = accept.Split(',');
+
+                for(int i=0; i<acceptTypes.Length; i++)
+                {
+                    acceptTypes[i].Trim();
+                }
+
+                return acceptTypes;
+            }
+        }
+
+        public int ContentLength
+        {
+            get
+            {
+                return int.Parse(this["Content-Length"]);
+            }
+        }
+
+        public string ContentType
+        {
+            get
+            {
+                return this["Content-Type"];
+            }
+        }
+
+        public string HttpMethod
+        {
+            get
+            {
+                return _httpMethod;
+            }
+            internal set
+            {
+                _httpMethod = value;
+            }
+        }
+
+        public string RawUrl
+        {
+            get
+            {
+                return _rawUrl;
+            }
+            internal set
+            {
+                _rawUrl = value;
+            }
+        }
+
+        public string HttpVersion
+        {
+            get
+            {
+                return _httpVersion;
+            }
+            internal set
+            {
+                _httpVersion = value;
+            }
+        }
+
+        public string Path
+        {
+            get
+            {
+                return _path;
+            }
+            internal set
+            {
+                _path = value;
+            }
+        }
+
+        public string QueryString
+        {
+            get
+            {
+                return _queryString;
+            }
+            internal set
+            {
+                _queryString = value;
+            }
+        }
+
+        public string UserHostAddress
+        {
+            get
+            {
+                return _userHostAddress;
+            }
+            internal set
+            {
+                _userHostAddress = value;
+            }
+        }
+
+        #endregion
 
         public string GetHeaderValue(string name)
         {
