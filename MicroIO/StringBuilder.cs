@@ -1,5 +1,5 @@
-﻿/* 
- * DnsWriter.cs
+/* 
+ * StringBuilder.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -22,44 +22,44 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
+ * MS   09-02-16    added StringBuilder
+ * 
+ * 
  */
 using System;
-using System.Text;
-using System.IO;
-using MSchwarz.IO;
+using Microsoft.SPOT;
+using System.Collections;
 
-namespace MSchwarz.Net.Dns
+namespace MSchwarz.Text
 {
-    internal class DnsWriter : ByteWriter
+    public class StringBuilder
     {
-        public DnsWriter()
-            : base()
+        private ArrayList _content;
+
+        public StringBuilder()
         {
-            _byteOrder = ByteOrder.Network;
+            _content = new ArrayList();
         }
 
-        public override void Write(string s)
+        public void Append(string s)
         {
-#if(MF)
-            byte[] bytes = Encoding.UTF8.GetBytes(s);
-#else
-            byte[] bytes = Encoding.ASCII.GetBytes(s);
-#endif
-
-
-            Write((byte)bytes.Length);      // RFC 1035 strings are prefixed with a 8-bit length indicator.
-            Write(bytes);
+            foreach (char c in s)
+                Append(c);
         }
 
-        /// <summary>
-        /// Writs a domain name. (RFC 1035 - 4.1.4.)
-        /// </summary>
-        public void WriteDomain(string domain)
+        public void Append(char c)
         {
-            foreach (string label in domain.Split('.'))
-                this.Write(label);
+            _content.Add(c);
+        }
 
-            Write((byte)0x00);    // last label
+        public override string ToString()
+        {
+            string res = "";
+
+            foreach (char c in _content)
+                res += c;
+
+            return res;
         }
     }
 }

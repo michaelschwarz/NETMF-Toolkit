@@ -1,7 +1,7 @@
 ﻿/* 
  * DnsRequest.cs
  * 
- * Copyright (c) 2008, Michael Schwarz (http://www.schwarz-interactive.de)
+ * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -22,10 +22,14 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
+ * MS   09-02-16    changed build compiler argument for .NET MF
+ * 
  */
 using System;
-using System.Collections.Generic;
 using System.Text;
+#if(!MF)
+using System.Collections.Generic;
+#endif
 using MSchwarz.IO;
 
 namespace MSchwarz.Net.Dns
@@ -33,10 +37,10 @@ namespace MSchwarz.Net.Dns
     public class DnsRequest
     {
         private short _messageID;
-        private readonly byte _flag1;
-        private readonly byte _flag2;
+        //private readonly byte _flag1;
+        //private readonly byte _flag2;
 
-#if(NETMF)
+#if(MF)
         private Question[] _questions;
 #else
         private List<Question> _questions = new List<Question>();
@@ -51,7 +55,7 @@ namespace MSchwarz.Net.Dns
             internal set { _messageID = value; }
         }
 
-#if(NETMF)
+#if(MF)
         public Question[] Questions
 #else
         public List<Question> Questions
@@ -84,7 +88,7 @@ namespace MSchwarz.Net.Dns
 
             // Question
 
-#if(NETMF)
+#if(MF)
             bw.Write((short)_questions.Length);
 #else
             bw.Write((short)_questions.Count);

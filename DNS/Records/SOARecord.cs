@@ -1,7 +1,7 @@
 /* 
  * SOARecord.cs
  * 
- * Copyright (c) 2008, Michael Schwarz (http://www.schwarz-interactive.de)
+ * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -124,6 +124,9 @@ namespace MSchwarz.Net.Dns
 
         internal string GetDuration(int d)
         {
+#if(MF)
+            return d.ToString();
+#else
             TimeSpan t = new TimeSpan(0, 0, d);
 
             string s = "(";
@@ -156,10 +159,20 @@ namespace MSchwarz.Net.Dns
                 s = s.Substring(0, s.Length - 1);
 
             return s + ")";
+#endif
         }
 
         public override string ToString()
         {
+#if(MF)
+            return @"    primary name server = " + _mname + @"
+    responsible mail addr = " + _rname + @"
+    serial  = " + _serial.ToString() + @"
+    refresh = {3} {7}
+    retry   = {4} {8}
+    expire  = {5} {9}
+    default TTL = {6} {10}";
+#else
             return string.Format(@"    primary name server = {0}
     responsible mail addr = {1}
     serial  = {2}
@@ -179,7 +192,7 @@ namespace MSchwarz.Net.Dns
                 GetDuration(_expire),
                 GetDuration(_minimumTtl)
             );
-
+#endif
         }
     }
 }

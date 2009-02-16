@@ -1,7 +1,7 @@
 ﻿/* 
  * DnsResponse.cs
  * 
- * Copyright (c) 2008, Michael Schwarz (http://www.schwarz-interactive.de)
+ * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -22,10 +22,16 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
+ * MS   09-02-16    changed build compiler argument for .NET MF
+ * 
+ * 
+ * 
  */
 using System;
-using System.Collections.Generic;
 using System.Text;
+#if(!MF)
+using System.Collections.Generic;
+#endif
 
 namespace MSchwarz.Net.Dns
 {
@@ -39,7 +45,7 @@ namespace MSchwarz.Net.Dns
         private readonly short _numNameServers;
         private readonly short _numAdditionalRecords;
 
-#if(NETMF)
+#if(MF)
         private readonly Question[] _questions;
         private readonly Answer[] _answers;
         private readonly Authority[] _authorities;
@@ -58,7 +64,7 @@ namespace MSchwarz.Net.Dns
             get { return _messageID; }
         }
 
-#if(NETMF)
+#if(MF)
         public Question[] Questions
         {
             get { return _questions; }
@@ -117,7 +123,7 @@ namespace MSchwarz.Net.Dns
             _numNameServers = br.ReadInt16();
             _numAdditionalRecords = br.ReadInt16();
 
-#if(NETMF)
+#if(MF)
             _questions = new Question[_numQuestions];
             _answers = new Answer[_numAnswers];
             _authorities = new Authority[_numNameServers];
@@ -125,7 +131,7 @@ namespace MSchwarz.Net.Dns
 #endif
 
 
-#if(NETMF)
+#if(MF)
             for (int i = 0; i < _numQuestions; i++)
                 _questions[i] = new Question(br);
 

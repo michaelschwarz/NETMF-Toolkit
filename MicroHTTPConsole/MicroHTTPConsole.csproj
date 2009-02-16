@@ -27,7 +27,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;MF</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -55,6 +55,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\MicroDNS\MicroDNS.csproj">
+      <Project>{846E5BFE-3BD9-4111-9FBB-1A9E4BF295A6}</Project>
+      <Name>MicroDNS</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MicroHTTP\MicroHTTP.csproj">
       <Project>{1CC369CA-5686-445E-805A-B9B02578799F}</Project>
       <Name>MicroHTTP</Name>

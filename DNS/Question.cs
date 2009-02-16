@@ -1,7 +1,7 @@
 ﻿/* 
  * Question.cs
  * 
- * Copyright (c) 2008, Michael Schwarz (http://www.schwarz-interactive.de)
+ * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -22,11 +22,16 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
+ * MS   09-02-16    changed build compiler argument for .NET MF
+ * 
+ * 
  */
 using System;
-using System.Collections.Generic;
 using System.Text;
 using System.Net;
+#if(MF)
+using MSchwarz.Text;
+#endif
 
 namespace MSchwarz.Net.Dns
 {
@@ -88,6 +93,7 @@ namespace MSchwarz.Net.Dns
 				IPAddress addr = IPAddress.Parse (domain);
 
 				StringBuilder sb = new StringBuilder();
+
 				byte[] addrBytes = addr.GetAddressBytes();
 				for(int i=addrBytes.Length -1; i>=0; i--)
 					sb.Append((int)addrBytes[i] + ".");

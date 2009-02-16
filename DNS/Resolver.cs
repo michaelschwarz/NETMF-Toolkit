@@ -1,7 +1,7 @@
 ﻿/* 
  * Resolver.cs
  * 
- * Copyright (c) 2008, Michael Schwarz (http://www.schwarz-interactive.de)
+ * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -22,11 +22,17 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
+ * MS   09-02-16    added support for .NET MF
+ *                  fixed receiving message from server
+ * 
+ * 
  */
 using System;
 using System.Net;
 using System.Net.Sockets;
+#if(!MF)
 using System.Management;
+#endif
 
 namespace MSchwarz.Net.Dns
 {
@@ -34,7 +40,7 @@ namespace MSchwarz.Net.Dns
     {
         private IPAddress _server = null;
         private IPEndPoint _endPoint;
-        private readonly int _maxRetryAttemps = 4;
+        private readonly int _maxRetryAttemps = 2;
         private Exception _lastException = null;
 
         public DnsResolver()
@@ -66,9 +72,17 @@ namespace MSchwarz.Net.Dns
 
 		private void LoadFromHostname(string hostName)
 		{
-			IPAddress[] addresses = System.Net.Dns.GetHostAddresses (hostName);
+            IPAddress[] addresses = null;
+            
+#if(MF)
+            IPHostEntry entry = System.Net.Dns.GetHostEntry(hostName);
+            if(entry != null)
+                addresses = entry.AddressList;
+#else
+            addresses = System.Net.Dns.GetHostAddresses(hostName);
+#endif
 
-			if (addresses.Length == 0)
+			if (addresses == null || addresses.Length == 0)
 				throw new ArgumentException ("Could not retrieve host IP address.");
 
 			_server = addresses[0];
@@ -80,6 +94,7 @@ namespace MSchwarz.Net.Dns
 
 		public void LoadNetworkConfiguration()
 		{
+#if(!MF)
 			// http://msdn.microsoft.com/en-us/library/aa394217(VS.85).aspx
 
 			ManagementClass mgmt = new ManagementClass ("Win32_NetworkAdapterConfiguration");
@@ -97,12 +112,16 @@ namespace MSchwarz.Net.Dns
 						if (dns != null && dns.Length > 0)
 						{
 							LoadFromHostname (dns[0]);
+
+                            obj.Dispose();
+                            return;
 						}
 					}
 				}
 
 				obj.Dispose ();
 			}
+#endif
 		}
 
         public DnsResponse Resolve(DnsRequest request)
@@ -116,9 +135,18 @@ namespace MSchwarz.Net.Dns
                 if (bytes.Length > 512)
                     throw new ArgumentException("RFC 1035 2.3.4 states that the maximum size of a UDP datagram is 512 octets (bytes).");
 
-                Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+                Socket socket = new Socket(
+#if(MF)
+                    AddressFamily.InterNetwork
+#else
+                    _endPoint.AddressFamily
+#endif
+                    , SocketType.Dgram, ProtocolType.Udp);
 
-                socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReceiveTimeout, 1000);
+
+                socket.ReceiveTimeout = 300;
+                //socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReceiveTimeout, 300);
+                
                 socket.SendTo(bytes, bytes.Length, SocketFlags.None, _endPoint);
 
                 // Messages carried by UDP are restricted to 512 bytes (not counting the IP
@@ -128,7 +156,10 @@ namespace MSchwarz.Net.Dns
 
                 try
                 {
-                    int numBytes = socket.Receive(responseMessage);
+                    //int numBytes = socket.Receive(responseMessage);
+
+                    EndPoint ep = (EndPoint)_endPoint;
+                    int numBytes = socket.ReceiveFrom(responseMessage, ref ep);
 
                     if (numBytes == 0 || numBytes > 512)
                         throw new Exception("RFC 1035 2.3.4 states that the maximum size of a UDP datagram is 512 octets (bytes).");
