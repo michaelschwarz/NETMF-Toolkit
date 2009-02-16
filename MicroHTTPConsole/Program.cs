@@ -5,12 +5,14 @@ using System.Threading;
 using System.Text;
 using System.Net;
 using Microsoft.SPOT.Net.NetworkInformation;
+using MSchwarz.Net.Dns;
 
 namespace MicroHTTPConsole
 {
     public class Program
     {
         internal static bool stopThread = false;
+
         public static void Main()
         {
             foreach (NetworkInterface net in NetworkInterface.GetAllNetworkInterfaces())
@@ -73,6 +75,24 @@ namespace MicroHTTPConsole
                         foreach (NetworkInterface net in NetworkInterface.GetAllNetworkInterfaces())
                         {
                             context.Response.WriteLine(net.IPAddress.ToString() + "<br/>");
+
+                            if (net.DnsAddresses.Length > 0)
+                            {
+                                string dns = net.DnsAddresses[0];
+
+                                DnsResolver resolver = new DnsResolver(IPAddress.Parse(dns));
+                                DnsRequest dnsreq = new DnsRequest();
+                                dnsreq.Questions = new Question[] {
+                                    new Question("microsoft.com", DnsType.A, DnsClass.IN)
+                                };
+
+                                DnsResponse dnsres = resolver.Resolve(dnsreq);
+
+                                foreach (Answer a in dnsres.Answers)
+                                    context.Response.WriteLine("microsoft.com A record: " + (a.Record as ARecord).IPAddress.ToString() + "<br/>");
+                            }
+
+
                         }
                         context.Response.WriteLine(htmlfoot);
                         break;

@@ -1,7 +1,7 @@
 /* 
  * HttpResponse.cs
  * 
- * Copyright (c) 2008, Michael Schwarz (http://www.schwarz-interactive.de)
+ * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -104,11 +104,16 @@ Date: Wed, 05 Mar 2008 11:14:43 GMT
 
         public void RaiseError()
         {
+            RaiseError(null);
+        }
 
+        public void RaiseError(string details)
+        {
             Clear();
 
             Write(@"<html><head><title>Error</title></head><body>
 <h2>" + (int)HttpStatus + " " + HttpStatusHelper.GetHttpStatusFromCode(HttpStatus) + @"</h2>
+" + (details != null ? details : "") + @"
 </body></html>");
         }
 

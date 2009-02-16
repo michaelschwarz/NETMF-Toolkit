@@ -1,7 +1,7 @@
 /* 
  * MXRecord.cs
  * 
- * Copyright (c) 2008, Michael Schwarz (http://www.schwarz-interactive.de)
+ * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -68,7 +68,11 @@ namespace MSchwarz.Net.Dns
 
         public override string ToString()
         {
+#if(MF)
+            return "    MX preference =" + _preference + ", mail exchanger = " + _domainName;
+#else
             return string.Format("    MX preference ={1,3}, mail exchanger = {0}", _domainName, _preference.ToString());
+#endif
         }
 
         #region IComparable Members

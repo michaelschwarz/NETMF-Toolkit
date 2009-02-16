@@ -1,7 +1,7 @@
 /* 
  * ProcessClientRequest.cs
  * 
- * Copyright (c) 2008, Michael Schwarz (http://www.schwarz-interactive.de)
+ * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -89,10 +89,15 @@ namespace MSchwarz.Net.Web
 
         private void RaiseError(HttpStatusCode httpStatusCode)
         {
+            RaiseError(httpStatusCode, null);
+        }
+
+        private void RaiseError(HttpStatusCode httpStatusCode, string details)
+        {
             HttpResponse res = new HttpResponse();
 
             res.HttpStatus = httpStatusCode;
-            res.RaiseError();
+            res.RaiseError(details);
 
             Send(res.GetResponseHeaderBytes());
             Send(res.GetResponseBytes());
@@ -358,9 +363,10 @@ namespace MSchwarz.Net.Web
                             }
                         }
                     }
-                    catch(Exception)
+                    catch(Exception ex)
                     {
-
+                        RaiseError(HttpStatusCode.ServiceUnavailable, ex.Message);
+                        return;
                     }
                     break;
                 }
