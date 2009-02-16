@@ -1,7 +1,7 @@
 ﻿/* 
  * DnsReader.cs
  * 
- * Copyright (c) 2008, Michael Schwarz (http://www.schwarz-interactive.de)
+ * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -27,6 +27,9 @@ using System;
 using System.Text;
 using System.IO;
 using MSchwarz.IO;
+#if(MF)
+using MSchwarz.Text;
+#endif
 
 namespace MSchwarz.Net.Dns
 {
@@ -43,7 +46,7 @@ namespace MSchwarz.Net.Dns
         {
         }
 
-        public new DnsReader Copy()
+        public DnsReader Copy()
         {
             return new DnsReader(_message, _byteOrder, _encoding, _position);
         }
