@@ -45,9 +45,6 @@ namespace HttpConsole
             Console.WriteLine(context.Request.RawUrl);
 #endif
 
-            Console.WriteLine(context.Request.Connection);
-            context.Response.Connection = context.Request.Connection;
-
             if (!String.IsNullOrEmpty(_rootFolder))
             {
                 string filename = Path.Combine(_rootFolder, context.Request.RawUrl.Replace("/", "\\").Substring(1));
@@ -58,7 +55,7 @@ namespace HttpConsole
                 }
             }
 
-            switch(context.Request.RawUrl)
+            switch(context.Request.Path)
             {
                 case "/test":
                     context.Response.Redirect("/test.aspx");
@@ -80,14 +77,14 @@ function test() {
     x.onreadystatechange = function() {
         if(x.readyState == 4) {
             document.getElementById('txtbox1').value = x.responseText;
-            if(++c < 10)
+            if(++c < 100)
                 setTimeout(test, 1);
         }
     }
-    x.open(""POST"", ""/test.ajax"", true);
+    x.open(""POST"", ""/test.ajax?x="" + c, true);
     x.send("""" + c);
 }
-setTimeout(test, 100);
+setTimeout(test, 1);
 ");
                     break;
 

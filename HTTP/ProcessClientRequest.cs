@@ -120,6 +120,7 @@ namespace MSchwarz.Net.Web
                         _begin = DateTime.Now;
 
                         string requestHeader = "";
+                        long bytesReceived = 0;
                         MemoryStream requestBody = null;
 
                         int avail = 0;
@@ -144,6 +145,7 @@ namespace MSchwarz.Net.Web
 
                         #endregion
 
+
                         #region Reading http request header and body
 
                         ArrayList header = new ArrayList();
@@ -162,6 +164,8 @@ namespace MSchwarz.Net.Web
 #endif
 
                                 int bytesRead = _client.Receive(buffer, avail > buffer.Length ? buffer.Length : avail, SocketFlags.None);
+
+                                bytesReceived += bytesRead;
 
                                 int c = requestHeader.Length;
 
@@ -231,8 +235,7 @@ namespace MSchwarz.Net.Web
 
                         // GET /index.htm HTTP/1.1
                         string[] httpRequest = header[0].ToString().Split(' ');
-                        bool isHttpPost = false;
-
+                        
                         if (httpRequest.Length != 3)
                         {
                             RaiseError(HttpStatusCode.BadRequest);
@@ -247,7 +250,6 @@ namespace MSchwarz.Net.Web
 
                         if (httpRequest[0] == "POST")
                         {
-                            isHttpPost = true;
                         }
                         else
                         {
@@ -264,11 +266,10 @@ namespace MSchwarz.Net.Web
                             return;
                         }
 
-
-        
                         HttpRequest request = new HttpRequest();
                         request.HttpMethod = httpRequest[0];
                         request.RawUrl = httpRequest[1];
+                        request.Path = request.RawUrl;
                         request.HttpVersion = httpRequest[2];
 
 
@@ -278,16 +279,6 @@ namespace MSchwarz.Net.Web
                             string h = header[i].ToString();
                             int hsep = h.IndexOf(": ");
                             request.Headers[i-1] = new HttpHeader(h.Substring(0, hsep), h.Substring(hsep + 2));
-
-                            switch (request.Headers[i - 1].Name)
-                            {
-                                case "User-Agent":
-                                    request.UserAgent = request.Headers[i - 1].Value;
-                                    break;
-                                case "Connection":
-                                    request.Connection = request.Headers[i - 1].Value;
-                                    break;
-                            }
                         }
 
                         if (requestBody != null && requestBody.Length > 0)
@@ -296,9 +287,15 @@ namespace MSchwarz.Net.Web
 
                             // TODO: parse MIME content
                         }
-                        else if(httpRequest[1].IndexOf("?") >= 0)
+                        
+                        // parse request parameters
+
+                        if(httpRequest[1].IndexOf("?") >= 0)
                         {
                             string queryString = httpRequest[1].Substring(httpRequest[1].IndexOf("?") + 1);
+
+                            request.QueryString = queryString;
+                            request.Path = httpRequest[1].Substring(0, httpRequest[1].IndexOf("?"));
 
                             if (queryString != null && queryString.Length > 0)
                             {
@@ -322,25 +319,16 @@ namespace MSchwarz.Net.Web
                                 for (int i = 0; i < ps.Count; i++)
                                     request.Params[i] = ps[i] as HttpParameter;
                             }
-
                         }
 
+                        LogAccess log = new LogAccess();
+                        log.ClientIP = (_client.RemoteEndPoint as IPEndPoint).Address;
+                        log.BytesReceived = bytesReceived;
+                        log.Date = _begin;
+                        log.Method = request.HttpMethod;
+                        log.RawUri = request.RawUrl;
+                        log.UserAgent = request.UserAgent;
 
-
-
-
-
-
-
-
-                        //log.ClientIP = (_client.RemoteEndPoint as IPEndPoint).Address;
-                        //log.BytesReceived = bytes.Length;
-                        //log.Date = begin;
-                        //log.Method = request.HttpMethod;
-                        //log.RawUri = request.RawUrl;
-                        //log.UserAgent = request.UserAgent;
-
-                        //request.Content = body;
 
                         HttpContext ctx = new HttpContext();
                         ctx.Request = request;
@@ -350,25 +338,23 @@ namespace MSchwarz.Net.Web
 
                         _handler.ProcessRequest(ctx);
 
-
                         if (ctx != null && ctx.Response != null)
                         {
-                            int bytesSent = Send(ctx.Response.GetResponseHeaderBytes()) + Send(ctx.Response.GetResponseBytes());
+                            long bytesSent = Send(ctx.Response.GetResponseHeaderBytes()) + Send(ctx.Response.GetResponseBytes());
 
-                            //log.BytesSent = bytesSent;
+                            log.BytesSent = bytesSent;
 #if(!MF)
-                            //log.Duration = (int)(DateTime.Now - log.Date).TotalMilliseconds;
+                            log.Duration = (int)(DateTime.Now - log.Date).TotalMilliseconds;
 #endif
-
-                            //_server.RaiseLogAccess(log);
+                            _server.RaiseLogAccess(log);
 
                             if (bytesSent > 0)
                             {
-                                //if (ctx.Response.Connection.ToLower() == "keep-alive")
-                                //{
-                                //    Thread.Sleep(10);
-                                //    continue;
-                                //}
+                                if (ctx.Response.Connection != null && ctx.Response.Connection.ToLower() == "keep-alive")
+                                {
+                                    Thread.Sleep(10);
+                                    continue;
+                                }
                             }
                         }
                     }
@@ -376,7 +362,6 @@ namespace MSchwarz.Net.Web
                     {
 
                     }
-
                     break;
                 }
 

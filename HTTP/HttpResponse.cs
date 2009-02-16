@@ -171,13 +171,6 @@ Date: Wed, 05 Mar 2008 11:14:43 GMT
 
             response += "\r\n";
 
-#if(MF)
-            Microsoft.SPOT.Debug.Print(response);
-#elif(DEBUG)
-            Console.WriteLine(response);
-#endif
-
-
             return response;
         }
 
