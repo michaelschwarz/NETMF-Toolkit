@@ -41,10 +41,11 @@ namespace MSchwarz.Net.Web
 
         private string _userHostAddress;
 
+        private HttpCookie[] _cookies;
+        private HttpParameter[] _params;
 
-        public HttpCookie[] Cookies;
         public HttpHeader[] Headers;
-        public HttpParameter[] Params;
+        
         
         public byte[] Body = null;
 
@@ -54,17 +55,40 @@ namespace MSchwarz.Net.Web
         {
             get
             {
-                if (Params == null || Params.Length == 0)
+                if (_params == null || _params.Length == 0)
                     return null;
 
-                for (int i = 0; i < Params.Length; i++)
+                for (int i = 0; i < _params.Length; i++)
                 {
-                    if (Params[i].Name == name)
-                        return Params[i].Value;
+                    if (_params[i].Name == name)
+                        return _params[i].Value;
                 }
 
                 return null;
             }
+        }
+
+        public HttpParameter[] Params
+        {
+            get { return _params; }
+            internal set { _params = value; }
+        }
+
+        public HttpCookie[] Cookies
+        {
+            get
+            {
+                if (_cookies == null)
+                {
+                    _cookies = HttpCookie.CookiesFromHeader(GetHeaderValue("Cookie"));
+                }
+
+                if (_cookies == null)
+                    _cookies = new HttpCookie[0];
+
+                return _cookies;
+            }
+            internal set { _cookies = value; }
         }
 
         public string UserAgent

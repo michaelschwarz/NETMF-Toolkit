@@ -41,10 +41,6 @@ namespace HttpConsole
 
         public void ProcessRequest(HttpContext context)
         {
-#if(DEBUG)
-            Console.WriteLine(context.Request.RawUrl);
-#endif
-
             if (!String.IsNullOrEmpty(_rootFolder))
             {
                 string filename = Path.Combine(_rootFolder, context.Request.RawUrl.Replace("/", "\\").Substring(1));
@@ -62,11 +58,28 @@ namespace HttpConsole
                     break;
 
                 case "/test2.aspx":
-                    context.Response.Write("<html><head><body>" + Encoding.UTF8.GetString(context.Request.Body) + "</body></html>");
+                    context.Response.Write("<html><head><title></title></head><body>" + Encoding.UTF8.GetString(context.Request.Body) + "</body></html>");
+                    break;
+
+                case "/cookie":
+
+                    context.Response.Write("<html><head><title></title></head><body>");
+
+                    if (context.Request.Cookies.Length > 0)
+                    {
+                        foreach (HttpCookie c in context.Request.Cookies)
+                            context.Response.WriteLine("Cookie " + c.Name + " = " + c.Value + "<br/>");
+                    }
+
+                    HttpCookie cookie = new HttpCookie("test", DateTime.Now.ToString());
+                    cookie.Expires = DateTime.Now.AddDays(2);
+                    context.Response.SetCookie(cookie);
+                    context.Response.WriteLine("</body></html>");
+
                     break;
 
                 case "/test.aspx":
-                    context.Response.Write("<html><head><script type=\"text/javascript\" src=\"/scripts/test.js\"></script></head><body><form action=\"/test2.aspx\" method=\"post\"><input type=\"text\" id=\"txtbox1\" name=\"txtbox1\"/><input type=\"submit\" value=\"Post\"/></form></body></html>");
+                    context.Response.Write("<html><head><title></title><script type=\"text/javascript\" src=\"/scripts/test.js\"></script></head><body><form action=\"/test2.aspx\" method=\"post\"><input type=\"text\" id=\"txtbox1\" name=\"txtbox1\"/><input type=\"submit\" value=\"Post\"/></form></body></html>");
                     break;
 
                 case "/scripts/test.js":
@@ -93,7 +106,7 @@ setTimeout(test, 1);
                     break;
 
                 default:
-                    context.Response.Write("<html><body>" + DateTime.Now + "<br/><b>RawUrl: " + context.Request.RawUrl + "</b><br/>");
+                    context.Response.Write("<html><head><title></title></head><body>" + DateTime.Now + "<br/><b>RawUrl: " + context.Request.RawUrl + "</b><br/>");
 
                     if (context.Request.Params != null && context.Request.Params.Length > 0)
                     {

@@ -40,43 +40,62 @@ namespace MSchwarz.Net.Web
     {
         private MemoryStream _content;
 
+        private string _httpVersion = "HTTP/1.1";
+        private HttpStatusCode _httpStatus = HttpStatusCode.OK;
+
+        private HttpHeader[] _headers = null;
+        private ArrayList _cookies = null;
+
+        private DateTime _date = DateTime.Now;
+
+
+
         public HttpResponse()
         {
             _content = new MemoryStream();
+
+            AddHeader("Content-Type", "text/plain; charset=utf-8");
+            AddHeader("Server", "MSchwarz HTTP Server");
         }
 
-        /*
-HTTP/1.1 200 OK
-Cache-Control: no-cache
-Pragma: no-cache,no-cache
-Content-Length: 37514
-Content-Type: text/html; charset=utf-8
-Expires: -1
-Server: Microsoft-IIS/7.0
-X-AspNet-Version: 2.0.50727
-Set-Cookie: LastPage=/multimachineterminal.aspx; path=/
-X-Powered-By: ASP.NET
-Date: Wed, 05 Mar 2008 11:14:43 GMT
-         */
+        #region Public Properties
 
-        public string HttpVersion = "HTTP/1.1";
-        public HttpStatusCode HttpStatus = HttpStatusCode.OK;
+        public HttpStatusCode HttpStatus
+        {
+            set { _httpStatus = value; }
+        }
 
-        public string ContentType = "text/html; charset=utf-8";
-        public string Expires = "-1";
-        public string Server = "HttpServer";
-        public ArrayList SetCookie = null;
-        public ArrayList Headers = null;     // TODO: implement HttpHeaders
-        public DateTime Date = DateTime.Now;    // "Date: Wed, 05 Mar 2008 11:14:43 GMT";
-        public string Connection = "Close";
+        public string ContentType
+        {
+            set { AddHeader("Content-Type", value); }
+        }
+
+        public string Connection
+        {
+            set { AddHeader("Connection", value); }
+            internal get { return GetHeader("Connection"); }
+        }
+
+        public DateTime Date
+        {
+            set { _date = value; }
+            internal get { return _date; }
+        }
+
+        #endregion
+
+        #region Http header related methods
 
         public void AddHeader(string name, string value)
         {
-            if (Headers == null)
-                Headers = new ArrayList();
-            else
+            AddHeader(name, value, true);
+        }
+
+        public void AddHeader(string name, string value, bool replace)
+        {
+            if (replace && _headers != null)
             {
-                foreach (HttpHeader header in Headers)
+                foreach (HttpHeader header in _headers)
                 {
                     if (header.Name == name)
                     {
@@ -86,12 +105,50 @@ Date: Wed, 05 Mar 2008 11:14:43 GMT
                 }
             }
 
-            Headers.Add(new HttpHeader(name, value));
+            ArrayList lis = new ArrayList();
+
+            if (_headers != null)
+            {
+                foreach (HttpHeader header in _headers)
+                    lis.Add(header);
+            }
+
+            lis.Add(new HttpHeader(name, value));
+
+            _headers = new HttpHeader[lis.Count];
+            for (int i = 0; i < _headers.Length; i++)
+                _headers[i] = lis[i] as HttpHeader;
         }
+
+        private string GetHeader(string name)
+        {
+            if(_headers == null)
+                return null;
+
+            for(int i=0; i<_headers.Length; i++)
+                if(_headers[i].Name == name)
+                    return _headers[i].Value;
+
+            return null;
+        }
+
+        #endregion
+
+        #region Cookie related methods
+
+        public void SetCookie(HttpCookie cookie)
+        {
+            if (_cookies == null)
+                _cookies = new ArrayList();
+
+            _cookies.Add(cookie);
+        }
+
+        #endregion
 
         public void Redirect(string uri)
         {
-            HttpStatus = HttpStatusCode.MovedPermanently;
+            _httpStatus = HttpStatusCode.MovedPermanently;
 
             Clear();
 
@@ -112,7 +169,7 @@ Date: Wed, 05 Mar 2008 11:14:43 GMT
             Clear();
 
             Write(@"<html><head><title>Error</title></head><body>
-<h2>" + (int)HttpStatus + " " + HttpStatusHelper.GetHttpStatusFromCode(HttpStatus) + @"</h2>
+<h2>" + (int)_httpStatus + " " + HttpStatusHelper.GetHttpStatusFromCode(_httpStatus) + @"</h2>
 " + (details != null ? details : "") + @"
 </body></html>");
         }
@@ -145,32 +202,30 @@ Date: Wed, 05 Mar 2008 11:14:43 GMT
 
         internal string GetResponseHeader()
         {
-            string response = HttpVersion + " " + (int)HttpStatus + " " + HttpStatusHelper.GetHttpStatusFromCode(HttpStatus) + "\r\nContent-Type: " + ContentType + "\r\n"
-                + "Expires: " + Expires + "\r\nServer: " + Server + "\r\n";
+            string response = _httpVersion + " " + (int)_httpStatus + " " + HttpStatusHelper.GetHttpStatusFromCode(_httpStatus) + "\r\n";
 
-            if (SetCookie != null)
+            AddHeader("Date", _date.ToString("r")); // dddd, dd MMM yyyy HH':'mm':'ss 'GMT'"));
+            AddHeader("Content-Length", (_content != null ? _content.Length.ToString() : "0"));
+
+            AddHeader("X-Powered-By", "MSchwarz HTTP Server");
+
+            if (_cookies != null)
             {
-                for (int i = 0; i < SetCookie.Count; i++)
+                for (int i = 0; i < _cookies.Count; i++)
                 {
-                    HttpCookie cookie = SetCookie[i] as HttpCookie;
+                    HttpCookie cookie = _cookies[i] as HttpCookie;
 
-                    if(cookie != null)
-                        response += "Set-Cookie: " + cookie.ToString() + "\r\n";
+                    if (cookie != null)
+                        AddHeader("Set-Cookie", cookie.ToString(), false);
                 }
             }
 
-            response += "Date: " + Date + "\r\n";
-            response += "Content-Length: " + _content.Length + "\r\n";
-            response += "Connection: " + Connection + "\r\n";
-
-            if (Headers != null)
+            
+            if (_headers != null && _headers.Length > 0)
             {
-                for (int i = 0; i < Headers.Count; i++)
+                for (int i = 0; i < _headers.Length; i++)
                 {
-                    HttpHeader header = Headers[i] as HttpHeader;
-
-                    if(header != null)
-                        response += header.Name + ": " + header.Value + "\r\n";
+                    response += _headers[i].Name + ": " + _headers[i].Value + "\r\n";
                 }
             }
 
@@ -186,7 +241,10 @@ Date: Wed, 05 Mar 2008 11:14:43 GMT
 
         internal byte[] GetResponseBytes()
         {
-            return _content.ToArray();   
+            if (_content == null)
+                return new byte[0];
+
+            return _content.ToArray();
         }
     }
 }
