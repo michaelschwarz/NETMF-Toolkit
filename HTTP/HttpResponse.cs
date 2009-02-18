@@ -204,7 +204,7 @@ namespace MSchwarz.Net.Web
         {
             string response = _httpVersion + " " + (int)_httpStatus + " " + HttpStatusHelper.GetHttpStatusFromCode(_httpStatus) + "\r\n";
 
-            AddHeader("Date", _date.ToString("r")); // dddd, dd MMM yyyy HH':'mm':'ss 'GMT'"));
+            AddHeader("Date", _date.ToString("dddd, dd MMM yyyy HH':'mm':'ss 'GMT'"));
             AddHeader("Content-Length", (_content != null ? _content.Length.ToString() : "0"));
 
             AddHeader("X-Powered-By", "MSchwarz HTTP Server");
