@@ -51,11 +51,12 @@ namespace MicroHTTPConsole
             }
             else
             {
-                switch (context.Request.RawUrl)
+                switch (context.Request.Path)
                 {
                     case "/":
+                        context.Response.ContentType = "text/html; charset=UTF-8";
                         context.Response.WriteLine(htmlhead);
-                        context.Response.WriteLine("<form action=\"/testpost\" method=\"POST\"><input type=\"text\" name=\"txtbox1\"/><input type=\"submit\" value=\"post\"/></form>");
+                        context.Response.WriteLine("<form action=\"/testget\" method=\"GET\"><input type=\"text\" name=\"txtbox1\"/><input type=\"submit\" value=\"post\"/></form>");
                         context.Response.WriteLine(htmlfoot);
                         break;
 
@@ -64,13 +65,25 @@ namespace MicroHTTPConsole
                         context.Response.Write(Resources.GetBytes(Resources.BinaryResources.ms_jpg));
                         break;
 
-                    case "/testpost":
+                    case "/testget":
+                        context.Response.ContentType = "text/html; charset=UTF-8";
                         context.Response.WriteLine(htmlhead);
-                        context.Response.WriteLine(new String(Encoding.UTF8.GetChars(context.Request.Body)));
+                        context.Response.Write(DateTime.Now + "<br/><b>RawUrl: " + context.Request.RawUrl + "</b><br/>");
+
+                        if (context.Request.Params != null && context.Request.Params.Length > 0)
+                        {
+                            foreach (HttpParameter p in context.Request.Params)
+                                context.Response.Write(p.Name + " = " + p.Value + "<br/>");
+                        }
+
+                        if (context.Request.Body != null)
+                            context.Response.WriteLine(new String(Encoding.UTF8.GetChars(context.Request.Body)));
+
                         context.Response.WriteLine(htmlfoot);
                         break;
 
                     case "/network":
+                        context.Response.ContentType = "text/html; charset=UTF-8";
                         context.Response.WriteLine(htmlhead);
                         foreach (NetworkInterface net in NetworkInterface.GetAllNetworkInterfaces())
                         {
@@ -102,5 +115,4 @@ namespace MicroHTTPConsole
 
         #endregion
     }
-
 }

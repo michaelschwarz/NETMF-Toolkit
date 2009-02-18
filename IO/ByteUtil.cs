@@ -33,29 +33,30 @@ namespace MSchwarz.IO
 {
     public class ByteUtil
     {
-//#if(MF)
-		public static string GetString(byte[] bytes)
-		{
-			return GetString(bytes, 0, bytes.Length);
-		}
+        private const string HEX_INDEX = "0123456789abcdef          ABCDEF";
+        private const string HEX_CHARS = "0123456789ABCDEF";
 
-		public static string GetString(byte[] bytes, int offset, int length)
-		{
-			string s = "";
+        public static string GetString(byte[] bytes)
+        {
+            return GetString(bytes, 0, bytes.Length);
+        }
 
-			for(int i=offset; i<length && i<bytes.Length; i++)
-				s += (char)bytes[i];
+        public static string GetString(byte[] bytes, int offset, int length)
+        {
+            string s = "";
 
-			return s;
-		}
-//#endif
+            for (int i = offset; i < length && i < bytes.Length; i++)
+                s += (char)bytes[i];
+
+            return s;
+        }
 
         public static string PrintByte(byte b)
         {
 #if(MF)
 			return b.ToString();
 #else
-			return b.ToString("X2");
+            return b.ToString("X2");
 #endif
         }
 
@@ -71,14 +72,34 @@ namespace MSchwarz.IO
 
         public static string ByteToHex(byte b)
         {
-            const string hex = "0123456789ABCDEF";
-            
             int lowByte = b & 0x0F;
             int highByte = (b & 0xF0) >> 4;
-            
+
             return new string(
-                new char[] { hex[highByte], hex[lowByte] }
+                new char[] { HEX_CHARS[highByte], HEX_CHARS[lowByte] }
             );
+        }
+
+        public static byte[] HexToByte(string s)
+        {
+            int l = s.Length / 2;
+            byte[] data = new byte[l];
+            int j = 0;
+
+            for (int i = 0; i < l; i++)
+            {
+                char c = s[j++];
+                int n, b;
+
+                n = HEX_INDEX.IndexOf(c);
+                b = (n & 0xf) << 4;
+                c = s[j++];
+                n = HEX_INDEX.IndexOf(c);
+                b += (n & 0xf);
+                data[i] = (byte)b;
+            }
+
+            return data;
         }
 
         public static string PrintBytes(byte[] bytes)
@@ -89,7 +110,7 @@ namespace MSchwarz.IO
 
             for (int i = 0; i < bytes.Length; i++)
             {
-				s += PrintByte(bytes[i]);
+                s += PrintByte(bytes[i]);
 
                 if (++c == 25)
                 {

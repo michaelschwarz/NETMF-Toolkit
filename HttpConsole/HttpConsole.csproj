@@ -48,6 +48,10 @@
       <Project>{71330466-A906-4DBB-8C6D-457210D53E47}</Project>
       <Name>HTTP</Name>
     </ProjectReference>
+    <ProjectReference Include="..\IO\IO.csproj">
+      <Project>{A3B69586-127A-4287-9EA1-E64E2C42131C}</Project>
+      <Name>IO</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="root\index.htm" />
