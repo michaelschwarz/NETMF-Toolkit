@@ -45,7 +45,7 @@ namespace MSchwarz.Net.Web
         private Socket _client;
         private IHttpHandler _handler;
         private HttpServer _server;
-        private int _bufferSize = 256;
+        private int _bufferSize = 4048;
         private DateTime _begin;
 
         private const long MAX_BYTE_PER_REQUEST = 100 * 1024;   // 100 KB
@@ -109,6 +109,9 @@ namespace MSchwarz.Net.Web
         {
             if (_client != null)
             {
+#if(!MF)
+                _client.Shutdown(SocketShutdown.Both);
+#endif
                 _client.Close();
                 _client = null;
             }
@@ -162,7 +165,9 @@ namespace MSchwarz.Net.Web
                             {
                                 avail = _client.Available;
                                 if (avail == 0)
+                                {
                                     break;
+                                }
 #if(MF)
                                 // set all bytes to null byte (strings are ending with null byte in MF)
                                 Array.Clear(buffer, 0, buffer.Length);
@@ -184,7 +189,22 @@ namespace MSchwarz.Net.Web
                                 {
                                     if (bytesRead + requestBody.Length > MAX_BYTE_PER_REQUEST)
                                     {
-                                        RaiseError(HttpStatusCode.RequestEntitiyTooLarge);
+                                        // TODO: how can I stop receiving bytes and send the error message directly
+                                        
+                                        while (_client.Poll(300, SelectMode.SelectRead))
+                                        {
+                                            avail = _client.Available;
+                                            if (avail == 0)
+                                                break;
+
+                                            _client.Receive(buffer, avail > buffer.Length ? buffer.Length : avail, SocketFlags.None);
+
+                                            Thread.Sleep(10);
+                                        }
+
+                                        
+
+                                        RaiseError(HttpStatusCode.RequestEntitiyTooLarge, "A maximum of " + MAX_BYTE_PER_REQUEST + " bytes allowed.");
                                         return;
                                     }
 
