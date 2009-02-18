@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using MSchwarz.Net.Web;
 using System.IO;
+using MSchwarz.IO;
 
 namespace HttpConsole
 {
@@ -10,7 +11,36 @@ namespace HttpConsole
 	{
 		static void Main(string[] args)
 		{
-            using (HttpServer http = new HttpServer(82, new MyHttpHandler(Path.Combine(Environment.CurrentDirectory, "..\\..\\root"))))
+            //Char[] chars;
+            //Byte[] bytes = Encoding.UTF8.GetBytes("Hello Worlö");
+
+            //Console.WriteLine(ByteUtil.PrintBytes(bytes));
+
+            //Decoder utf7Decoder = Encoding.UTF8.GetDecoder();
+
+            //int charCount = utf7Decoder.GetCharCount(bytes, 0, bytes.Length);
+            //chars = new Char[charCount];
+            //int charsDecodedCount = utf7Decoder.GetChars(bytes, 0, bytes.Length, chars, 0);
+
+            //Console.WriteLine(
+            //    "{0} characters used to decode bytes.", charsDecodedCount
+            //);
+
+            //Console.Write("Decoded chars: ");
+            //foreach (Char c in chars)
+            //{
+            //    Console.Write("{0}", c);
+            //}
+            //Console.WriteLine();
+
+
+            //Console.WriteLine(HttpServerUtility.UrlEncode("ö"));
+            //Console.WriteLine(HttpServerUtility.UrlDecode("%c3%b6"));
+
+            //return;
+
+
+            using (HttpServer http = new HttpServer(new MyHttpHandler(Path.Combine(Environment.CurrentDirectory, "..\\..\\root"))))
             {
                 http.OnLogAccess += new HttpServer.LogAccessHandler(http_OnLogAccess);
                 http.Start();
@@ -46,6 +76,11 @@ namespace HttpConsole
                 string filename = Path.Combine(_rootFolder, context.Request.RawUrl.Replace("/", "\\").Substring(1));
                 if (File.Exists(filename))
                 {
+                    if (Path.GetExtension(filename) == ".htm")
+                        context.Response.ContentType = "text/html; charset=UTF-8";
+                    else if (Path.GetExtension(filename) == ".jpg")
+                        context.Response.ContentType = "image/jpeg";
+
                     context.Response.Write(File.ReadAllBytes(filename));
                     return;
                 }
@@ -58,11 +93,12 @@ namespace HttpConsole
                     break;
 
                 case "/test2.aspx":
+                    context.Response.ContentType = "text/html; charset=UTF-8";
                     context.Response.Write("<html><head><title></title></head><body>" + Encoding.UTF8.GetString(context.Request.Body) + "</body></html>");
                     break;
 
                 case "/cookie":
-
+                    context.Response.ContentType = "text/html; charset=UTF-8";
                     context.Response.Write("<html><head><title></title></head><body>");
 
                     if (context.Request.Cookies.Length > 0)
@@ -79,18 +115,20 @@ namespace HttpConsole
                     break;
 
                 case "/test.aspx":
+                    context.Response.ContentType = "text/html; charset=UTF-8";
                     context.Response.Write("<html><head><title></title><script type=\"text/javascript\" src=\"/scripts/test.js\"></script></head><body><form action=\"/test2.aspx\" method=\"post\"><input type=\"text\" id=\"txtbox1\" name=\"txtbox1\"/><input type=\"submit\" value=\"Post\"/></form></body></html>");
                     break;
 
                 case "/scripts/test.js":
+                    context.Response.ContentType = "text/javascript";
                     context.Response.Write(@"
 var c = 0;
 function test() {
-    var x = new ActiveXObject(""Microsoft.XMLHTTP"");
+    var x = window.ActiveXObject ? new ActiveXObject(""Microsoft.XMLHTTP"") : new XMLHttpRequest();
     x.onreadystatechange = function() {
         if(x.readyState == 4) {
             document.getElementById('txtbox1').value = x.responseText;
-            if(++c < 100)
+            if(++c < 5)
                 setTimeout(test, 1);
         }
     }
@@ -106,6 +144,7 @@ setTimeout(test, 1);
                     break;
 
                 default:
+                    context.Response.ContentType = "text/html; charset=UTF-8";
                     context.Response.Write("<html><head><title></title></head><body>" + DateTime.Now + "<br/><b>RawUrl: " + context.Request.RawUrl + "</b><br/>");
 
                     if (context.Request.Params != null && context.Request.Params.Length > 0)
@@ -114,7 +153,13 @@ setTimeout(test, 1);
                             context.Response.Write(p.Name + " = " + p.Value + "<br/>");
                     }
 
-                    context.Response.Write("<br/><a href=\"index.htm\">Demo</a> <a href=\"test\">Redirect, AJAX and Form Test</a></body></html>");
+                    context.Response.Write(@"<br/><a href=""index.htm"">Demo (files on SD card)</a><br/>
+<a href=""test"">Redirect, AJAX and Form Test</a><br/>
+<a href=""cookie"">Cookie Test</a><br/><br/><br/>
+<hr size=1/>
+<b>Any feedback welcome: <a href=""http://weblogs.asp.net/mschwarz/contact.aspx"">contact</a>
+<a href=""http://michael-schwarz.blogspot.com/"">My Blog</a> <a href=""http://weblogs.asp.net/mschwarz/"">My Blog (en)</a>
+</body></html>");
                     break;
             }
         }
