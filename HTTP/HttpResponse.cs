@@ -168,6 +168,8 @@ namespace MSchwarz.Net.Web
         {
             Clear();
 
+            ContentType = "text/html; charset=UTF-8";
+
             Write(@"<html><head><title>Error</title></head><body>
 <h2>" + (int)_httpStatus + " " + HttpStatusHelper.GetHttpStatusFromCode(_httpStatus) + @"</h2>
 " + (details != null ? details : "") + @"

@@ -153,6 +153,13 @@ setTimeout(test, 1);
                             context.Response.Write(p.Name + " = " + p.Value + "<br/>");
                     }
 
+                    if (context.Request.Body != null)
+                    {
+                        context.Response.Write("<h3>Received Bytes:</h3>");
+                        context.Response.Write(context.Request.Body);
+                        context.Response.Write("<hr size=1/>");
+                    }
+
                     context.Response.Write(@"<br/><a href=""index.htm"">Demo (files on SD card)</a><br/>
 <a href=""test"">Redirect, AJAX and Form Test</a><br/>
 <a href=""cookie"">Cookie Test</a><br/><br/><br/>
