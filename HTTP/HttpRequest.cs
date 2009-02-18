@@ -216,6 +216,9 @@ namespace MSchwarz.Net.Web
 
             for (int i = 0; i < Headers.Length; i++)
             {
+                if (Headers[i] == null)
+                    continue;
+
                 if (Headers[i].Name == name)
                     return Headers[i].Value;
             }

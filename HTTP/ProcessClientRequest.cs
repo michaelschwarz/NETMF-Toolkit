@@ -286,7 +286,9 @@ namespace MSchwarz.Net.Web
                         {
                             string h = header[i +1].ToString();
                             int hsep = h.IndexOf(": ");
-                            request.Headers[i] = new HttpHeader(h.Substring(0, hsep), h.Substring(hsep + 2));
+
+                            if(hsep > 0)
+                                request.Headers[i] = new HttpHeader(h.Substring(0, hsep), h.Substring(hsep + 2));
                         }
 
                         if (requestBody != null && requestBody.Length > 0)
