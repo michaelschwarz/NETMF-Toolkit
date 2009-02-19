@@ -55,6 +55,7 @@ namespace HttpConsole
         static void http_OnLogAccess(LogAccess data)
         {
             Console.WriteLine(data.ClientIP + "\t" + data.RawUri + "\t" + data.Method + "\t" + data.Duration + " msec\t" + data.BytesReceived + " bytes\t" + data.BytesSent + " bytes");
+            Console.WriteLine(data.UserAgent);
         }
 	}
 
@@ -145,7 +146,10 @@ setTimeout(test, 1);
 
                 default:
                     context.Response.ContentType = "text/html; charset=UTF-8";
-                    context.Response.Write("<html><head><title></title></head><body>" + DateTime.Now + "<br/><b>RawUrl: " + context.Request.RawUrl + "</b><br/>");
+                    context.Response.Write("<html><head><title>Control My World - How to switch lights on and heating off?</title></head><body>");
+                    
+                    
+                    context.Response.Write("<h1>Welcome to my .NET Micro Framework web server</h1><p>This demo server is running on a Tahoe-II board using XBee modules to communicate with XBee sensors from Digi.</p><p>On my device the current date is " + DateTime.Now + "</b><p><b>RawUrl: " + context.Request.RawUrl + "</b><br/>" + context.Request.GetHeaderValue("User-Agent") + "</p>");
 
                     if (context.Request.Params != null && context.Request.Params.Length > 0)
                     {
@@ -160,12 +164,13 @@ setTimeout(test, 1);
                         context.Response.Write("<hr size=1/>");
                     }
 
-                    context.Response.Write(@"<br/><a href=""index.htm"">Demo (files on SD card)</a><br/>
+                    context.Response.Write(@"<p><a href=""index.htm"">Demo (files on SD card)</a><br/>
 <a href=""test"">Redirect, AJAX and Form Test</a><br/>
-<a href=""cookie"">Cookie Test</a><br/><br/><br/>
+<a href=""cookie"">Cookie Test</a><br/></p>
 <hr size=1/>
-<b>Any feedback welcome: <a href=""http://weblogs.asp.net/mschwarz/contact.aspx"">contact</a>
-<a href=""http://michael-schwarz.blogspot.com/"">My Blog</a> <a href=""http://weblogs.asp.net/mschwarz/"">My Blog (en)</a>
+<p>Any feedback welcome: <a href=""http://weblogs.asp.net/mschwarz/contact.aspx"">contact</a>
+<a href=""http://michael-schwarz.blogspot.com/"">My Blog</a> <a href=""http://weblogs.asp.net/mschwarz/"">My Blog (en)</a><br/>
+<a href=""http://www.control-my-world.com/"">Control My World</a></p>
 </body></html>");
                     break;
             }
