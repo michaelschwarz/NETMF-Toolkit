@@ -45,10 +45,10 @@ namespace MSchwarz.Net.Web
         private Socket _client;
         private IHttpHandler _handler;
         private HttpServer _server;
-        private int _bufferSize = 4048;
+        private int _bufferSize = 256;
         private DateTime _begin;
 
-        private const long MAX_BYTE_PER_REQUEST = 100 * 1024;   // 100 KB
+        private const long MAX_BYTE_PER_REQUEST = 10 * 1024;   // 100 KB
         
         public ProcessClientRequest(ref Socket Client, IHttpHandler Handler, HttpServer Server)
         {
@@ -94,8 +94,13 @@ namespace MSchwarz.Net.Web
 
         private void RaiseError(HttpStatusCode httpStatusCode, string details)
         {
+#if(!MF)
+            Console.WriteLine("Error");
+#endif
+
             HttpResponse res = new HttpResponse();
 
+            res.Connection = "Close";
             res.HttpStatus = httpStatusCode;
             res.RaiseError(details);
 
@@ -125,7 +130,7 @@ namespace MSchwarz.Net.Web
                 {
                     try
                     {
-                        _begin = DateTime.Now;
+                        //_begin = DateTime.Now;
 
                         string requestHeader = "";
                         long bytesReceived = 0;
@@ -137,7 +142,7 @@ namespace MSchwarz.Net.Web
                         #region Wait for first byte
 
                         // wait maxWait unil first byte arrives
-                        DateTime maxWait = _begin.AddMilliseconds(3000);
+                        DateTime maxWait = DateTime.Now.AddMilliseconds(2000);
                         do
                         {
                             try
@@ -153,15 +158,17 @@ namespace MSchwarz.Net.Web
 
                         #endregion
 
-
                         #region Reading http request header and body
+
+                        _begin = DateTime.Now;
 
                         ArrayList header = new ArrayList();
                         bool isHeader = true;
 
                         try
                         {
-                            while (_client.Poll(300, SelectMode.SelectRead))
+                            label1:
+                            while (_client.Poll(800, SelectMode.SelectRead))
                             {
                                 avail = _client.Available;
                                 if (avail == 0)
@@ -174,11 +181,9 @@ namespace MSchwarz.Net.Web
 #endif
 
                                 int bytesRead = _client.Receive(buffer, avail > buffer.Length ? buffer.Length : avail, SocketFlags.None);
-
                                 bytesReceived += bytesRead;
 
                                 int c = requestHeader.Length;
-
 #if(MF)
                                 requestHeader += new string(Encoding.UTF8.GetChars(buffer));
 #else
@@ -187,66 +192,72 @@ namespace MSchwarz.Net.Web
 
                                 if (!isHeader)
                                 {
-                                    if (bytesRead + requestBody.Length > MAX_BYTE_PER_REQUEST)
-                                    {
+                                    //if (bytesRead + requestBody.Length > 700) // MAX_BYTE_PER_REQUEST)
+                                    //{
                                         // TODO: how can I stop receiving bytes and send the error message directly
-                                        
-                                        while (_client.Poll(300, SelectMode.SelectRead))
-                                        {
-                                            avail = _client.Available;
-                                            if (avail == 0)
-                                                break;
 
-                                            _client.Receive(buffer, avail > buffer.Length ? buffer.Length : avail, SocketFlags.None);
+                                        //while (_client.Poll(500, SelectMode.SelectRead))
+                                        //{
+                                        //    avail = _client.Available;
+                                        //    if (avail == 0)
+                                        //        break;
 
-                                            Thread.Sleep(10);
-                                        }
+                                        //    _client.Receive(buffer, avail > buffer.Length ? buffer.Length : avail, SocketFlags.None);
+                                        //}
 
-                                        
-
-                                        RaiseError(HttpStatusCode.RequestEntitiyTooLarge, "A maximum of " + MAX_BYTE_PER_REQUEST + " bytes allowed.");
-                                        return;
-                                    }
+                                    //    RaiseError(HttpStatusCode.RequestEntitiyTooLarge, "A maximum of " + MAX_BYTE_PER_REQUEST + " bytes allowed.");
+                                    //    return;
+                                    //}
 
                                     requestBody.Write(buffer, 0, bytesRead);
-                                    continue;
                                 }
-
-                                int lineBegin = 0;
-                                int lineEnd = 0;
-
-                                while (isHeader)
+                                else
                                 {
-                                    lineEnd = requestHeader.IndexOf("\r\n", lineBegin);
+                                    int lineBegin = 0;
+                                    int lineEnd = 0;
 
-                                    if (lineEnd < 0)
+                                    while (isHeader)
                                     {
-                                        if (lineBegin + 2 < requestHeader.Length)
-                                            requestHeader = requestHeader.Substring(lineBegin);
-                                        
-                                        break;
+                                        lineEnd = requestHeader.IndexOf("\r\n", lineBegin);
+
+                                        if (lineEnd < 0)
+                                        {
+                                            if (lineBegin + 2 < requestHeader.Length)
+                                                requestHeader = requestHeader.Substring(lineBegin);
+
+                                            break;
+                                        }
+
+                                        if (lineEnd - lineBegin > 0)
+                                        {
+                                            header.Add(requestHeader.Substring(lineBegin, lineEnd - lineBegin));
+                                        }
+                                        else
+                                        {
+                                            isHeader = false;
+
+                                            lineBegin += 2;
+
+                                            requestBody = new MemoryStream();
+                                            requestBody.Write(buffer, lineBegin - c, bytesRead - lineBegin + c);
+
+                                            break;
+                                        }
+
+                                        lineBegin = lineEnd + 2;
                                     }
-
-                                    if (lineEnd - lineBegin > 0)
-                                        header.Add(requestHeader.Substring(lineBegin, lineEnd - lineBegin));
-                                    else
-                                    {
-                                        isHeader = false;
-
-                                        lineBegin += 2;
-
-                                        requestBody = new MemoryStream();
-                                        requestBody.Write(buffer, lineBegin -c, bytesRead - lineBegin +c );
-
-                                        break;
-                                    }
-
-                                    lineBegin = lineEnd + 2;
                                 }
                             }
 
+
+                            //if (requestBody != null && requestBody.Length != 1730921)
+                            //    goto label1;
+
+
                             if (bytesReceived == 0)
+                            {
                                 break;
+                            }
                         }
                         catch
                         {
@@ -254,6 +265,8 @@ namespace MSchwarz.Net.Web
                         }
 
                         #endregion
+
+
 
                         if (header.Count == 0)
                         {
@@ -294,6 +307,7 @@ namespace MSchwarz.Net.Web
                             return;
                         }
 
+
                         HttpRequest request = new HttpRequest();
                         request.HttpMethod = httpRequest[0];
                         request.RawUrl = httpRequest[1];
@@ -309,6 +323,16 @@ namespace MSchwarz.Net.Web
 
                             if(hsep > 0)
                                 request.Headers[i] = new HttpHeader(h.Substring(0, hsep), h.Substring(hsep + 2));
+                        }
+
+                        if (request.HttpMethod == "POST" && request.GetHeaderValue("Content-Length") != null)
+                        {
+#if(!MF)
+                            if (requestBody == null || requestBody.Length != int.Parse(request.GetHeaderValue("Content-Length")))
+                            {
+                                //Console.WriteLine("not recevied all bytes " + (requestBody != null ? requestBody.Length + " of " + request.GetHeaderValue("Content-Length") : ""));
+                            }
+#endif
                         }
 
                         if (requestBody != null && requestBody.Length > 0)

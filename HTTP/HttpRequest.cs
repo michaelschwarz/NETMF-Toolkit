@@ -95,7 +95,7 @@ namespace MSchwarz.Net.Web
         {
             get
             {
-                return this["User-Agent"];
+                return GetHeaderValue("User-Agent");
             }
         }
 
@@ -103,7 +103,7 @@ namespace MSchwarz.Net.Web
         {
             get
             {
-                string accept = this["Accept"];
+                string accept = GetHeaderValue("Accept");
 
                 if (accept == null)
                     return null;
@@ -123,7 +123,7 @@ namespace MSchwarz.Net.Web
         {
             get
             {
-                return int.Parse(this["Content-Length"]);
+                return int.Parse(GetHeaderValue("Content-Length"));
             }
         }
 

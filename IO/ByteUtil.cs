@@ -112,7 +112,7 @@ namespace MSchwarz.IO
             {
                 s += PrintByte(bytes[i]);
 
-                if (++c == 25)
+                if (++c == 24)
                 {
                     s += "\r\n";
                     c = 0;
