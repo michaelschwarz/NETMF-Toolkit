@@ -382,6 +382,7 @@ namespace MSchwarz.Net.Web
                         log.Method = request.HttpMethod;
                         log.RawUri = request.RawUrl;
                         log.UserAgent = request.UserAgent;
+                        log.HttpReferer = request.GetHeaderValue("Referer");
 
 
                         HttpContext ctx = new HttpContext();

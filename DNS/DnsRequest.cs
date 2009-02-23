@@ -71,6 +71,16 @@ namespace MSchwarz.Net.Dns
         {
         }
 
+        public DnsRequest(Question question)
+            : this()
+        {
+#if(MF)
+            _questions = new Question[] { question };
+#else
+            _questions.Add(question);
+#endif
+        }
+
         public byte[] GetMessage()
         {
             DnsWriter bw = new DnsWriter();

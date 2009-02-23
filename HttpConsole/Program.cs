@@ -4,6 +4,7 @@ using System.Text;
 using MSchwarz.Net.Web;
 using System.IO;
 using MSchwarz.IO;
+using MSchwarz.Net.Dns;
 
 namespace HttpConsole
 {
@@ -11,33 +12,24 @@ namespace HttpConsole
 	{
 		static void Main(string[] args)
 		{
-            //Char[] chars;
-            //Byte[] bytes = Encoding.UTF8.GetBytes("Hello Worlö");
 
-            //Console.WriteLine(ByteUtil.PrintBytes(bytes));
+            DnsResolver dns = new DnsResolver();
+            dns.LoadNetworkConfiguration();
 
-            //Decoder utf7Decoder = Encoding.UTF8.GetDecoder();
-
-            //int charCount = utf7Decoder.GetCharCount(bytes, 0, bytes.Length);
-            //chars = new Char[charCount];
-            //int charsDecodedCount = utf7Decoder.GetChars(bytes, 0, bytes.Length, chars, 0);
-
-            //Console.WriteLine(
-            //    "{0} characters used to decode bytes.", charsDecodedCount
-            //);
-
-            //Console.Write("Decoded chars: ");
-            //foreach (Char c in chars)
-            //{
-            //    Console.Write("{0}", c);
-            //}
-            //Console.WriteLine();
+            DnsResponse res = dns.Resolve(new DnsRequest(new Question("microsoft.com", DnsType.MX, DnsClass.IN)));
 
 
-            //Console.WriteLine(HttpServerUtility.UrlEncode("ö"));
-            //Console.WriteLine(HttpServerUtility.UrlDecode("%c3%b6"));
 
-            //return;
+            foreach (Answer a in res.Answers)
+            {
+                MXRecord mx = a.Record as MXRecord;
+
+                if (mx != null)
+                    Console.WriteLine(mx.Preference + " " + mx.DomainName);
+            }
+            return;
+
+
 
 
             using (HttpServer http = new HttpServer(new MyHttpHandler(Path.Combine(Environment.CurrentDirectory, "..\\..\\root"))))
@@ -56,6 +48,26 @@ namespace HttpConsole
         {
             Console.WriteLine(data.ClientIP + "\t" + data.RawUri + "\t" + data.Method + "\t" + data.Duration + " msec\t" + data.BytesReceived + " bytes\t" + data.BytesSent + " bytes");
             Console.WriteLine(data.UserAgent);
+            if(data.HttpReferer != null) Console.WriteLine(data.HttpReferer);
+
+            try
+            {
+                DnsResolver dns = new DnsResolver();
+                dns.LoadNetworkConfiguration();
+
+                DnsResponse res = dns.Resolve(new DnsRequest(new Question(data.ClientIP.ToString(), DnsType.PTR, DnsClass.IN)));
+
+               
+
+                if (res.Answers.Count > 0)
+                    Console.WriteLine(res.Answers[0].ToString());
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            Console.WriteLine("------------------------------------------------------------");
         }
 	}
 

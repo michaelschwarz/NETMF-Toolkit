@@ -89,9 +89,6 @@ namespace MSchwarz.Net.Dns
 
         public static bool operator == (MXRecord record1, MXRecord record2)
         {
-            if (record1 == null)
-                throw new ArgumentNullException("record1");
-
             return record1.Equals(record2);
         }
 

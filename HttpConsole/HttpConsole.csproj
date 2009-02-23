@@ -44,6 +44,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\DNS\DNS.csproj">
+      <Project>{43C6F30A-3EFA-45E1-ACF8-3D42C74BDC72}</Project>
+      <Name>DNS</Name>
+    </ProjectReference>
     <ProjectReference Include="..\HTTP\HTTP.csproj">
       <Project>{71330466-A906-4DBB-8C6D-457210D53E47}</Project>
       <Name>HTTP</Name>
