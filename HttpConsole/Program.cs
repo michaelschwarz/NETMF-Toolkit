@@ -33,22 +33,22 @@ namespace HttpConsole
             Console.WriteLine(data.UserAgent);
             if(data.HttpReferer != null) Console.WriteLine(data.HttpReferer);
 
-            try
-            {
-                DnsResolver dns = new DnsResolver();
-                dns.LoadNetworkConfiguration();
+            //try
+            //{
+            //    DnsResolver dns = new DnsResolver();
+            //    dns.LoadNetworkConfiguration();
 
-                DnsResponse res = dns.Resolve(new DnsRequest(new Question(data.ClientIP.ToString(), DnsType.PTR, DnsClass.IN)));
+            //    DnsResponse res = dns.Resolve(new DnsRequest(new Question(data.ClientIP.ToString(), DnsType.PTR, DnsClass.IN)));
 
                
 
-                if (res.Answers.Count > 0)
-                    Console.WriteLine(res.Answers[0].ToString());
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
+            //    if (res.Answers.Count > 0)
+            //        Console.WriteLine(res.Answers[0].ToString());
+            //}
+            //catch (Exception ex)
+            //{
+            //    Console.WriteLine(ex.Message);
+            //}
 
             
         }
@@ -60,7 +60,8 @@ namespace HttpConsole
 
         public MyHttpHandler(string rootFolder)
         {
-            _rootFolder = rootFolder;
+
+            _rootFolder = Path.GetFullPath(rootFolder);
         }
 
         #region IHttpHandler Members
@@ -69,16 +70,19 @@ namespace HttpConsole
         {
             if (!String.IsNullOrEmpty(_rootFolder))
             {
-                string filename = Path.Combine(_rootFolder, context.Request.RawUrl.Replace("/", "\\").Substring(1));
-                if (File.Exists(filename))
+                string filename = Path.Combine(_rootFolder, context.Request.Path.Replace("/", "\\").Substring(1));
+                if (filename.IndexOf("..") < 0 && filename.ToLower().StartsWith(_rootFolder.ToLower()))   // ensure that the files are below _rootFolder
                 {
-                    if (Path.GetExtension(filename) == ".htm")
-                        context.Response.ContentType = "text/html; charset=UTF-8";
-                    else if (Path.GetExtension(filename) == ".jpg")
-                        context.Response.ContentType = "image/jpeg";
+                    if (File.Exists(filename))
+                    {
+                        if (Path.GetExtension(filename) == ".htm")
+                            context.Response.ContentType = "text/html; charset=UTF-8";
+                        else if (Path.GetExtension(filename) == ".jpg")
+                            context.Response.ContentType = "image/jpeg";
 
-                    context.Response.Write(File.ReadAllBytes(filename));
-                    return;
+                        context.Response.Write(File.ReadAllBytes(filename));
+                        return;
+                    }
                 }
             }
 
@@ -136,7 +140,11 @@ setTimeout(test, 1);
                     break;
 
                 case "/test.ajax":
-                    context.Response.Write("ajax = " + Encoding.UTF8.GetString(context.Request.Body));
+                    if(context.Request.Body != null && context.Request.Body.Length > 0)
+                        context.Response.Write("ajax = " + Encoding.UTF8.GetString(context.Request.Body));
+                    else
+                        context.Response.Write("ajax = could not read request");
+                        
                     break;
 
                 default:
@@ -148,20 +156,47 @@ setTimeout(test, 1);
 
                     if (context.Request.Params != null && context.Request.Params.Length > 0)
                     {
+                        context.Response.Write("<p style=\"color:blue\">");
+
                         foreach (HttpParameter p in context.Request.Params)
                             context.Response.Write(p.Name + " = " + p.Value + "<br/>");
+
+                        context.Response.Write("</p>");
                     }
 
                     if (context.Request.Body != null)
                     {
                         context.Response.Write("<h3>Received Bytes:</h3>");
-                        context.Response.Write(context.Request.Body);
+                        context.Response.Write("<p>" + context.Request.Body.Length + " bytes</p>");
                         context.Response.Write("<hr size=1/>");
                     }
 
-                    context.Response.Write(@"<p><a href=""index.htm"">Demo (files on SD card)</a><br/>
-<a href=""test"">Redirect, AJAX and Form Test</a><br/>
-<a href=""cookie"">Cookie Test</a><br/></p>
+                    if (context.Request.UserHostAddress != null)
+                    {
+                        //context.Response.Write("<h3>Your IP: " + context.Request.UserHostAddress + "</h3>");
+
+                        //DnsResolver dns = new DnsResolver();
+                        //dns.LoadNetworkConfiguration();
+
+                        //try
+                        //{
+                        //    DnsResponse res = dns.Resolve(new DnsRequest(new Question(context.Request.UserHostAddress, DnsType.PTR, DnsClass.IN)));
+                        //    if (res != null)
+                        //    {
+                        //        foreach (Answer a in res.Answers)
+                        //            context.Response.Write("<p>" + a.Record.ToString() + " (using <a href=\"http://netmicroframework.blogspot.com/2009/02/3-examples-using-mschwarznetdns.html\">MSchwarz.Net.Dns</a>)</p>");
+                        //    }
+                        //}
+                        //catch (Exception)
+                        //{
+                        //}
+                    }
+
+                    context.Response.Write(@"<p><a href=""index.htm"">Demo HTML and JPEG (files on SD card)</a><br/>
+<a href=""test.txt"">Demo Plain Text (file on SD card)</a><br/>
+<a href=""test"">Redirect Test</a> calls /test and gets redirected to /test.aspx<br/>
+<a href=""test.aspx"">AJAX Test</a> requests 5 times a value from webserver<br/>
+<a href=""cookie"">Cookie Test</a> sets and displays a cookie<br/></p>
 <hr size=1/>
 <p>Any feedback welcome: <a href=""http://weblogs.asp.net/mschwarz/contact.aspx"">contact</a>
 <a href=""http://michael-schwarz.blogspot.com/"">My Blog</a> <a href=""http://weblogs.asp.net/mschwarz/"">My Blog (en)</a><br/>
