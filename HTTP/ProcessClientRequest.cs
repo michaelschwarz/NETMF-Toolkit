@@ -48,7 +48,7 @@ namespace MSchwarz.Net.Web
         private int _bufferSize = 256;
         private DateTime _begin;
 
-        private const long MAX_BYTE_PER_REQUEST = 1024;
+        private const long MAX_BYTE_PER_REQUEST = 100 * 1024;
         
         public ProcessClientRequest(ref Socket Client, IHttpHandler Handler, HttpServer Server)
         {
@@ -98,10 +98,6 @@ namespace MSchwarz.Net.Web
 
         private void RaiseError(HttpStatusCode httpStatusCode, string details)
         {
-#if(!MF)
-            Console.WriteLine("Error " + httpStatusCode.ToString());
-#endif
-
             HttpResponse res = new HttpResponse();
 
             res.Connection = "Close";
@@ -151,6 +147,7 @@ namespace MSchwarz.Net.Web
 
                         #region Wait for first byte
 
+
                         // wait maxWait unil first byte arrives
                         DateTime maxWait = DateTime.Now.AddMilliseconds(2000);
                         do
@@ -158,6 +155,9 @@ namespace MSchwarz.Net.Web
                             try
                             {
                                 avail = _client.Available;
+
+                                //if (avail == 0)
+                                //    Thread.Sleep(10);
                             }
                             catch
                             {
@@ -168,23 +168,25 @@ namespace MSchwarz.Net.Web
 
                         #endregion
 
+                        if (avail == 0)
+                            break;
+
                         #region Reading http request header and body
 
                         _begin = DateTime.Now;
 
-                        
-
                         try
                         {
-                            while (_client.Poll(800, SelectMode.SelectRead)
+                            while (_client.Poll(500, SelectMode.SelectRead)
                                 || (contentLength > 0 && requestBody != null && contentLength != requestBody.Length)
                                 )
                             {
                                 avail = _client.Available;
+
                                 if (avail == 0)
                                 {
-                                    Thread.Sleep(100);
-                                    break;
+                                    Thread.Sleep(10);
+                                    continue;
                                 }
 #if(MF)
                                 // set all bytes to null byte (strings are ending with null byte in MF)
@@ -200,8 +202,6 @@ namespace MSchwarz.Net.Web
 #else
                                 requestHeader += new string(Encoding.UTF8.GetChars(buffer, 0, bytesRead));
 #endif
-
-
 
                                 if (!isHeader)
                                 {
@@ -281,6 +281,7 @@ namespace MSchwarz.Net.Web
                                             request.RawUrl = httpRequest[1];
                                             request.Path = request.RawUrl;
                                             request.HttpVersion = httpRequest[2];
+                                            request.UserHostAddress = (_client.RemoteEndPoint as IPEndPoint).Address.ToString();
 
 
                                             request.Headers = new HttpHeader[header.Count - 1];
@@ -317,23 +318,20 @@ namespace MSchwarz.Net.Web
                             bool entityToLarge = false;
                             while (contentLength > 0 && bytesReceived < contentLength)
                             {
-#if!(MF)
-                                Console.Write(".");
-#endif
-                                if (!_client.Poll(500, SelectMode.SelectRead))
+                                if (!_client.Poll(300, SelectMode.SelectRead))
                                     continue;
 
                                 avail = _client.Available;
                                 if (avail == 0)
+                                {
+                                    Thread.Sleep(10);
                                     continue;
+                                }
 #if(MF)
                                 // set all bytes to null byte (strings are ending with null byte in MF)
                                 Array.Clear(buffer, 0, buffer.Length);
 #endif
 
-#if!(MF)
-                                Console.WriteLine("Reading " + avail + " (expected: " + contentLength + ", total: " + bytesReceived + ") bytes...");
-#endif
                                 int bytesRead = _client.Receive(buffer, avail > buffer.Length ? buffer.Length : avail, SocketFlags.None);
                                 bytesReceived += bytesRead;
 
@@ -365,16 +363,22 @@ namespace MSchwarz.Net.Web
                         #endregion
 
 
-
+                        if (request == null)
+                        {
+                             break;
+                        }
                         
 
-                        if (request.HttpMethod == "POST" && request.GetHeaderValue("Content-Length") != null)
+
+                        if (request.HttpMethod == "POST" && 
+
+
+                            request.GetHeaderValue("Content-Length") != null)
                         {
-                            if (requestBody == null || requestBody.Length != int.Parse(request.GetHeaderValue("Content-Length")))
+                            if (requestBody == null || 
+                                requestBody.Length != request.ContentLength)
                             {
-#if(!MF)
-                                Console.WriteLine("not recevied all bytes " + (requestBody != null ? requestBody.Length + " of " + request.GetHeaderValue("Content-Length") : ""));
-#endif
+                                // TODO: maybe throw an exception?
                             }
                         }
 
@@ -384,9 +388,9 @@ namespace MSchwarz.Net.Web
 
                             // TODO: parse MIME content
                         }
-                        
-                        // parse request parameters
 
+
+                        // parse request parameters
                         if(httpRequest[1].IndexOf("?") >= 0)
                         {
                             string queryString = httpRequest[1].Substring(httpRequest[1].IndexOf("?") + 1);
@@ -436,6 +440,7 @@ namespace MSchwarz.Net.Web
 
                         _handler.ProcessRequest(ctx);
 
+
                         if (ctx != null && ctx.Response != null)
                         {
                             long bytesSent = Send(ctx.Response.GetResponseHeaderBytes()) + Send(ctx.Response.GetResponseBytes());
@@ -458,7 +463,11 @@ namespace MSchwarz.Net.Web
                     }
                     catch(Exception ex)
                     {
-                        RaiseError(HttpStatusCode.InternalServerError, ex.Message);
+#if(!MF && DEBUG)
+                        Console.WriteLine("ERROR: " + ex.Message);
+                        Console.WriteLine("StackTrace: " + ex.StackTrace);
+#endif
+                        RaiseError(HttpStatusCode.InternalServerError);
                         return;
                     }
                     break;

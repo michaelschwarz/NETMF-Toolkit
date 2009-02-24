@@ -147,10 +147,6 @@ namespace MSchwarz.Net.Web
             {
                 Socket client = _listenSocket.Accept();
 
-#if(!MF && DEBUG)
-                Console.WriteLine("New client accepted: " + client.RemoteEndPoint.ToString());
-#endif
-
                 CreateWorkerProcess(ref client);
 
                 Thread.Sleep(10);
@@ -201,7 +197,7 @@ namespace MSchwarz.Net.Web
                         {
                             if (((Thread)_workerThreads[i]).ThreadState == ThreadState.Stopped)
                             {
-                                _workerThreads.RemoveAt(i);
+                                 _workerThreads.RemoveAt(i);
                             }
                         }
                     }
