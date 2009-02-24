@@ -13,25 +13,6 @@ namespace HttpConsole
 		static void Main(string[] args)
 		{
 
-            DnsResolver dns = new DnsResolver();
-            dns.LoadNetworkConfiguration();
-
-            DnsResponse res = dns.Resolve(new DnsRequest(new Question("microsoft.com", DnsType.MX, DnsClass.IN)));
-
-
-
-            foreach (Answer a in res.Answers)
-            {
-                MXRecord mx = a.Record as MXRecord;
-
-                if (mx != null)
-                    Console.WriteLine(mx.Preference + " " + mx.DomainName);
-            }
-            return;
-
-
-
-
             using (HttpServer http = new HttpServer(new MyHttpHandler(Path.Combine(Environment.CurrentDirectory, "..\\..\\root"))))
             {
                 http.OnLogAccess += new HttpServer.LogAccessHandler(http_OnLogAccess);
@@ -46,6 +27,8 @@ namespace HttpConsole
 
         static void http_OnLogAccess(LogAccess data)
         {
+            Console.WriteLine("------------------------------------------------------------");
+
             Console.WriteLine(data.ClientIP + "\t" + data.RawUri + "\t" + data.Method + "\t" + data.Duration + " msec\t" + data.BytesReceived + " bytes\t" + data.BytesSent + " bytes");
             Console.WriteLine(data.UserAgent);
             if(data.HttpReferer != null) Console.WriteLine(data.HttpReferer);
@@ -67,7 +50,7 @@ namespace HttpConsole
                 Console.WriteLine(ex.Message);
             }
 
-            Console.WriteLine("------------------------------------------------------------");
+            
         }
 	}
 

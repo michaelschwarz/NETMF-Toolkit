@@ -48,13 +48,17 @@ namespace MSchwarz.Net.Web
         private int _bufferSize = 256;
         private DateTime _begin;
 
-        private const long MAX_BYTE_PER_REQUEST = 10 * 1024;   // 100 KB
+        private const long MAX_BYTE_PER_REQUEST = 1024;
         
         public ProcessClientRequest(ref Socket Client, IHttpHandler Handler, HttpServer Server)
         {
             _client = Client;
             _handler = Handler;
             _server = Server;
+
+#if(!MF)
+            _bufferSize = 2048;
+#endif
         }
 
 		public int Send(Byte[] data)
@@ -95,7 +99,7 @@ namespace MSchwarz.Net.Web
         private void RaiseError(HttpStatusCode httpStatusCode, string details)
         {
 #if(!MF)
-            Console.WriteLine("Error");
+            Console.WriteLine("Error " + httpStatusCode.ToString());
 #endif
 
             HttpResponse res = new HttpResponse();
@@ -134,7 +138,13 @@ namespace MSchwarz.Net.Web
 
                         string requestHeader = "";
                         long bytesReceived = 0;
+
+                        string[] httpRequest = null;
+                        HttpRequest request = null;
+                        ArrayList header = new ArrayList();
+                        bool isHeader = true;
                         MemoryStream requestBody = null;
+                        long contentLength = 0;
 
                         int avail = 0;
                         byte[] buffer = new byte[_bufferSize];
@@ -162,17 +172,18 @@ namespace MSchwarz.Net.Web
 
                         _begin = DateTime.Now;
 
-                        ArrayList header = new ArrayList();
-                        bool isHeader = true;
+                        
 
                         try
                         {
-                            label1:
-                            while (_client.Poll(800, SelectMode.SelectRead))
+                            while (_client.Poll(800, SelectMode.SelectRead)
+                                || (contentLength > 0 && requestBody != null && contentLength != requestBody.Length)
+                                )
                             {
                                 avail = _client.Available;
                                 if (avail == 0)
                                 {
+                                    Thread.Sleep(100);
                                     break;
                                 }
 #if(MF)
@@ -190,25 +201,10 @@ namespace MSchwarz.Net.Web
                                 requestHeader += new string(Encoding.UTF8.GetChars(buffer, 0, bytesRead));
 #endif
 
+
+
                                 if (!isHeader)
                                 {
-                                    //if (bytesRead + requestBody.Length > 700) // MAX_BYTE_PER_REQUEST)
-                                    //{
-                                        // TODO: how can I stop receiving bytes and send the error message directly
-
-                                        //while (_client.Poll(500, SelectMode.SelectRead))
-                                        //{
-                                        //    avail = _client.Available;
-                                        //    if (avail == 0)
-                                        //        break;
-
-                                        //    _client.Receive(buffer, avail > buffer.Length ? buffer.Length : avail, SocketFlags.None);
-                                        //}
-
-                                    //    RaiseError(HttpStatusCode.RequestEntitiyTooLarge, "A maximum of " + MAX_BYTE_PER_REQUEST + " bytes allowed.");
-                                    //    return;
-                                    //}
-
                                     requestBody.Write(buffer, 0, bytesRead);
                                 }
                                 else
@@ -238,6 +234,74 @@ namespace MSchwarz.Net.Web
 
                                             lineBegin += 2;
 
+                                            #region Analyzing http header
+
+                                            if (header.Count == 0)
+                                            {
+                                                RaiseError(HttpStatusCode.BadRequest, "header.Count == 0");
+                                                return;
+                                            }
+
+                                            // GET /index.htm HTTP/1.1
+                                            httpRequest = header[0].ToString().Split(' ');
+
+                                            if (httpRequest.Length != 3)
+                                            {
+                                                RaiseError(HttpStatusCode.BadRequest, "httpRequest.Length != 3 => " + header[0].ToString());
+                                                return;
+                                            }
+
+                                            if (httpRequest[0] != "GET" && httpRequest[0] != "POST")
+                                            {
+                                                RaiseError(HttpStatusCode.MethodNotAllowed, "http method = " + header[0].ToString());
+                                                return;
+                                            }
+
+                                            if (httpRequest[0] == "POST")
+                                            {
+                                            }
+                                            else
+                                            {
+                                                //if (requestBody != null && requestBody.Length > 0)
+                                                //{
+                                                //    RaiseError(HttpStatusCode.BadRequest);
+                                                //    return;
+                                                //}
+                                            }
+
+                                            if (httpRequest[2] != "HTTP/1.1")        // HTTP/1.0 is not used any more
+                                            {
+                                                RaiseError(HttpStatusCode.HttpVersionNotSupported);
+                                                return;
+                                            }
+
+
+                                            request = new HttpRequest();
+                                            request.HttpMethod = httpRequest[0];
+                                            request.RawUrl = httpRequest[1];
+                                            request.Path = request.RawUrl;
+                                            request.HttpVersion = httpRequest[2];
+
+
+                                            request.Headers = new HttpHeader[header.Count - 1];
+                                            for (int i = 0; i < header.Count - 1; i++)
+                                            {
+                                                string h = header[i + 1].ToString();
+                                                int hsep = h.IndexOf(": ");
+
+                                                if (hsep > 0)
+                                                {
+                                                    if (h.Substring(0, hsep) == "Content-Length")
+                                                    {
+                                                        contentLength = int.Parse(h.Substring(hsep + 2));
+                                                    }
+
+                                                    request.Headers[i] = new HttpHeader(h.Substring(0, hsep), h.Substring(hsep + 2));
+                                                }
+                                            }
+
+                                            #endregion
+
                                             requestBody = new MemoryStream();
                                             requestBody.Write(buffer, lineBegin - c, bytesRead - lineBegin + c);
 
@@ -249,9 +313,43 @@ namespace MSchwarz.Net.Web
                                 }
                             }
 
+                            #region Handling POST bytes
+                            bool entityToLarge = false;
+                            while (contentLength > 0 && bytesReceived < contentLength)
+                            {
+#if!(MF)
+                                Console.Write(".");
+#endif
+                                if (!_client.Poll(500, SelectMode.SelectRead))
+                                    continue;
 
-                            //if (requestBody != null && requestBody.Length != 1730921)
-                            //    goto label1;
+                                avail = _client.Available;
+                                if (avail == 0)
+                                    continue;
+#if(MF)
+                                // set all bytes to null byte (strings are ending with null byte in MF)
+                                Array.Clear(buffer, 0, buffer.Length);
+#endif
+
+#if!(MF)
+                                Console.WriteLine("Reading " + avail + " (expected: " + contentLength + ", total: " + bytesReceived + ") bytes...");
+#endif
+                                int bytesRead = _client.Receive(buffer, avail > buffer.Length ? buffer.Length : avail, SocketFlags.None);
+                                bytesReceived += bytesRead;
+
+                                if (bytesRead + requestBody.Length <= MAX_BYTE_PER_REQUEST)
+                                    requestBody.Write(buffer, 0, bytesRead);
+                                else
+                                    entityToLarge = true;
+                            }
+
+                            if (entityToLarge)
+                            {
+                                RaiseError(HttpStatusCode.RequestEntitiyTooLarge);
+                                break;
+                            }
+
+                            #endregion
 
 
                             if (bytesReceived == 0)
@@ -268,71 +366,16 @@ namespace MSchwarz.Net.Web
 
 
 
-                        if (header.Count == 0)
-                        {
-                            RaiseError(HttpStatusCode.BadRequest);
-                            return;
-                        }
-
-                        // GET /index.htm HTTP/1.1
-                        string[] httpRequest = header[0].ToString().Split(' ');
                         
-                        if (httpRequest.Length != 3)
-                        {
-                            RaiseError(HttpStatusCode.BadRequest);
-                            return;
-                        }
-
-                        if (httpRequest[0] != "GET" && httpRequest[0] != "POST")
-                        {
-                            RaiseError(HttpStatusCode.MethodNotAllowed);
-                            return;
-                        }
-
-                        if (httpRequest[0] == "POST")
-                        {
-                        }
-                        else
-                        {
-                            if (requestBody != null && requestBody.Length > 0)
-                            {
-                                RaiseError(HttpStatusCode.BadRequest);
-                                return;
-                            }
-                        }
-
-                        if (httpRequest[2] != "HTTP/1.1")        // HTTP/1.0 is not used any more
-                        {
-                            RaiseError(HttpStatusCode.HttpVersionNotSupported);
-                            return;
-                        }
-
-
-                        HttpRequest request = new HttpRequest();
-                        request.HttpMethod = httpRequest[0];
-                        request.RawUrl = httpRequest[1];
-                        request.Path = request.RawUrl;
-                        request.HttpVersion = httpRequest[2];
-
-
-                        request.Headers = new HttpHeader[header.Count - 1];
-                        for(int i=0; i<header.Count -1; i++)
-                        {
-                            string h = header[i +1].ToString();
-                            int hsep = h.IndexOf(": ");
-
-                            if(hsep > 0)
-                                request.Headers[i] = new HttpHeader(h.Substring(0, hsep), h.Substring(hsep + 2));
-                        }
 
                         if (request.HttpMethod == "POST" && request.GetHeaderValue("Content-Length") != null)
                         {
-#if(!MF)
                             if (requestBody == null || requestBody.Length != int.Parse(request.GetHeaderValue("Content-Length")))
                             {
-                                //Console.WriteLine("not recevied all bytes " + (requestBody != null ? requestBody.Length + " of " + request.GetHeaderValue("Content-Length") : ""));
-                            }
+#if(!MF)
+                                Console.WriteLine("not recevied all bytes " + (requestBody != null ? requestBody.Length + " of " + request.GetHeaderValue("Content-Length") : ""));
 #endif
+                            }
                         }
 
                         if (requestBody != null && requestBody.Length > 0)
