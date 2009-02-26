@@ -68,6 +68,8 @@ namespace HttpConsole
 
         public void ProcessRequest(HttpContext context)
         {
+            context.Response.RemoveHeader("Connection");
+
             if (!String.IsNullOrEmpty(_rootFolder))
             {
                 string filename = Path.Combine(_rootFolder, context.Request.Path.Replace("/", "\\").Substring(1));
@@ -123,13 +125,16 @@ namespace HttpConsole
                     context.Response.ContentType = "text/javascript";
                     context.Response.Write(@"
 var c = 0;
+var d = new Date();
 function test() {
     var x = window.ActiveXObject ? new ActiveXObject(""Microsoft.XMLHTTP"") : new XMLHttpRequest();
     x.onreadystatechange = function() {
         if(x.readyState == 4) {
             document.getElementById('txtbox1').value = x.responseText;
-            if(++c < 5)
+            if(++c < 20)
                 setTimeout(test, 1);
+            else
+                alert(""Total: "" + (new Date().getTime() - d.getTime()) + "" msec"");
         }
     }
     x.open(""POST"", ""/test.ajax?x="" + c, true);
@@ -140,6 +145,9 @@ setTimeout(test, 1);
                     break;
 
                 case "/test.ajax":
+
+                    context.Response.AddHeader("Cache-Control", "private");
+
                     if(context.Request.Body != null && context.Request.Body.Length > 0)
                         context.Response.Write("ajax = " + Encoding.UTF8.GetString(context.Request.Body));
                     else
