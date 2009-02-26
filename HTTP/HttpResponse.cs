@@ -25,7 +25,8 @@
  * MS	08-03-24	initial version
  * MS   09-02-10    added http headers
  *                  added http redirect
- * 
+ * MS   09-02-26    fixed wrong date output
+ *                  added remove http header
  * 
  */
 using System;
@@ -33,6 +34,7 @@ using System.Text;
 using System.IO;
 using System.Collections;
 using System.Diagnostics;
+using System.Globalization;
 
 namespace MSchwarz.Net.Web
 {
@@ -85,6 +87,22 @@ namespace MSchwarz.Net.Web
         #endregion
 
         #region Http header related methods
+
+        public void RemoveHeader(string name)
+        {
+            if (_headers == null)
+                return;
+
+            ArrayList lis = new ArrayList();
+
+            foreach (HttpHeader header in _headers)
+                if(header.Name != name)
+                    lis.Add(header);
+
+            _headers = new HttpHeader[lis.Count];
+            for (int i = 0; i < _headers.Length; i++)
+                _headers[i] = lis[i] as HttpHeader;
+        }
 
         public void AddHeader(string name, string value)
         {
@@ -206,7 +224,14 @@ namespace MSchwarz.Net.Web
         {
             string response = _httpVersion + " " + (int)_httpStatus + " " + HttpStatusHelper.GetHttpStatusFromCode(_httpStatus) + "\r\n";
 
-            AddHeader("Date", _date.ToString("dddd, dd MMM yyyy HH':'mm':'ss 'GMT'"));
+#if(MF)
+            AddHeader("Date", _date.ToString("ddd, dd MMM yyyy HH':'mm':'ss 'GMT'"));
+#else
+            AddHeader("Date", _date.ToString("ddd, dd MMM yyyy HH':'mm':'ss 'GMT'", DateTimeFormatInfo.InvariantInfo));
+#endif
+
+
+
             AddHeader("Content-Length", (_content != null ? _content.Length.ToString() : "0"));
 
             AddHeader("X-Powered-By", "MSchwarz HTTP Server");

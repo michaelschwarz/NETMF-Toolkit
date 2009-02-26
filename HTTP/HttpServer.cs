@@ -95,7 +95,7 @@ namespace MSchwarz.Net.Web
 
                 // TODO: check if there is already a binding for the IPEndPoint
                 _listenSocket.Bind(new IPEndPoint(_address, _port));
-                _listenSocket.Listen(1000);         // TODO: check what value is good
+                _listenSocket.Listen(30);
 
                 _thdListener = new Thread(new ThreadStart(ListenerThread));
 #if(!MF)
@@ -146,10 +146,11 @@ namespace MSchwarz.Net.Web
             while (!_stopThreads)
             {
                 Socket client = _listenSocket.Accept();
+                //client.SetSocketOption(SocketOptionLevel.Tcp, SocketOptionName.NoDelay, true);
 
                 CreateWorkerProcess(ref client);
 
-                Thread.Sleep(10);
+                //Thread.Sleep(10);
             }
         }
 

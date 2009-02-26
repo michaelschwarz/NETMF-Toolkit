@@ -71,7 +71,6 @@ namespace MSchwarz.Net.Web
                 if (_client.Poll(100, SelectMode.SelectWrite))
                 {
                     int bytesSent = _client.Send(data);
-
                     return bytesSent;
                 }
             }
@@ -185,7 +184,7 @@ namespace MSchwarz.Net.Web
 
                                 if (avail == 0)
                                 {
-                                    Thread.Sleep(10);
+                                    //Thread.Sleep(10);
                                     continue;
                                 }
 #if(MF)
@@ -324,7 +323,7 @@ namespace MSchwarz.Net.Web
                                 avail = _client.Available;
                                 if (avail == 0)
                                 {
-                                    Thread.Sleep(10);
+                                    //Thread.Sleep(10);
                                     continue;
                                 }
 #if(MF)
@@ -455,7 +454,7 @@ namespace MSchwarz.Net.Web
                             {
                                 if (ctx.Response.Connection != null && ctx.Response.Connection.ToLower() == "keep-alive")
                                 {
-                                    Thread.Sleep(10);
+                                    //Thread.Sleep(10);
                                     continue;
                                 }
                             }
