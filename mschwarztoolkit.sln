@@ -27,9 +27,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroHTTPConsole", "MicroHT
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroDNS", "MicroDNS\MicroDNS.csproj", "{846E5BFE-3BD9-4111-9FBB-1A9E4BF295A6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "uALFAT_DemoApplication", "uALFAT_DemoApplication\uALFAT_DemoApplication.csproj", "{680F8443-80B4-48DE-B68A-691F21E214BA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "uALFAT", "uALFAT\uALFAT.csproj", "{99A4FCF1-68D3-4E0B-97C6-1CD7E81C3201}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 14
+		SccNumberOfProjects = 16
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs05.codeplex.com/
 		SccLocalPath0 = .
@@ -72,6 +76,12 @@ Global
 		SccProjectUniqueName13 = MicroDNS\\MicroDNS.csproj
 		SccProjectName13 = MicroDNS
 		SccLocalPath13 = MicroDNS
+		SccProjectUniqueName14 = uALFAT_DemoApplication\\uALFAT_DemoApplication.csproj
+		SccProjectName14 = uALFAT_DemoApplication
+		SccLocalPath14 = uALFAT_DemoApplication
+		SccProjectUniqueName15 = uALFAT\\uALFAT.csproj
+		SccProjectName15 = uALFAT
+		SccLocalPath15 = uALFAT
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -134,6 +144,16 @@ Global
 		{846E5BFE-3BD9-4111-9FBB-1A9E4BF295A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{846E5BFE-3BD9-4111-9FBB-1A9E4BF295A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{846E5BFE-3BD9-4111-9FBB-1A9E4BF295A6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{680F8443-80B4-48DE-B68A-691F21E214BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{680F8443-80B4-48DE-B68A-691F21E214BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{680F8443-80B4-48DE-B68A-691F21E214BA}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{680F8443-80B4-48DE-B68A-691F21E214BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{680F8443-80B4-48DE-B68A-691F21E214BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{680F8443-80B4-48DE-B68A-691F21E214BA}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{99A4FCF1-68D3-4E0B-97C6-1CD7E81C3201}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99A4FCF1-68D3-4E0B-97C6-1CD7E81C3201}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99A4FCF1-68D3-4E0B-97C6-1CD7E81C3201}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99A4FCF1-68D3-4E0B-97C6-1CD7E81C3201}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
