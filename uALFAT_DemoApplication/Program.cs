@@ -27,6 +27,8 @@
 using System;
 using System.Threading;
 using Microsoft.SPOT;
+using Microsoft.SPOT.Hardware;
+
 using MFToolkit.Devices;
 
 namespace MFToolkit.uALFAT_DemoApplication
@@ -39,8 +41,17 @@ namespace MFToolkit.uALFAT_DemoApplication
     {
         public static void Main()
         {
+
+            //////
+            //
+            //
+            //   NOTE: Before using uALFAT device check pin assignments in
+            //   uALFATCommSerial Class or uALATCommI2
+            //
+            //////
+
             Debug.Print("Initialize uALFAT..");
-            using (uALFAT uALFATDevice = new uALFAT(new uALFATCommSerial("COM2")))
+            using (uALFAT uALFATDevice = new uALFAT(new uALFATCommSerial("COM2", (Cpu.Pin)49, (Cpu.Pin) 42, (Cpu.Pin) 47)))
             {
                 // Variables used in this demo
                 byte[] FileContents;
