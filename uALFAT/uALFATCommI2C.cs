@@ -40,17 +40,17 @@ namespace MFToolkit.Devices
         /// <summary>
         /// Pin to use for reset
         /// </summary>
-        private const Cpu.Pin _resetpin = DeviceSolutions.SPOT.Hardware.Meridian.Pins.GPIO3;
+        private Cpu.Pin _resetpin;
 
         /// <summary>
         /// Pin to use for SSEL 
         /// </summary>
-        private const Cpu.Pin _sselpin = DeviceSolutions.SPOT.Hardware.Meridian.Pins.GPIO9;
+        private Cpu.Pin _sselpin;
 
         /// <summary>
         /// Pin to use for SCK
         /// </summary>
-        private const Cpu.Pin _sckpin = DeviceSolutions.SPOT.Hardware.Meridian.Pins.GPIO5;
+        private Cpu.Pin _sckpin;
 
         /// <summary>
         /// Reset output port
@@ -61,6 +61,19 @@ namespace MFToolkit.Devices
         /// I2CDevice used to connect to uALFAT
         /// </summary>
         private I2CDevice _i2cconnection;
+
+        /// <summary>
+        /// Create new uALFATCommI2C Instance
+        /// </summary>
+        /// <param name="Reset">Pin connected to uALFAT Reset</param>
+        /// <param name="SSEL">Pin connected to uALFAT SSEL#</param>
+        /// <param name="SCK">Pin connected to uALFAT SCK</param>
+        public uALFATCommI2C(Cpu.Pin Reset, Cpu.Pin SSEL, Cpu.Pin SCK)
+        {
+            this._resetpin = Reset;
+            this._sselpin = SSEL;
+            this._sckpin = SCK;
+        }
 
         /// <summary>
         /// Open communication
