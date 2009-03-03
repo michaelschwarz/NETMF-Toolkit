@@ -41,6 +41,9 @@ namespace MicroHTTPConsole
 
         public void ProcessRequest(HttpContext context)
         {
+            context.Response.RemoveHeader("Connection");
+            context.Response.ContentType = "text/html; charset=UTF-8";
+
             if (context.Request.RawUrl == "/stop")
             {
                 context.Response.WriteLine(htmlhead);
@@ -53,9 +56,35 @@ namespace MicroHTTPConsole
             {
                 switch (context.Request.Path)
                 {
+                    default:
                     case "/":
                         context.Response.ContentType = "text/html; charset=UTF-8";
+
+
                         context.Response.WriteLine(htmlhead);
+
+
+                        context.Response.Write("<h1>Welcome to my .NET Micro Framework web server</h1><p>This demo server is running on a Tahoe-II board using XBee modules to communicate with XBee sensors from Digi.</p><p>On my device the current date is " + DateTime.Now + "</b><p><b>RawUrl: " + context.Request.RawUrl + "</b><br/>" + context.Request.GetHeaderValue("User-Agent") + "</p>");
+
+                        context.Response.WriteLine("<img src=\"ms.jpg\"/>");
+
+                        if (context.Request.Params != null && context.Request.Params.Length > 0)
+                        {
+                            context.Response.Write("<p style=\"color:blue\">");
+
+                            foreach (HttpParameter p in context.Request.Params)
+                                context.Response.Write(p.Name + " = " + p.Value + "<br/>");
+
+                            context.Response.Write("</p>");
+                        }
+
+                        if (context.Request.Body != null)
+                        {
+                            context.Response.Write("<h3>Received Bytes:</h3>");
+                            context.Response.Write("<p>" + context.Request.Body.Length + " bytes</p>");
+                            context.Response.Write("<hr size=1/>");
+                        }
+
                         context.Response.WriteLine("<form action=\"/testget\" method=\"GET\"><input type=\"text\" name=\"txtbox1\"/><input type=\"submit\" value=\"post\"/></form>");
                         context.Response.WriteLine(htmlfoot);
                         break;
@@ -68,6 +97,7 @@ namespace MicroHTTPConsole
                     case "/testget":
                         context.Response.ContentType = "text/html; charset=UTF-8";
                         context.Response.WriteLine(htmlhead);
+                        context.Response.WriteLine("<p>Click <a href=\"/\">here</a> to go back to main page.</p>");
                         context.Response.Write(DateTime.Now + "<br/><b>RawUrl: " + context.Request.RawUrl + "</b><br/>");
 
                         if (context.Request.Params != null && context.Request.Params.Length > 0)
