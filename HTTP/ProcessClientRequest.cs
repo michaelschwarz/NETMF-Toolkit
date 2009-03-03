@@ -64,25 +64,50 @@ namespace MSchwarz.Net.Web
 		public int Send(Byte[] data)
         {
             if (_client == null || data == null || data.Length <= 0)
+            {
+#if(MF && DEBUG)
+                Microsoft.SPOT.Debug.Print("client not available or data is null");
+#endif
                 return -1;
+            }
 
             try
             {
-                if (_client.Poll(100, SelectMode.SelectWrite))
+                if (_client.Poll(500, SelectMode.SelectWrite))
                 {
+#if(MF && DEBUG)
+                    Microsoft.SPOT.Debug.Print(data.Length + " bytes to send");
+#endif
                     int bytesSent = _client.Send(data);
+
+#if(MF && DEBUG)
+                    Microsoft.SPOT.Debug.Print(bytesSent + " bytes sent");
+#endif
+
                     return bytesSent;
                 }
+                else
+                {
+#if(MF && DEBUG)
+                    Microsoft.SPOT.Debug.Print("client not able to write");
+#endif
+                }
             }
-            catch (SocketException)
+            catch (SocketException se)
             {
+#if(MF && DEBUG)
+                Microsoft.SPOT.Debug.Print("SocketException: " + se.Message);
+#endif
                 _client.Close();
                 _client = null;
 
                 return -1;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+#if(MF && DEBUG)
+                Microsoft.SPOT.Debug.Print("Exception: " + ex.Message);
+#endif
                 _client.Close();
                 _client = null;
             }
@@ -442,7 +467,13 @@ namespace MSchwarz.Net.Web
 
                         if (ctx != null && ctx.Response != null)
                         {
-                            long bytesSent = Send(ctx.Response.GetResponseHeaderBytes()) + Send(ctx.Response.GetResponseBytes());
+                            long bytesSent = Send(ctx.Response.GetResponseHeaderBytes());
+                            
+#if(MF)
+                            Thread.Sleep(10);
+#endif
+
+                            bytesSent += Send(ctx.Response.GetResponseBytes());
 
                             log.BytesSent = bytesSent;
 #if(!MF)
@@ -463,8 +494,11 @@ namespace MSchwarz.Net.Web
                     catch(Exception ex)
                     {
 #if(!MF && DEBUG)
-                        Console.WriteLine("ERROR: " + ex.Message);
+                        Console.WriteLine("Error: " + ex.Message);
                         Console.WriteLine("StackTrace: " + ex.StackTrace);
+#elif(MF && DEBUG)
+                        Microsoft.SPOT.Debug.Print("Error: " + ex.Message);
+                        Microsoft.SPOT.Debug.Print("StackTrace: " + ex.StackTrace);
 #endif
                         RaiseError(HttpStatusCode.InternalServerError);
                         return;

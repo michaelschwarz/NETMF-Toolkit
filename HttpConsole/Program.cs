@@ -90,6 +90,29 @@ namespace HttpConsole
 
             switch(context.Request.Path)
             {
+                case "/imbot":
+                    context.Response.ContentType = "text/html; charset=UTF-8";
+
+                    switch (context.Request["step"])
+                    {
+                        case "1":
+                        default:
+                            context.Response.WriteLine("Hi, what's your name?");
+                            break;
+
+                        case "2":
+                            context.Response.WriteLine("Hi " + context.Request["value1"] + ", where do you live?");
+                            break;
+
+                        case "3":
+                            context.Response.WriteLine("Well, welcome to this hello world bot, " + context.Request["value1"] + " from " + context.Request["value2"] + ".");
+                            context.Response.WriteLine("<br/>");
+                            context.Response.WriteLine("Visit my blog at http://netmicroframework.blogspot.com/");
+                            break;
+                    }
+
+                    break;
+
                 case "/test":
                     context.Response.Redirect("/test.aspx");
                     break;
