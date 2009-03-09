@@ -6,6 +6,8 @@ using System.Text;
 using System.Net;
 using Microsoft.SPOT.Net.NetworkInformation;
 using MSchwarz.Net.Dns;
+using MSchwarz.Net.Ntp;
+using System.IO;
 
 namespace MicroHTTPConsole
 {
@@ -20,10 +22,13 @@ namespace MicroHTTPConsole
                 Debug.Print(net.IPAddress.ToString());
             }
 
-            using (HttpServer http = new HttpServer((int)81, IPAddress.Any, new MyHttpHandler()))
+            Microsoft.SPOT.ExtendedTimeZone.SetTimeZone(TimeZoneId.Berlin);
+            Microsoft.SPOT.Hardware.Utility.SetLocalTime(NtpClient.GetNetworkTime());
+
+            using (HttpServer http = new HttpServer(new MyHttpHandler()))
             {
                 http.Start();
-
+                 
                 while (!stopThread)
                 {
                     Thread.Sleep(1000);
@@ -42,105 +47,201 @@ namespace MicroHTTPConsole
         public void ProcessRequest(HttpContext context)
         {
             context.Response.RemoveHeader("Connection");
-            context.Response.ContentType = "text/html; charset=UTF-8";
 
-            if (context.Request.RawUrl == "/stop")
+            //if (!String.IsNullOrEmpty(_rootFolder) && context.Request.Path != null)
+            //{
+            //    string filename = Path.Combine(_rootFolder, context.Request.Path.Replace("/", "\\").Substring(1));
+            //    if (filename.IndexOf("..") < 0 && filename.ToLower().StartsWith(_rootFolder.ToLower()))   // ensure that the files are below _rootFolder
+            //    {
+            //        if (File.Exists(filename))
+            //        {
+            //            if (Path.GetExtension(filename) == ".htm")
+            //                context.Response.ContentType = "text/html; charset=UTF-8";
+            //            else if (Path.GetExtension(filename) == ".jpg")
+            //                context.Response.ContentType = "image/jpeg";
+
+            //            context.Response.Write(File.ReadAllBytes(filename));
+            //            return;
+            //        }
+            //    }
+            //}
+
+            switch (context.Request.Path)
             {
-                context.Response.WriteLine(htmlhead);
-                context.Response.WriteLine("Ok, stopped http server.");
-                context.Response.WriteLine(htmlfoot);
+                case "/imbot":
+                    context.Response.ContentType = "text/html; charset=UTF-8";
 
-                Program.stopThread = true;
-            }
-            else
-            {
-                switch (context.Request.Path)
-                {
-                    default:
-                    case "/":
-                        context.Response.ContentType = "text/html; charset=UTF-8";
+                    switch (context.Request.Form["step"])
+                    {
+                        case "2":
+                            context.Response.WriteLine("Hi " + context.Request["value1"] + ", where do you live?");
+                            break;
+
+                        case "3":
+                            context.Response.WriteLine("Well, welcome to this hello world bot, " + context.Request["value1"] + " from " + context.Request["value2"] + ".");
+                            context.Response.WriteLine("<br/>");
+                            context.Response.WriteLine("Visit my blog at http://netmicroframework.blogspot.com/");
+                            context.Response.WriteLine("<reset>");
+                            break;
+
+                        case "1":
+                            context.Response.WriteLine("Hi, what's your name?");
+                            break;
+
+                        default:
+                            context.Response.WriteLine("<goto=1>");
+                            break;
+                    }
+
+                    break;
+
+                case "/test":
+                    context.Response.Redirect("/test.aspx");
+                    break;
+
+                case "/test2.aspx":
+                    context.Response.ContentType = "text/html; charset=UTF-8";
+                    context.Response.Write("<html><head><title></title></head><body>" + new string(Encoding.UTF8.GetChars(context.Request.Body)) + "</body></html>");
+                    break;
+
+                case "/cookie":
+                    context.Response.ContentType = "text/html; charset=UTF-8";
+                    context.Response.Write("<html><head><title></title></head><body>");
+
+                    if (context.Request.Cookies.Count > 0)
+                    {
+                        foreach (HttpCookie c in context.Request.Cookies)
+                            context.Response.WriteLine("Cookie " + c.Name + " = " + c.Value + "<br/>");
+                    }
+
+                    HttpCookie cookie = new HttpCookie("test", DateTime.Now.ToString());
+                    cookie.Expires = DateTime.Now.AddDays(2);
+                    context.Response.SetCookie(cookie);
+                    context.Response.WriteLine("</body></html>");
+
+                    break;
+
+                case "/test.aspx":
+                    context.Response.ContentType = "text/html; charset=UTF-8";
+                    context.Response.Write("<html><head><title></title><script type=\"text/javascript\" src=\"/scripts/test.js\"></script></head><body><form action=\"/test2.aspx\" method=\"post\"><input type=\"text\" id=\"txtbox1\" name=\"txtbox1\"/><input type=\"submit\" value=\"Post\"/></form></body></html>");
+                    break;
+
+                case "/scripts/test.js":
+                    context.Response.ContentType = "text/javascript";
+                    context.Response.Write(@"
+var c = 0;
+var d = new Date();
+function test() {
+    var x = window.ActiveXObject ? new ActiveXObject(""Microsoft.XMLHTTP"") : new XMLHttpRequest();
+    x.onreadystatechange = function() {
+        if(x.readyState == 4) {
+            document.getElementById('txtbox1').value = x.responseText;
+            if(++c <= 5)
+                setTimeout(test, 1);
+        }
+    }
+    x.open(""POST"", ""/test.ajax?x="" + c, true);
+    x.send("""" + c);
+}
+setTimeout(test, 1);
+");
+                    break;
+
+                case "/test.ajax":
+
+                    //if (context.Request.Connection.ToLower() == "keep-alive")
+                    //{
+                    //    context.Response.AddHeader("Connection", "Keep-Alive");
+                    //    context.Response.AddHeader("Keep-Alive", "timeout=15, max=100");
+                    //}
+
+                    if (context.Request.Body != null && context.Request.Body.Length > 0)
+                        context.Response.Write("ajax = " + new string(Encoding.UTF8.GetChars(context.Request.Body)));
+                    else
+                        context.Response.Write("ajax = could not read request");
+
+                    break;
+
+                default:
+                    context.Response.ContentType = "text/html; charset=UTF-8";
+                    context.Response.Write("<html><head><title>Control My World - How to switch lights on and heating off?</title></head><body>");
 
 
-                        context.Response.WriteLine(htmlhead);
+                    context.Response.Write("<h1>Welcome to my .NET Micro Framework web server</h1><p>This demo server is running on a Tahoe-II board using XBee modules to communicate with XBee sensors from Digi.</p><p>On my device the current date is " + DateTime.Now + "</b><p><b>RawUrl: " + context.Request.RawUrl + "</b><br/>" + context.Request.Headers["User-Agent"] + "</p>");
 
+                    if (context.Request.Params != null && context.Request.Params.Count > 0)
+                    {
+                        context.Response.Write("<h3>Params</h3>");
+                        context.Response.Write("<p style=\"color:blue\">");
 
-                        context.Response.Write("<h1>Welcome to my .NET Micro Framework web server</h1><p>This demo server is running on a Tahoe-II board using XBee modules to communicate with XBee sensors from Digi.</p><p>On my device the current date is " + DateTime.Now + "</b><p><b>RawUrl: " + context.Request.RawUrl + "</b><br/>" + context.Request.GetHeaderValue("User-Agent") + "</p>");
+                        foreach (string key in context.Request.Params.AllKeys)
+                            context.Response.Write(key + " = " + context.Request.Params[key] + "<br/>");
 
-                        context.Response.WriteLine("<img src=\"ms.jpg\"/>");
+                        context.Response.Write("</p>");
+                    }
 
-                        if (context.Request.Params != null && context.Request.Params.Length > 0)
+                    if (context.Request.Form != null && context.Request.Form.Count > 0)
+                    {
+                        context.Response.Write("<h3>Form</h3>");
+                        context.Response.Write("<p style=\"color:brown\">");
+
+                        foreach (string key in context.Request.Form.AllKeys)
+                            context.Response.Write(key + " = " + context.Request.Form[key] + "<br/>");
+
+                        context.Response.Write("</p>");
+                    }
+
+                    if (context.Request.MimeContent != null)
+                    {
+                        context.Response.Write("<h3>MIME Content</h3>");
+
+                        foreach (string key in context.Request.MimeContent.AllKeys)
                         {
-                            context.Response.Write("<p style=\"color:blue\">");
+                            MimeContent mime = context.Request.MimeContent[key];
 
-                            foreach (HttpParameter p in context.Request.Params)
-                                context.Response.Write(p.Name + " = " + p.Value + "<br/>");
+                            context.Response.Write("<p style=\"color:blue\">");
+                            context.Response.Write(key + " =&gt; " + (mime.Content != null ? mime.Content.Length.ToString() : "0") + " bytes<br/>");
+
+                            foreach (string mkey in context.Request.MimeContent[key].Headers.Keys)
+                                context.Response.Write("<i>" + mkey + " : " + context.Request.MimeContent[key].Headers[mkey] + "</i><br/>");
 
                             context.Response.Write("</p>");
+
+                            if (mime.Headers["Content-Type"] == "text/plain" && mime.Content != null && mime.Content.Length > 0)
+                                context.Response.Write("<pre>" + new string(Encoding.UTF8.GetChars(mime.Content)) + "</pre>");
                         }
+                    }
 
-                        if (context.Request.Body != null)
-                        {
-                            context.Response.Write("<h3>Received Bytes:</h3>");
-                            context.Response.Write("<p>" + context.Request.Body.Length + " bytes</p>");
-                            context.Response.Write("<hr size=1/>");
-                        }
+                    if (context.Request.Headers != null && context.Request.Headers.Count > 0)
+                    {
+                        context.Response.Write("<h3>HTTP Header</h3>");
+                        context.Response.Write("<p style=\"color:green\">");
 
-                        context.Response.WriteLine("<form action=\"/testget\" method=\"GET\"><input type=\"text\" name=\"txtbox1\"/><input type=\"submit\" value=\"post\"/></form>");
-                        context.Response.WriteLine(htmlfoot);
-                        break;
+                        foreach (string key in context.Request.Headers.AllKeys)
+                            context.Response.Write(key + " = " + context.Request.Headers[key] + "<br/>");
 
-                    case "/ms.jpg":
-                        context.Response.ContentType = "image/jpeg";
-                        context.Response.Write(Resources.GetBytes(Resources.BinaryResources.ms_jpg));
-                        break;
+                        context.Response.Write("</p>");
+                    }
 
-                    case "/testget":
-                        context.Response.ContentType = "text/html; charset=UTF-8";
-                        context.Response.WriteLine(htmlhead);
-                        context.Response.WriteLine("<p>Click <a href=\"/\">here</a> to go back to main page.</p>");
-                        context.Response.Write(DateTime.Now + "<br/><b>RawUrl: " + context.Request.RawUrl + "</b><br/>");
+                    if (context.Request.Body != null)
+                    {
+                        context.Response.Write("<h3>Received Bytes:</h3>");
+                        context.Response.Write("<p>" + context.Request.Body.Length + " bytes</p>");
+                        context.Response.Write("<hr size=1/>");
+                    }
 
-                        if (context.Request.Params != null && context.Request.Params.Length > 0)
-                        {
-                            foreach (HttpParameter p in context.Request.Params)
-                                context.Response.Write(p.Name + " = " + p.Value + "<br/>");
-                        }
-
-                        if (context.Request.Body != null)
-                            context.Response.WriteLine(new String(Encoding.UTF8.GetChars(context.Request.Body)));
-
-                        context.Response.WriteLine(htmlfoot);
-                        break;
-
-                    case "/network":
-                        context.Response.ContentType = "text/html; charset=UTF-8";
-                        context.Response.WriteLine(htmlhead);
-                        foreach (NetworkInterface net in NetworkInterface.GetAllNetworkInterfaces())
-                        {
-                            context.Response.WriteLine(net.IPAddress.ToString() + "<br/>");
-
-                            if (net.DnsAddresses.Length > 0)
-                            {
-                                string dns = net.DnsAddresses[0];
-
-                                DnsResolver resolver = new DnsResolver(IPAddress.Parse(dns));
-                                DnsRequest dnsreq = new DnsRequest();
-                                dnsreq.Questions = new Question[] {
-                                    new Question("microsoft.com", DnsType.A, DnsClass.IN)
-                                };
-
-                                DnsResponse dnsres = resolver.Resolve(dnsreq);
-
-                                foreach (Answer a in dnsres.Answers)
-                                    context.Response.WriteLine("microsoft.com A record: " + (a.Record as ARecord).IPAddress.ToString() + "<br/>");
-                            }
-
-
-                        }
-                        context.Response.WriteLine(htmlfoot);
-                        break;
-                }
-            }
+                    context.Response.Write(@"<p><a href=""index.htm"">Demo HTML and JPEG (files on SD card)</a><br/>
+<a href=""test.txt"">Demo Plain Text (file on SD card)</a><br/>
+<a href=""test"">Redirect Test</a> calls /test and gets redirected to /test.aspx<br/>
+<a href=""test.aspx"">AJAX Test</a> requests 5 times a value from webserver<br/>
+<a href=""cookie"">Cookie Test</a> sets and displays a cookie<br/></p>
+<hr size=1/>
+<p>Any feedback welcome: <a href=""http://weblogs.asp.net/mschwarz/contact.aspx"">contact</a>
+<a href=""http://michael-schwarz.blogspot.com/"">My Blog</a> <a href=""http://weblogs.asp.net/mschwarz/"">My Blog (en)</a><br/>
+<a href=""http://www.control-my-world.com/"">Control My World</a></p>
+</body></html>");
+                    break;
+            } 
         }
 
         #endregion

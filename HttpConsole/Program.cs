@@ -5,6 +5,9 @@ using MSchwarz.Net.Web;
 using System.IO;
 using MSchwarz.IO;
 using MSchwarz.Net.Dns;
+using System.Threading;
+using System.Net;
+using System.Net.Sockets;
 
 namespace HttpConsole
 {
@@ -12,7 +15,6 @@ namespace HttpConsole
 	{
 		static void Main(string[] args)
 		{
-
             using (HttpServer http = new HttpServer(new MyHttpHandler(Path.Combine(Environment.CurrentDirectory, "..\\..\\root"))))
             {
                 http.OnLogAccess += new HttpServer.LogAccessHandler(http_OnLogAccess);
@@ -23,34 +25,17 @@ namespace HttpConsole
             }
 
             Console.WriteLine("Done.");
+
+            thd.Abort();
 		}
 
         static void http_OnLogAccess(LogAccess data)
         {
             Console.WriteLine("------------------------------------------------------------");
-
-            Console.WriteLine(data.ClientIP + "\t" + data.RawUri + "\t" + data.Method + "\t" + data.Duration + " msec\t" + data.BytesReceived + " bytes\t" + data.BytesSent + " bytes");
+            Console.WriteLine(DateTime.Now.ToString());
+            Console.WriteLine(data.ClientIP + "\t" + data.RawUrl + "\t" + data.Method + "\t" + data.Duration + " msec\t" + data.BytesReceived + " bytes\t" + data.BytesSent + " bytes");
             Console.WriteLine(data.UserAgent);
             if(data.HttpReferer != null) Console.WriteLine(data.HttpReferer);
-
-            //try
-            //{
-            //    DnsResolver dns = new DnsResolver();
-            //    dns.LoadNetworkConfiguration();
-
-            //    DnsResponse res = dns.Resolve(new DnsRequest(new Question(data.ClientIP.ToString(), DnsType.PTR, DnsClass.IN)));
-
-               
-
-            //    if (res.Answers.Count > 0)
-            //        Console.WriteLine(res.Answers[0].ToString());
-            //}
-            //catch (Exception ex)
-            //{
-            //    Console.WriteLine(ex.Message);
-            //}
-
-            
         }
 	}
 
@@ -70,7 +55,7 @@ namespace HttpConsole
         {
             context.Response.RemoveHeader("Connection");
 
-            if (!String.IsNullOrEmpty(_rootFolder))
+            if (!String.IsNullOrEmpty(_rootFolder) && context.Request.Path != null)
             {
                 string filename = Path.Combine(_rootFolder, context.Request.Path.Replace("/", "\\").Substring(1));
                 if (filename.IndexOf("..") < 0 && filename.ToLower().StartsWith(_rootFolder.ToLower()))   // ensure that the files are below _rootFolder
@@ -93,13 +78,8 @@ namespace HttpConsole
                 case "/imbot":
                     context.Response.ContentType = "text/html; charset=UTF-8";
 
-                    switch (context.Request["step"])
+                    switch (context.Request.Form["step"])
                     {
-                        case "1":
-                        default:
-                            context.Response.WriteLine("Hi, what's your name?");
-                            break;
-
                         case "2":
                             context.Response.WriteLine("Hi " + context.Request["value1"] + ", where do you live?");
                             break;
@@ -108,6 +88,15 @@ namespace HttpConsole
                             context.Response.WriteLine("Well, welcome to this hello world bot, " + context.Request["value1"] + " from " + context.Request["value2"] + ".");
                             context.Response.WriteLine("<br/>");
                             context.Response.WriteLine("Visit my blog at http://netmicroframework.blogspot.com/");
+                            context.Response.WriteLine("<reset>");
+                            break;
+
+                        case "1":
+                            context.Response.WriteLine("Hi, what's your name?");
+                            break;
+
+                        default:
+                            context.Response.WriteLine("<goto=1>");
                             break;
                     }
 
@@ -126,7 +115,7 @@ namespace HttpConsole
                     context.Response.ContentType = "text/html; charset=UTF-8";
                     context.Response.Write("<html><head><title></title></head><body>");
 
-                    if (context.Request.Cookies.Length > 0)
+                    if (context.Request.Cookies.Count > 0)
                     {
                         foreach (HttpCookie c in context.Request.Cookies)
                             context.Response.WriteLine("Cookie " + c.Name + " = " + c.Value + "<br/>");
@@ -154,10 +143,8 @@ function test() {
     x.onreadystatechange = function() {
         if(x.readyState == 4) {
             document.getElementById('txtbox1').value = x.responseText;
-            if(++c < 20)
+            if(++c <= 5)
                 setTimeout(test, 1);
-            else
-                alert(""Total: "" + (new Date().getTime() - d.getTime()) + "" msec"");
         }
     }
     x.open(""POST"", ""/test.ajax?x="" + c, true);
@@ -169,7 +156,11 @@ setTimeout(test, 1);
 
                 case "/test.ajax":
 
-                    context.Response.AddHeader("Cache-Control", "private");
+                    //if (context.Request.Connection.ToLower() == "keep-alive")
+                    //{
+                    //    context.Response.AddHeader("Connection", "Keep-Alive");
+                    //    context.Response.AddHeader("Keep-Alive", "timeout=15, max=100");
+                    //}
 
                     if(context.Request.Body != null && context.Request.Body.Length > 0)
                         context.Response.Write("ajax = " + Encoding.UTF8.GetString(context.Request.Body));
@@ -183,14 +174,60 @@ setTimeout(test, 1);
                     context.Response.Write("<html><head><title>Control My World - How to switch lights on and heating off?</title></head><body>");
                     
                     
-                    context.Response.Write("<h1>Welcome to my .NET Micro Framework web server</h1><p>This demo server is running on a Tahoe-II board using XBee modules to communicate with XBee sensors from Digi.</p><p>On my device the current date is " + DateTime.Now + "</b><p><b>RawUrl: " + context.Request.RawUrl + "</b><br/>" + context.Request.GetHeaderValue("User-Agent") + "</p>");
+                    context.Response.Write("<h1>Welcome to my .NET Micro Framework web server</h1><p>This demo server is running on a Tahoe-II board using XBee modules to communicate with XBee sensors from Digi.</p><p>On my device the current date is " + DateTime.Now + "</b><p><b>RawUrl: " + context.Request.RawUrl + "</b><br/>" + context.Request.Headers["User-Agent"] + "</p>");
 
-                    if (context.Request.Params != null && context.Request.Params.Length > 0)
+                    if (context.Request.Params != null && context.Request.Params.Count > 0)
                     {
+                        context.Response.Write("<h3>Params</h3>");
                         context.Response.Write("<p style=\"color:blue\">");
 
-                        foreach (HttpParameter p in context.Request.Params)
-                            context.Response.Write(p.Name + " = " + p.Value + "<br/>");
+                        foreach (string key in context.Request.Params.AllKeys)
+                            context.Response.Write(key + " = " + context.Request.Params[key] + "<br/>");
+
+                        context.Response.Write("</p>");
+                    }
+
+                    if (context.Request.Form != null && context.Request.Form.Count > 0)
+                    {
+                        context.Response.Write("<h3>Form</h3>");
+                        context.Response.Write("<p style=\"color:brown\">");
+
+                        foreach (string key in context.Request.Form.AllKeys)
+                            context.Response.Write(key + " = " + context.Request.Form[key] + "<br/>");
+
+                        context.Response.Write("</p>");
+                    }
+
+                    if (context.Request.MimeContent != null)
+                    {
+                        context.Response.Write("<h3>MIME Content</h3>");
+
+                        foreach (string key in context.Request.MimeContent.AllKeys)
+                        {
+                            MimeContent mime = context.Request.MimeContent[key];
+
+                            context.Response.Write("<p style=\"color:blue\">");
+                            context.Response.Write(key + " =&gt; " + (mime.Content != null ? mime.Content.Length.ToString() : "0") + " bytes<br/>");
+
+                            foreach (string mkey in context.Request.MimeContent[key].Headers.Keys)
+                                context.Response.Write("<i>" + mkey + " : " + context.Request.MimeContent[key].Headers[mkey] + "</i><br/>");
+
+                            context.Response.Write("</p>");
+
+
+
+                            if (mime.Headers["Content-Type"] == "text/plain" && mime.Content != null && mime.Content.Length > 0)
+                                context.Response.Write("<pre>" + Encoding.UTF8.GetString(mime.Content) + "</pre>");
+                        }
+                    }
+
+                    if (context.Request.Headers != null && context.Request.Headers.Count > 0)
+                    {
+                        context.Response.Write("<h3>HTTP Header</h3>");
+                        context.Response.Write("<p style=\"color:green\">");
+
+                        foreach (string key in context.Request.Headers.AllKeys)
+                            context.Response.Write(key + " = " + context.Request.Headers[key] + "<br/>");
 
                         context.Response.Write("</p>");
                     }
@@ -200,27 +237,6 @@ setTimeout(test, 1);
                         context.Response.Write("<h3>Received Bytes:</h3>");
                         context.Response.Write("<p>" + context.Request.Body.Length + " bytes</p>");
                         context.Response.Write("<hr size=1/>");
-                    }
-
-                    if (context.Request.UserHostAddress != null)
-                    {
-                        //context.Response.Write("<h3>Your IP: " + context.Request.UserHostAddress + "</h3>");
-
-                        //DnsResolver dns = new DnsResolver();
-                        //dns.LoadNetworkConfiguration();
-
-                        //try
-                        //{
-                        //    DnsResponse res = dns.Resolve(new DnsRequest(new Question(context.Request.UserHostAddress, DnsType.PTR, DnsClass.IN)));
-                        //    if (res != null)
-                        //    {
-                        //        foreach (Answer a in res.Answers)
-                        //            context.Response.Write("<p>" + a.Record.ToString() + " (using <a href=\"http://netmicroframework.blogspot.com/2009/02/3-examples-using-mschwarznetdns.html\">MSchwarz.Net.Dns</a>)</p>");
-                        //    }
-                        //}
-                        //catch (Exception)
-                        //{
-                        //}
                     }
 
                     context.Response.Write(@"<p><a href=""index.htm"">Demo HTML and JPEG (files on SD card)</a><br/>

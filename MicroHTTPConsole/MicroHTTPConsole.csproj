@@ -46,6 +46,7 @@
     <Reference Include="Microsoft.SPOT.Native" />
     <Reference Include="Microsoft.SPOT.Net" />
     <Reference Include="System" />
+    <Reference Include="System.IO" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources.resx">
@@ -62,6 +63,10 @@
     <ProjectReference Include="..\MicroHTTP\MicroHTTP.csproj">
       <Project>{1CC369CA-5686-445E-805A-B9B02578799F}</Project>
       <Name>MicroHTTP</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MicroNTP\MicroNTP.csproj">
+      <Project>{7E0CDF9D-1EDC-4F9A-A4F6-01151BB89BB7}</Project>
+      <Name>MicroNTP</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
