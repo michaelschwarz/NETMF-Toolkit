@@ -27,6 +27,7 @@
  *                  added http redirect
  * MS   09-02-26    fixed wrong date output
  *                  added remove http header
+ * MS   09-03-09    changed that http response is written by HttpResponse
  * 
  */
 using System;
@@ -35,6 +36,11 @@ using System.IO;
 using System.Collections;
 using System.Diagnostics;
 using System.Globalization;
+using System.Net.Sockets;
+
+#if(MF)
+using MSchwarz.Text;
+#endif
 
 namespace MSchwarz.Net.Web
 {
@@ -50,11 +56,15 @@ namespace MSchwarz.Net.Web
 
         private DateTime _date = DateTime.Now;
 
-
+        internal long totalBytes = 0;
 
         public HttpResponse()
         {
             _content = new MemoryStream();
+
+            AddHeader("Cache-Control", "no-cache");
+            AddHeader("Pragma", "no-cache");
+            AddHeader("Expires", "-1");
 
             AddHeader("Content-Type", "text/plain; charset=utf-8");
             AddHeader("Server", "MSchwarz HTTP Server");
@@ -202,7 +212,7 @@ namespace MSchwarz.Net.Web
         public void Write(string s)
         {
             byte[] b = Encoding.UTF8.GetBytes(s);
-            _content.Write(b, 0, b.Length);
+            Write(b);
         }
 
         public void Write(byte[] bytes)
@@ -222,6 +232,8 @@ namespace MSchwarz.Net.Web
 
         internal string GetResponseHeader()
         {
+            StringBuilder sb = new StringBuilder();
+
             string response = _httpVersion + " " + (int)_httpStatus + " " + HttpStatusHelper.GetHttpStatusFromCode(_httpStatus) + "\r\n";
 
 #if(MF)
@@ -261,17 +273,25 @@ namespace MSchwarz.Net.Web
             return response;
         }
 
-        internal byte[] GetResponseHeaderBytes()
+        public void WriteSocket(Socket socket)
         {
-            return Encoding.UTF8.GetBytes(this.GetResponseHeader());
-        }
+            using(NetworkStream ns = new NetworkStream(socket))
+            {
+                byte[] bytes = Encoding.UTF8.GetBytes(GetResponseHeader());
+                totalBytes += bytes.Length;
 
-        internal byte[] GetResponseBytes()
-        {
-            if (_content == null)
-                return new byte[0];
+                ns.Write(bytes, 0, bytes.Length);
+                ns.Flush();
 
-            return _content.ToArray();
+                if (_content != null && _content.Length > 0)
+                {
+                    bytes = _content.ToArray();
+                    totalBytes += bytes.Length;
+
+                    ns.Write(bytes, 0, bytes.Length);
+                    ns.Flush();
+                }
+            }
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿/* 
- * LogAccess.cs
+ * ParserState.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -22,95 +22,59 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
+ * MS   09-03-09    initial version
  * 
- * 
+ *
  */
 using System;
-using System.Net;
 
-namespace MSchwarz.Net.Web
+namespace MSchwarz.Net
 {
-    public struct LogAccess
+    internal enum RequestParserState
     {
         /// <summary>
-        /// Date and time
+        /// Read http method.
         /// </summary>
-        public DateTime Date;
+        ReadMethod,
 
         /// <summary>
-        /// s-ip
+        /// Read url.
         /// </summary>
-        public IPAddress ServerIP;
+        ReadUrl,
 
         /// <summary>
-        /// cs-method
+        /// Read key of querystring.
         /// </summary>
-        public string Method;
+        ReadParamKey,
 
         /// <summary>
-        /// cs-uri-stem
+        /// Read value of querystring.
         /// </summary>
-        public string RawUrl;
+        ReadParamValue,
 
         /// <summary>
-        /// cs-uri-query
+        /// Read http version (i.e. HTTP/1.1).
         /// </summary>
-        public string RequestString;
+        ReadVersion,
 
         /// <summary>
-        /// s-port
+        /// Read http header key.
         /// </summary>
-        public int Port;
+        ReadHeaderKey,
 
         /// <summary>
-        /// cs-username
+        /// Read http header value.
         /// </summary>
-        public string Username;
+        ReadHeaderValue,
 
         /// <summary>
-        /// c-ip
+        /// Read http body if POST.
         /// </summary>
-        public string ClientIP;
+        ReadBody,
 
         /// <summary>
-        /// cs(User-Agent)
+        /// Reading http request done.
         /// </summary>
-        public string UserAgent;
-
-        /// <summary>
-        /// cs(Referer)
-        /// </summary>
-        public string HttpReferer;
-
-        /// <summary>
-        /// sc-status
-        /// </summary>
-        public int Status;
-
-        /// <summary>
-        /// sc-substatus
-        /// </summary>
-        public int SubStatus;
-
-        /// <summary>
-        /// sc-win32-status
-        /// </summary>
-        [Obsolete("Not implemented.", true)]
-        public int Win32Status;
-
-        /// <summary>
-        /// sc-bytes
-        /// </summary>
-        public long BytesSent;
-
-        /// <summary>
-        /// cs-bytes
-        /// </summary>
-        public long BytesReceived;
-
-        /// <summary>
-        /// time-taken in milli seconds
-        /// </summary>
-        public long Duration;
+        ReadDone
     }
 }

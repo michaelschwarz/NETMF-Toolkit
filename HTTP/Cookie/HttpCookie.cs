@@ -22,7 +22,7 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
- * 
+ * MS   09-03-09    fixed MF support
  * 
  * 
  */
@@ -141,7 +141,15 @@ namespace MSchwarz.Net.Web
             // Set-Cookie: RMID=732423sdfs73242; expires=Fri, 31-Dec-2010 23:59:59 GMT; path=/; domain=.example.net; HttpOnly
 
             return _name + "=" + _value + "; "
-                + (_expiresSet ? "expires=" + _expires.ToString("r") + "; " : "")
+                + (_expiresSet ? "expires=" + 
+                
+#if(MF)
+                _expires.ToString("ddd, dd'-'MMM'-'yyyy HH':'mm':'ss 'GMT'")
+#else
+                _expires.ToString("r")
+#endif
+                
+                + "; " : "")
                 + (_path != null ? "path=" + _path + "; " : "")
                 + (_domain != null ? "domain=" + _domain + "; " : "")
                 + (_httpOnly ? "HttpOnly" : "");

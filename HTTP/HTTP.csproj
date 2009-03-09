@@ -40,11 +40,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Collection\NameValueEnumerator.cs" />
+    <Compile Include="Collection\NameValuePair.cs" />
+    <Compile Include="Collection\NameValueCollection.cs" />
+    <Compile Include="Cookie\HttpCookieEnumerator.cs" />
     <Compile Include="Enums\HttpStatusCode.cs" />
     <Compile Include="Enums\LogEventType.cs" />
     <Compile Include="HttpContext.cs" />
-    <Compile Include="HttpCookie.cs" />
+    <Compile Include="Cookie\HttpCookie.cs" />
     <Compile Include="HttpHeader.cs" />
+    <Compile Include="Cookie\HttpCookieCollection.cs" />
     <Compile Include="HttpParameter.cs" />
     <Compile Include="HttpRequest.cs" />
     <Compile Include="HttpResponse.cs" />
@@ -53,6 +58,12 @@
     <Compile Include="HttpServerUtility.cs" />
     <Compile Include="IHttpHandler.cs" />
     <Compile Include="LogAccess.cs" />
+    <Compile Include="Mime\MimeContent.cs" />
+    <Compile Include="Mime\MimeContentCollection.cs" />
+    <Compile Include="Mime\MimeContentEnumerator.cs" />
+    <Compile Include="Mime\MimeParser.cs" />
+    <Compile Include="Enums\MimeParserState.cs" />
+    <Compile Include="Enums\RequestParserState.cs" />
     <Compile Include="ProcessClientRequest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

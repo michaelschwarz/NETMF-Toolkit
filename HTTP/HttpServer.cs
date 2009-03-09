@@ -23,6 +23,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  * MS   09-02-10    added MT support
+ * MS   09-03-09    changed stop http server when there is any exception while starting (i.e. when port is not available)
  * 
  * 
  */
@@ -81,27 +82,35 @@ namespace MSchwarz.Net.Web
 
         public bool Start()
         {
-            if (_stopThreads)
+            try
             {
-                _stopThreads = false;
+                if (_stopThreads)
+                {
+                    _stopThreads = false;
 
-                _thdWorker = new Thread(new ThreadStart(RemoveWorkerThreads));
+                    _thdWorker = new Thread(new ThreadStart(RemoveWorkerThreads));
 #if(!MF)
-                _thdWorker.Name = "Worker Thread";
+                    _thdWorker.Name = "Worker Thread";
 #endif
-                _thdWorker.Start();
+                    _thdWorker.Start();
 
-                _listenSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                    _listenSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
-                // TODO: check if there is already a binding for the IPEndPoint
-                _listenSocket.Bind(new IPEndPoint(_address, _port));
-                _listenSocket.Listen(30);
+                    // TODO: check if there is already a binding for the IPEndPoint
+                    _listenSocket.Bind(new IPEndPoint(_address, _port));
+                    _listenSocket.Listen(30);
 
-                _thdListener = new Thread(new ThreadStart(ListenerThread));
+                    _thdListener = new Thread(new ThreadStart(ListenerThread));
 #if(!MF)
-                _thdListener.Name = "Listener Thread";
+                    _thdListener.Name = "Listener Thread";
 #endif
-                _thdListener.Start();
+                    _thdListener.Start();
+                }
+            }
+            catch (Exception)
+            {
+                Stop();
+                return false;
             }
 
             return true;

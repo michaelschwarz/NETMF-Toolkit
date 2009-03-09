@@ -1,5 +1,5 @@
 ﻿/* 
- * HttpParameter.cs
+ * MimeParserState.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -22,18 +22,34 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
- * MS   09-02-10    added MT support
+ * MS   09-03-09    initial version
  * 
- * 
+ *
  */
 using System;
 
 namespace MSchwarz.Net.Web
 {
-    [Obsolete("Use HttpRequest.Params (NameValueCollection) instead.", true)]
-    public class HttpParameter
+    internal enum MimeParserState
     {
-        public string Name;
-        public string Value;
+        /// <summary>
+        /// Read boundary mime line.
+        /// </summary>
+        ReadBoundary,
+
+        /// <summary>
+        /// Read mime header key.
+        /// </summary>
+        ReadHeaderKey,
+
+        /// <summary>
+        /// Read mime header value.
+        /// </summary>
+        ReadHeaderValue,
+
+        /// <summary>
+        /// Read mime content.
+        /// </summary>
+        ReadContent
     }
 }

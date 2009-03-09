@@ -85,6 +85,9 @@ namespace MSchwarz.Net.Web
 
         public static string UrlDecode(string s)
         {
+            if (s == null)
+                return null;
+
             ArrayList bytes = new ArrayList();
 
             for(int i=0; i<s.Length; i++)
