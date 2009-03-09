@@ -33,20 +33,41 @@
   </PropertyGroup>
   <Import Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <ItemGroup>
+    <Compile Include="..\HTTP\Collection\NameValueCollection.cs">
+      <Link>Collection\NameValueCollection.cs</Link>
+    </Compile>
+    <Compile Include="..\HTTP\Collection\NameValueEnumerator.cs">
+      <Link>Collection\NameValueEnumerator.cs</Link>
+    </Compile>
+    <Compile Include="..\HTTP\Collection\NameValuePair.cs">
+      <Link>Collection\NameValuePair.cs</Link>
+    </Compile>
+    <Compile Include="..\HTTP\Cookie\HttpCookie.cs">
+      <Link>Cookie\HttpCookie.cs</Link>
+    </Compile>
+    <Compile Include="..\HTTP\Cookie\HttpCookieCollection.cs">
+      <Link>Cookie\HttpCookieCollection.cs</Link>
+    </Compile>
+    <Compile Include="..\HTTP\Cookie\HttpCookieEnumerator.cs">
+      <Link>Cookie\HttpCookieEnumerator.cs</Link>
+    </Compile>
     <Compile Include="..\HTTP\Enums\HttpStatusCode.cs">
       <Link>Enums\HttpStatusCode.cs</Link>
     </Compile>
     <Compile Include="..\HTTP\Enums\LogEventType.cs">
       <Link>Enums\LogEventType.cs</Link>
     </Compile>
+    <Compile Include="..\HTTP\Enums\MimeParserState.cs">
+      <Link>Enums\MimeParserState.cs</Link>
+    </Compile>
+    <Compile Include="..\HTTP\Enums\RequestParserState.cs">
+      <Link>Enums\RequestParserState.cs</Link>
+    </Compile>
     <Compile Include="..\HTTP\Helper\NetworkHelper.cs">
       <Link>Helper\NetworkHelper.cs</Link>
     </Compile>
     <Compile Include="..\HTTP\HttpContext.cs">
       <Link>HttpContext.cs</Link>
-    </Compile>
-    <Compile Include="..\HTTP\HttpCookie.cs">
-      <Link>HttpCookie.cs</Link>
     </Compile>
     <Compile Include="..\HTTP\HttpHeader.cs">
       <Link>HttpHeader.cs</Link>
@@ -71,6 +92,18 @@
     </Compile>
     <Compile Include="..\HTTP\LogAccess.cs">
       <Link>LogAccess.cs</Link>
+    </Compile>
+    <Compile Include="..\HTTP\Mime\MimeContent.cs">
+      <Link>Mime\MimeContent.cs</Link>
+    </Compile>
+    <Compile Include="..\HTTP\Mime\MimeContentCollection.cs">
+      <Link>Mime\MimeContentCollection.cs</Link>
+    </Compile>
+    <Compile Include="..\HTTP\Mime\MimeContentEnumerator.cs">
+      <Link>Mime\MimeContentEnumerator.cs</Link>
+    </Compile>
+    <Compile Include="..\HTTP\Mime\MimeParser.cs">
+      <Link>Mime\MimeParser.cs</Link>
     </Compile>
     <Compile Include="..\HTTP\ProcessClientRequest.cs">
       <Link>ProcessClientRequest.cs</Link>
