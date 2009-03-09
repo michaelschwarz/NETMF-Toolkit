@@ -1,0 +1,179 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZigbeeConsole", "ZigbeeConsole\ZigbeeConsole.csproj", "{74F0327C-8A14-44B4-A13D-5746A751D705}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IO", "IO\IO.csproj", "{A3B69586-127A-4287-9EA1-E64E2C42131C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zigbee", "Zigbee\Zigbee.csproj", "{712410B3-03CB-4771-9AFE-75CA1C65EC3E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNS", "DNS\DNS.csproj", "{43C6F30A-3EFA-45E1-ACF8-3D42C74BDC72}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroZigbee", "MicroZigbee\MicroZigbee.csproj", "{60B9F011-DF1C-4624-8E04-52A2127C4CEE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroIO", "MicroIO\MicroIO.csproj", "{A009B2CC-E9A5-4B53-A132-56F25E4D0CB9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroZigbeeConsole", "MicroZigbeeConsole\MicroZigbeeConsole.csproj", "{99A86DD7-E28B-4E9E-B04A-1453C88F26ED}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DnsConsole", "DnsConsole\DnsConsole.csproj", "{2DDEACF4-D21B-4143-B4CE-55CC68098835}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HTTP", "HTTP\HTTP.csproj", "{71330466-A906-4DBB-8C6D-457210D53E47}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpConsole", "HttpConsole\HttpConsole.csproj", "{43D7737D-9029-43DF-A367-A8C4B71BFFF9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroHTTP", "MicroHTTP\MicroHTTP.csproj", "{1CC369CA-5686-445E-805A-B9B02578799F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroHTTPConsole", "MicroHTTPConsole\MicroHTTPConsole.csproj", "{052865A7-299A-4D3F-BA8D-31368F872A29}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroDNS", "MicroDNS\MicroDNS.csproj", "{846E5BFE-3BD9-4111-9FBB-1A9E4BF295A6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "uALFAT", "uALFAT\uALFAT.csproj", "{99A4FCF1-68D3-4E0B-97C6-1CD7E81C3201}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "uALFAT_DemoApplication", "uALFAT_DemoApplication\uALFAT_DemoApplication.csproj", "{680F8443-80B4-48DE-B68A-691F21E214BA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroNTP", "MicroNTP\MicroNTP.csproj", "{7E0CDF9D-1EDC-4F9A-A4F6-01151BB89BB7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NTP", "NTP\NTP.csproj", "{8D2864CD-DF2E-494F-9DD1-2C31ECCF55D3}"
+EndProject
+Global
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 18
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = https://tfs05.codeplex.com/
+		SccProjectUniqueName0 = DNS\\DNS.csproj
+		SccProjectName0 = DNS
+		SccLocalPath0 = DNS
+		SccProjectUniqueName1 = DnsConsole\\DnsConsole.csproj
+		SccProjectName1 = DnsConsole
+		SccLocalPath1 = DnsConsole
+		SccProjectUniqueName2 = IO\\IO.csproj
+		SccProjectName2 = IO
+		SccLocalPath2 = IO
+		SccProjectUniqueName3 = MicroIO\\MicroIO.csproj
+		SccProjectName3 = MicroIO
+		SccLocalPath3 = MicroIO
+		SccProjectUniqueName4 = MicroZigbee\\MicroZigbee.csproj
+		SccProjectName4 = MicroZigbee
+		SccLocalPath4 = MicroZigbee
+		SccProjectUniqueName5 = MicroZigbeeConsole\\MicroZigbeeConsole.csproj
+		SccProjectName5 = MicroZigbeeConsole
+		SccLocalPath5 = MicroZigbeeConsole
+		SccProjectUniqueName6 = Zigbee\\Zigbee.csproj
+		SccProjectName6 = Zigbee
+		SccLocalPath6 = Zigbee
+		SccProjectUniqueName7 = ZigbeeConsole\\ZigbeeConsole.csproj
+		SccProjectName7 = ZigbeeConsole
+		SccLocalPath7 = ZigbeeConsole
+		SccProjectUniqueName8 = HTTP\\HTTP.csproj
+		SccProjectName8 = HTTP
+		SccLocalPath8 = HTTP
+		SccProjectUniqueName9 = HttpConsole\\HttpConsole.csproj
+		SccProjectName9 = HttpConsole
+		SccLocalPath9 = HttpConsole
+		SccProjectUniqueName10 = MicroHTTP\\MicroHTTP.csproj
+		SccProjectName10 = MicroHTTP
+		SccLocalPath10 = MicroHTTP
+		SccProjectUniqueName11 = MicroHTTPConsole\\MicroHTTPConsole.csproj
+		SccProjectName11 = MicroHTTPConsole
+		SccLocalPath11 = MicroHTTPConsole
+		SccProjectUniqueName12 = MicroDNS\\MicroDNS.csproj
+		SccProjectName12 = MicroDNS
+		SccLocalPath12 = MicroDNS
+		SccProjectUniqueName13 = uALFAT\\uALFAT.csproj
+		SccProjectName13 = uALFAT
+		SccLocalPath13 = uALFAT
+		SccProjectUniqueName14 = uALFAT_DemoApplication\\uALFAT_DemoApplication.csproj
+		SccProjectName14 = uALFAT_DemoApplication
+		SccLocalPath14 = uALFAT_DemoApplication
+		SccLocalPath15 = .
+		SccProjectUniqueName16 = MicroNTP\\MicroNTP.csproj
+		SccProjectName16 = MicroNTP
+		SccLocalPath16 = MicroNTP
+		SccProjectUniqueName17 = NTP\\NTP.csproj
+		SccProjectName17 = NTP
+		SccLocalPath17 = NTP
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{74F0327C-8A14-44B4-A13D-5746A751D705}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{74F0327C-8A14-44B4-A13D-5746A751D705}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{74F0327C-8A14-44B4-A13D-5746A751D705}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{74F0327C-8A14-44B4-A13D-5746A751D705}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3B69586-127A-4287-9EA1-E64E2C42131C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3B69586-127A-4287-9EA1-E64E2C42131C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3B69586-127A-4287-9EA1-E64E2C42131C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3B69586-127A-4287-9EA1-E64E2C42131C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{712410B3-03CB-4771-9AFE-75CA1C65EC3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{712410B3-03CB-4771-9AFE-75CA1C65EC3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{712410B3-03CB-4771-9AFE-75CA1C65EC3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{712410B3-03CB-4771-9AFE-75CA1C65EC3E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43C6F30A-3EFA-45E1-ACF8-3D42C74BDC72}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43C6F30A-3EFA-45E1-ACF8-3D42C74BDC72}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43C6F30A-3EFA-45E1-ACF8-3D42C74BDC72}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43C6F30A-3EFA-45E1-ACF8-3D42C74BDC72}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60B9F011-DF1C-4624-8E04-52A2127C4CEE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60B9F011-DF1C-4624-8E04-52A2127C4CEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60B9F011-DF1C-4624-8E04-52A2127C4CEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60B9F011-DF1C-4624-8E04-52A2127C4CEE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A009B2CC-E9A5-4B53-A132-56F25E4D0CB9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A009B2CC-E9A5-4B53-A132-56F25E4D0CB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A009B2CC-E9A5-4B53-A132-56F25E4D0CB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A009B2CC-E9A5-4B53-A132-56F25E4D0CB9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{99A86DD7-E28B-4E9E-B04A-1453C88F26ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99A86DD7-E28B-4E9E-B04A-1453C88F26ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99A86DD7-E28B-4E9E-B04A-1453C88F26ED}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{99A86DD7-E28B-4E9E-B04A-1453C88F26ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99A86DD7-E28B-4E9E-B04A-1453C88F26ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{99A86DD7-E28B-4E9E-B04A-1453C88F26ED}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{2DDEACF4-D21B-4143-B4CE-55CC68098835}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2DDEACF4-D21B-4143-B4CE-55CC68098835}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2DDEACF4-D21B-4143-B4CE-55CC68098835}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2DDEACF4-D21B-4143-B4CE-55CC68098835}.Release|Any CPU.Build.0 = Release|Any CPU
+		{71330466-A906-4DBB-8C6D-457210D53E47}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71330466-A906-4DBB-8C6D-457210D53E47}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71330466-A906-4DBB-8C6D-457210D53E47}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71330466-A906-4DBB-8C6D-457210D53E47}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43D7737D-9029-43DF-A367-A8C4B71BFFF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43D7737D-9029-43DF-A367-A8C4B71BFFF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43D7737D-9029-43DF-A367-A8C4B71BFFF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43D7737D-9029-43DF-A367-A8C4B71BFFF9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1CC369CA-5686-445E-805A-B9B02578799F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1CC369CA-5686-445E-805A-B9B02578799F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1CC369CA-5686-445E-805A-B9B02578799F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1CC369CA-5686-445E-805A-B9B02578799F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{052865A7-299A-4D3F-BA8D-31368F872A29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{052865A7-299A-4D3F-BA8D-31368F872A29}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{052865A7-299A-4D3F-BA8D-31368F872A29}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{052865A7-299A-4D3F-BA8D-31368F872A29}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{052865A7-299A-4D3F-BA8D-31368F872A29}.Release|Any CPU.Build.0 = Release|Any CPU
+		{052865A7-299A-4D3F-BA8D-31368F872A29}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{846E5BFE-3BD9-4111-9FBB-1A9E4BF295A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{846E5BFE-3BD9-4111-9FBB-1A9E4BF295A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{846E5BFE-3BD9-4111-9FBB-1A9E4BF295A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{846E5BFE-3BD9-4111-9FBB-1A9E4BF295A6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{99A4FCF1-68D3-4E0B-97C6-1CD7E81C3201}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99A4FCF1-68D3-4E0B-97C6-1CD7E81C3201}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99A4FCF1-68D3-4E0B-97C6-1CD7E81C3201}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99A4FCF1-68D3-4E0B-97C6-1CD7E81C3201}.Release|Any CPU.Build.0 = Release|Any CPU
+		{680F8443-80B4-48DE-B68A-691F21E214BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{680F8443-80B4-48DE-B68A-691F21E214BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{680F8443-80B4-48DE-B68A-691F21E214BA}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{680F8443-80B4-48DE-B68A-691F21E214BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{680F8443-80B4-48DE-B68A-691F21E214BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{680F8443-80B4-48DE-B68A-691F21E214BA}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{7E0CDF9D-1EDC-4F9A-A4F6-01151BB89BB7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E0CDF9D-1EDC-4F9A-A4F6-01151BB89BB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E0CDF9D-1EDC-4F9A-A4F6-01151BB89BB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E0CDF9D-1EDC-4F9A-A4F6-01151BB89BB7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8D2864CD-DF2E-494F-9DD1-2C31ECCF55D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D2864CD-DF2E-494F-9DD1-2C31ECCF55D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D2864CD-DF2E-494F-9DD1-2C31ECCF55D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D2864CD-DF2E-494F-9DD1-2C31ECCF55D3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
