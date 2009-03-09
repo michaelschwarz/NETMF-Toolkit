@@ -1,5 +1,5 @@
 ﻿/* 
- * HttpParameter.cs
+ * MimeContentEnumerator.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -22,18 +22,55 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
- * MS   09-02-10    added MT support
+ * MS   09-03-09    initial version
  * 
- * 
+ *
  */
 using System;
+using System.Collections;
 
 namespace MSchwarz.Net.Web
 {
-    [Obsolete("Use HttpRequest.Params (NameValueCollection) instead.", true)]
-    public class HttpParameter
+    public class MimeContentEnumerator : IEnumerator
     {
-        public string Name;
-        public string Value;
+        private MimeContentCollection _collection;
+        private int _idx = -1;
+
+        public MimeContentEnumerator(MimeContentCollection collection)
+        {
+            _collection = collection;
+        }
+
+        #region IEnumerator Members
+
+        public object Current
+        {
+            get
+            {
+                return _collection[_idx];
+            }
+        }
+
+        public bool MoveNext()
+        {
+            _idx++;
+            if (_idx < _collection.Count)
+            {
+                return true;
+            }
+            else
+            {
+                _idx = -1;
+                return false;
+            }
+
+        }
+
+        public void Reset()
+        {
+            _idx = -1;
+        }
+
+        #endregion
     }
 }

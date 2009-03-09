@@ -24,9 +24,20 @@
  * 
  * MS	08-03-24	initial version
  * MS   09-02-10    added GetHeaderValue
+ * MS   09-03-09    changed that HttpRequest is reading the request instead of ProcessClientRequest
  * 
  */
 using System;
+using System.IO;
+using System.Threading;
+using System.Net.Sockets;
+using System.Text;
+using System.Net;
+#if(MF)
+using MSchwarz.Collection.Spezialized;
+#else
+using System.Collections.Specialized;
+#endif
 
 namespace MSchwarz.Net.Web
 {
@@ -41,13 +52,22 @@ namespace MSchwarz.Net.Web
 
         private string _userHostAddress;
 
-        private HttpCookie[] _cookies;
-        private HttpParameter[] _params;
+        private NameValueCollection _headers = null;
+        private HttpCookieCollection _cookies = null;
+        private NameValueCollection _params = null;
+        private NameValueCollection _form = null;
+        private MimeContentCollection _mime = null;
 
-        public HttpHeader[] Headers;
-        
-        
-        public byte[] Body = null;
+        private byte[] _body = null;
+
+        internal long totalBytes = 0;
+
+        private const long MAX_BYTE_PER_REQUEST = 100 * 1024;
+
+        public HttpRequest()
+        {
+            _headers = new NameValueCollection();
+        }
 
         #region Public Properties
 
@@ -55,47 +75,131 @@ namespace MSchwarz.Net.Web
         {
             get
             {
-                if (_params == null || _params.Length == 0)
-                    return null;
+                if (_form != null && _form[name] != null)
+                    return _form[name];
 
-                for (int i = 0; i < _params.Length; i++)
-                {
-                    if (_params[i].Name == name)
-                        return _params[i].Value;
-                }
+                if (_params != null && _params[name] != null)
+                    return _params[name];
+
+                if (_headers != null && _headers[name] != null)
+                    return _headers[name];
 
                 return null;
             }
         }
 
-        public HttpParameter[] Params
+        public NameValueCollection Params
         {
             get { return _params; }
             internal set { _params = value; }
         }
 
-        public HttpCookie[] Cookies
+        public NameValueCollection Headers
+        {
+            get
+            {
+                return _headers;
+            }
+            internal set
+            {
+                _headers = value;
+            }
+        }
+
+        public NameValueCollection Form
+        {
+            get
+            {
+                return _form;
+            }
+            internal set
+            {
+                _form = value;
+            }
+        }
+
+        public MimeContentCollection MimeContent
+        {
+            get
+            {
+                return _mime;
+            }
+            internal set
+            {
+                _mime = value;
+            }
+        }
+
+        public HttpCookieCollection Cookies
         {
             get
             {
                 if (_cookies == null)
                 {
-                    _cookies = HttpCookie.CookiesFromHeader(GetHeaderValue("Cookie"));
-                }
+                    _cookies = new HttpCookieCollection();
 
-                if (_cookies == null)
-                    _cookies = new HttpCookie[0];
+                    string cookies = Headers["Cookie"];
+
+                    if (cookies == null || cookies.Length == 0)
+                        return _cookies;
+
+
+                    foreach (string cookieStr in cookies.Split(';'))
+                    {
+                        string[] cookieParts = cookieStr.Split('=');
+
+                        if (cookieParts.Length != 2)
+                            continue;
+
+                        _cookies.Add(cookieParts[0], new HttpCookie(cookieParts[0], cookieParts[1]));
+                    }
+                }
 
                 return _cookies;
             }
-            internal set { _cookies = value; }
+            internal set
+            {
+                _cookies = value;
+            }
+        }
+
+        public byte[] Body
+        {
+            get
+            {
+                return _body;
+            }
+        }
+
+        public string Host
+        {
+            get
+            {
+                return (Headers["Host"] != null ? Headers["Host"] : "");
+            }
+        }
+
+        public string Connection
+        {
+            get
+            {
+                    return (Headers["Connection"] != null ? Headers["Connection"] : "");
+            }
         }
 
         public string UserAgent
         {
             get
             {
-                return GetHeaderValue("User-Agent");
+                return (Headers["User-Agent"] != null ? Headers["User-Agent"] : "");
+            }
+        }
+
+        public string Referer
+        {
+            get
+            {
+                return (Headers["Referer"] != null ? Headers["Referer"] : "");
             }
         }
 
@@ -103,14 +207,14 @@ namespace MSchwarz.Net.Web
         {
             get
             {
-                string accept = GetHeaderValue("Accept");
+                string accept = Headers["Accept"];
 
                 if (accept == null)
                     return null;
 
                 string[] acceptTypes = accept.Split(',');
 
-                for(int i=0; i<acceptTypes.Length; i++)
+                for (int i = 0; i < acceptTypes.Length; i++)
                 {
                     acceptTypes[i].Trim();
                 }
@@ -123,7 +227,10 @@ namespace MSchwarz.Net.Web
         {
             get
             {
-                return int.Parse(GetHeaderValue("Content-Length"));
+                if (Headers["Content-Length"] != null)
+                    return int.Parse(Headers["Content-Length"]);
+
+                return 0;
             }
         }
 
@@ -131,7 +238,16 @@ namespace MSchwarz.Net.Web
         {
             get
             {
-                return this["Content-Type"];
+                if (Headers["Content-Type"] != null)
+                    return Headers["Content-Type"];
+
+                if (Headers["Content-type"] != null)
+                    return Headers["Content-type"];
+
+                if (Headers["content-type"] != null)
+                    return Headers["content-type"];
+
+                return "";
             }
         }
 
@@ -175,6 +291,9 @@ namespace MSchwarz.Net.Web
         {
             get
             {
+                if (_path == null)
+                    return RawUrl;
+
                 return _path;
             }
             internal set
@@ -209,21 +328,262 @@ namespace MSchwarz.Net.Web
 
         #endregion
 
-        public string GetHeaderValue(string name)
+        internal bool RaiseError()
         {
-            if (Headers == null)
-                return null;
+            return false;
+        }
+        
+        internal bool ReadSocket(Socket socket)
+        {
+            byte[] buffer = new byte[1024];
+            RequestParserState state = RequestParserState.ReadMethod;
+            MemoryStream ms = null;
 
-            for (int i = 0; i < Headers.Length; i++)
+            UserHostAddress = (socket.RemoteEndPoint as IPEndPoint).Address.ToString();
+
+            while (true)
             {
-                if (Headers[i] == null)
-                    continue;
+                if (!socket.Poll(500, SelectMode.SelectRead))
+                {
+                    if (HttpMethod == "POST" && (_body == null || _body.Length < ContentLength))
+                        continue;
 
-                if (Headers[i].Name == name)
-                    return Headers[i].Value;
+                    break;
+                }
+
+                int avail = socket.Available;
+                if (avail == 0)
+                {
+                    //Thread.Sleep(10);
+                    continue;
+                }
+
+#if(MF)
+                // set all bytes to null byte (strings are ending with null byte in MF)
+                Array.Clear(buffer, 0, buffer.Length);
+#endif
+                int bytesRead = socket.Receive(buffer, avail > buffer.Length ? buffer.Length : avail, SocketFlags.None);
+
+                totalBytes += bytesRead;
+
+                int idx = 0;
+                string key = "";
+                string value = "";
+
+                do
+                {
+                    switch (state)
+                    {
+                        case RequestParserState.ReadMethod:
+                            if (buffer[idx] != ' ')
+                                HttpMethod += (char)buffer[idx++];
+                            else
+                            {
+                                idx++;
+                                state = RequestParserState.ReadUrl;
+                            }
+                            break;
+
+                        case RequestParserState.ReadUrl:
+                            if (buffer[idx] == '?')
+                            {
+                                idx++;
+                                key = "";
+                                _params = new NameValueCollection();
+                                state = RequestParserState.ReadParamKey;
+                            }
+                            else if (buffer[idx] != ' ')
+                            {
+                                RawUrl += (char)buffer[idx++];
+                            }
+                            else
+                            {
+                                idx++;
+                                RawUrl = HttpServerUtility.UrlDecode(RawUrl);
+                                state = RequestParserState.ReadVersion;
+                            }
+                            break;
+                        case RequestParserState.ReadParamKey:
+                            if (buffer[idx] == '=')
+                            {
+                                idx++;
+                                value = "";
+                                state = RequestParserState.ReadParamValue;
+                            }
+                            else if (buffer[idx] == ' ')
+                            {
+                                idx++;
+                                RawUrl = HttpServerUtility.UrlDecode(RawUrl);
+                                state = RequestParserState.ReadVersion;
+                            }
+                            else
+                            {
+                                key += (char)buffer[idx++];
+                            }
+                            break;
+                        case RequestParserState.ReadParamValue:
+                            if (buffer[idx] == '&')
+                            {
+                                idx++;
+                                key = HttpServerUtility.UrlDecode(key);
+                                value = HttpServerUtility.UrlDecode(value);
+
+                                Params[key] = (Params[key] != null ? Params[key] + ", " + value : value);
+
+                                key = "";
+                                value = "";
+
+                                state = RequestParserState.ReadParamKey;
+                            }
+                            else if (buffer[idx] == ' ')
+                            {
+                                idx++;
+                                key = HttpServerUtility.UrlDecode(key);
+                                value = HttpServerUtility.UrlDecode(value);
+
+                                Params[key] = (Params[key] != null ? Params[key] + ", " + value : value);
+
+                                RawUrl = HttpServerUtility.UrlDecode(RawUrl);
+
+                                state = RequestParserState.ReadVersion;
+                            }
+                            else
+                            {
+                                value += (char)buffer[idx++];
+                            }
+                            break;
+                        case RequestParserState.ReadVersion:
+                            if (buffer[idx] == '\r')
+                                idx++;
+                            else if (buffer[idx] != '\n')
+                                HttpVersion += (char)buffer[idx++];
+                            else
+                            {
+                                idx++;
+                                key = "";
+                                Headers = new NameValueCollection();
+                                state = RequestParserState.ReadHeaderKey;
+                            }
+                            break;
+                        case RequestParserState.ReadHeaderKey:
+                            if (buffer[idx] == '\r')
+                                idx++;
+                            else if (buffer[idx] == '\n')
+                            {
+                                idx++;
+                                if (HttpMethod == "POST")
+                                    state = RequestParserState.ReadBody;
+                                else
+                                    state = RequestParserState.ReadDone;
+                            }
+                            else if (buffer[idx] == ':')
+                                idx++;
+                            else if (buffer[idx] != ' ')
+                                key += (char)buffer[idx++];
+                            else
+                            {
+                                idx++;
+                                value = "";
+                                state = RequestParserState.ReadHeaderValue;
+                            }
+                            break;
+                        case RequestParserState.ReadHeaderValue:
+                            if (buffer[idx] == '\r')
+                                idx++;
+                            else if (buffer[idx] != '\n')
+                                value += (char)buffer[idx++];
+                            else
+                            {
+                                idx++;
+                                Headers.Add(key, value);
+                                key = "";
+                                state = RequestParserState.ReadHeaderKey;
+                            }
+                            break;
+                        case RequestParserState.ReadBody:
+
+                            if (ms == null)
+                                ms = new MemoryStream();
+
+                            ms.Write(buffer, idx, bytesRead - idx);
+                            idx = bytesRead;
+
+                            if (ms.Length >= ContentLength)
+                            {
+                                state = RequestParserState.ReadDone;
+                                _body = ms.ToArray();
+
+                                // if using a <form/> tag with POST check if it is urlencoded or multipart boundary
+
+                                if (ContentType == "application/x-www-form-urlencoded")
+                                {
+                                    _form = new NameValueCollection();
+                                    key = "";
+                                    value = null;
+
+                                    for (int i = 0; i < _body.Length; i++)
+                                    {
+                                        if (_body[i] == '=')
+                                            value = "";
+                                        else if (_body[i] == '&')
+                                        {
+                                            _form.Add(key, value != null ? HttpServerUtility.UrlDecode(value) : "");
+                                            key = "";
+                                            value = null;
+                                        }
+                                        else if (value == null)
+                                            key += (char)_body[i];
+                                        else if (value != null)
+                                            value += (char)_body[i];
+                                    }
+
+                                    if (key != null && key.Length > 0)
+                                    {
+                                        _form.Add(key, value != null ? HttpServerUtility.UrlDecode(value) : "");
+                                    }
+                                }
+                                else if (ContentType != null && ContentType.Length > "multipart/form-data; boundary=".Length && ContentType.Substring(0, "multipart/form-data; boundary=".Length) == "multipart/form-data; boundary=")
+                                {
+                                    string boundary = ContentType.Substring("multipart/form-data; boundary=".Length);
+
+                                    _mime = new MimeContentCollection();
+
+                                    MimeParser mp = new MimeParser(_body, boundary);
+
+                                    MimeContent mime = mp.GetNextContent();
+                                    while (mime != null)
+                                    {
+                                        _mime.Add(mime.Name, mime);
+
+                                        if (mime.Headers["Content-Disposition"] != null && mime.Headers["Content-Disposition"].IndexOf("form-data") >= 0)
+                                        {
+                                            if (_form == null)
+                                                _form = new NameValueCollection();
+
+                                            _form.Add(mime.Name, (mime.Content != null && mime.Content.Length > 0 ? new string(Encoding.UTF8.GetChars(mime.Content)) : ""));
+                                        }
+
+                                        mime = mp.GetNextContent();
+                                    }
+                                }
+                            }
+
+                            break;
+
+                        case RequestParserState.ReadDone:
+                            return true;
+                            break;
+
+                        default:
+                            //idx++;
+                            break;
+
+                    }
+                }
+                while (idx < bytesRead);
             }
 
-            return null;
+            return false;
         }
     }
 }

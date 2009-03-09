@@ -1,5 +1,5 @@
 ﻿/* 
- * HttpParameter.cs
+ * NameValuePair.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -22,18 +22,55 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
- * MS   09-02-10    added MT support
+ * MS   09-03-09    initial version
  * 
- * 
+ *
  */
 using System;
 
-namespace MSchwarz.Net.Web
+namespace MSchwarz.Collection.Spezialized
 {
-    [Obsolete("Use HttpRequest.Params (NameValueCollection) instead.", true)]
-    public class HttpParameter
+    internal class NameValuePair
     {
-        public string Name;
-        public string Value;
+        private string _name;
+        private string _value;
+
+        #region Public Properties
+
+        public string Name
+        {
+            get
+            {
+                return _name;
+            }
+            set
+            {
+                _name = value;
+            }
+        }
+
+        public string Value
+        {
+            get
+            {
+                return _value;
+            }
+            set
+            {
+                _value = value;
+            }
+        }
+
+        #endregion
+
+        public NameValuePair()
+        {
+        }
+
+        public NameValuePair(string name, string value)
+        {
+            Name = name;
+            Value = value;
+        }
     }
 }

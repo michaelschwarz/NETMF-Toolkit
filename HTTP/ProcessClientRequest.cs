@@ -24,7 +24,7 @@
  * 
  * MS	08-03-24	initial version
  * MS   09-02-10    fixed keep-alive support
- * 
+ * MS   09-03-09    changed how the request and response is handled
  * 
  * 
  */
@@ -45,74 +45,12 @@ namespace MSchwarz.Net.Web
         private Socket _client;
         private IHttpHandler _handler;
         private HttpServer _server;
-        private int _bufferSize = 256;
-        private DateTime _begin;
 
-        private const long MAX_BYTE_PER_REQUEST = 100 * 1024;
-        
         public ProcessClientRequest(ref Socket Client, IHttpHandler Handler, HttpServer Server)
         {
             _client = Client;
             _handler = Handler;
             _server = Server;
-
-#if(!MF)
-            _bufferSize = 2048;
-#endif
-        }
-
-		public int Send(Byte[] data)
-        {
-            if (_client == null || data == null || data.Length <= 0)
-            {
-#if(MF && DEBUG)
-                Microsoft.SPOT.Debug.Print("client not available or data is null");
-#endif
-                return -1;
-            }
-
-            try
-            {
-                if (_client.Poll(500, SelectMode.SelectWrite))
-                {
-#if(MF && DEBUG)
-                    Microsoft.SPOT.Debug.Print(data.Length + " bytes to send");
-#endif
-                    int bytesSent = _client.Send(data);
-
-#if(MF && DEBUG)
-                    Microsoft.SPOT.Debug.Print(bytesSent + " bytes sent");
-#endif
-
-                    return bytesSent;
-                }
-                else
-                {
-#if(MF && DEBUG)
-                    Microsoft.SPOT.Debug.Print("client not able to write");
-#endif
-                }
-            }
-            catch (SocketException se)
-            {
-#if(MF && DEBUG)
-                Microsoft.SPOT.Debug.Print("SocketException: " + se.Message);
-#endif
-                _client.Close();
-                _client = null;
-
-                return -1;
-            }
-            catch (Exception ex)
-            {
-#if(MF && DEBUG)
-                Microsoft.SPOT.Debug.Print("Exception: " + ex.Message);
-#endif
-                _client.Close();
-                _client = null;
-            }
-            
-            return -1;
         }
 
         private void RaiseError(HttpStatusCode httpStatusCode)
@@ -122,14 +60,14 @@ namespace MSchwarz.Net.Web
 
         private void RaiseError(HttpStatusCode httpStatusCode, string details)
         {
-            HttpResponse res = new HttpResponse();
+            //HttpResponse res = new HttpResponse();
 
-            res.Connection = "Close";
-            res.HttpStatus = httpStatusCode;
-            res.RaiseError(details);
+            //res.Connection = "Close";
+            //res.HttpStatus = httpStatusCode;
+            //res.RaiseError(details);
 
-            Send(res.GetResponseHeaderBytes());
-            Send(res.GetResponseBytes());
+            //Send(res.GetResponseHeaderBytes());
+            //Send(res.GetResponseBytes());
 
             Close();
         } 
@@ -150,360 +88,74 @@ namespace MSchwarz.Net.Web
         {
             using (_client)
             {
-                while(true)
+                while (true)
                 {
-                    try
+#if(!MF)
+                    Console.WriteLine((_client.RemoteEndPoint as IPEndPoint).ToString());
+#endif
+
+
+                    #region Wait for first byte (used for keep-alive, too)
+
+                    int avail = 0;
+
+                    DateTime maxWait = DateTime.Now.AddMilliseconds(2000);
+                    do
                     {
-                        //_begin = DateTime.Now;
-
-                        string requestHeader = "";
-                        long bytesReceived = 0;
-
-                        string[] httpRequest = null;
-                        HttpRequest request = null;
-                        ArrayList header = new ArrayList();
-                        bool isHeader = true;
-                        MemoryStream requestBody = null;
-                        long contentLength = 0;
-
-                        int avail = 0;
-                        byte[] buffer = new byte[_bufferSize];
-
-                        #region Wait for first byte
-
-
-                        // wait maxWait unil first byte arrives
-                        DateTime maxWait = DateTime.Now.AddMilliseconds(2000);
-                        do
-                        {
-                            try
-                            {
-                                avail = _client.Available;
-
-                                //if (avail == 0)
-                                //    Thread.Sleep(10);
-                            }
-                            catch
-                            {
-                                break;
-                            }
-                        }
-                        while (avail == 0 && DateTime.Now <= maxWait);
-
-                        #endregion
-
-                        if (avail == 0)
-                            break;
-
-                        #region Reading http request header and body
-
-                        _begin = DateTime.Now;
-
                         try
                         {
-                            while (_client.Poll(500, SelectMode.SelectRead)
-                                || (contentLength > 0 && requestBody != null && contentLength != requestBody.Length)
-                                )
-                            {
-                                avail = _client.Available;
+                            avail = _client.Available;
 
-                                if (avail == 0)
-                                {
-                                    //Thread.Sleep(10);
-                                    continue;
-                                }
-#if(MF)
-                                // set all bytes to null byte (strings are ending with null byte in MF)
-                                Array.Clear(buffer, 0, buffer.Length);
-#endif
-
-                                int bytesRead = _client.Receive(buffer, avail > buffer.Length ? buffer.Length : avail, SocketFlags.None);
-                                bytesReceived += bytesRead;
-
-                                int c = requestHeader.Length;
-#if(MF)
-                                requestHeader += new string(Encoding.UTF8.GetChars(buffer));
-#else
-                                requestHeader += new string(Encoding.UTF8.GetChars(buffer, 0, bytesRead));
-#endif
-
-                                if (!isHeader)
-                                {
-                                    requestBody.Write(buffer, 0, bytesRead);
-                                }
-                                else
-                                {
-                                    int lineBegin = 0;
-                                    int lineEnd = 0;
-
-                                    while (isHeader)
-                                    {
-                                        lineEnd = requestHeader.IndexOf("\r\n", lineBegin);
-
-                                        if (lineEnd < 0)
-                                        {
-                                            if (lineBegin + 2 < requestHeader.Length)
-                                                requestHeader = requestHeader.Substring(lineBegin);
-
-                                            break;
-                                        }
-
-                                        if (lineEnd - lineBegin > 0)
-                                        {
-                                            header.Add(requestHeader.Substring(lineBegin, lineEnd - lineBegin));
-                                        }
-                                        else
-                                        {
-                                            isHeader = false;
-
-                                            lineBegin += 2;
-
-                                            #region Analyzing http header
-
-                                            if (header.Count == 0)
-                                            {
-                                                RaiseError(HttpStatusCode.BadRequest, "header.Count == 0");
-                                                return;
-                                            }
-
-                                            // GET /index.htm HTTP/1.1
-                                            httpRequest = header[0].ToString().Split(' ');
-
-                                            if (httpRequest.Length != 3)
-                                            {
-                                                RaiseError(HttpStatusCode.BadRequest, "httpRequest.Length != 3 => " + header[0].ToString());
-                                                return;
-                                            }
-
-                                            if (httpRequest[0] != "GET" && httpRequest[0] != "POST")
-                                            {
-                                                RaiseError(HttpStatusCode.MethodNotAllowed, "http method = " + header[0].ToString());
-                                                return;
-                                            }
-
-                                            if (httpRequest[0] == "POST")
-                                            {
-                                            }
-                                            else
-                                            {
-                                                //if (requestBody != null && requestBody.Length > 0)
-                                                //{
-                                                //    RaiseError(HttpStatusCode.BadRequest);
-                                                //    return;
-                                                //}
-                                            }
-
-                                            if (httpRequest[2] != "HTTP/1.1")        // HTTP/1.0 is not used any more
-                                            {
-                                                RaiseError(HttpStatusCode.HttpVersionNotSupported);
-                                                return;
-                                            }
-
-
-                                            request = new HttpRequest();
-                                            request.HttpMethod = httpRequest[0];
-                                            request.RawUrl = httpRequest[1];
-                                            request.Path = request.RawUrl;
-                                            request.HttpVersion = httpRequest[2];
-                                            request.UserHostAddress = (_client.RemoteEndPoint as IPEndPoint).Address.ToString();
-
-
-                                            request.Headers = new HttpHeader[header.Count - 1];
-                                            for (int i = 0; i < header.Count - 1; i++)
-                                            {
-                                                string h = header[i + 1].ToString();
-                                                int hsep = h.IndexOf(": ");
-
-                                                if (hsep > 0)
-                                                {
-                                                    if (h.Substring(0, hsep) == "Content-Length")
-                                                    {
-                                                        contentLength = int.Parse(h.Substring(hsep + 2));
-                                                    }
-
-                                                    request.Headers[i] = new HttpHeader(h.Substring(0, hsep), h.Substring(hsep + 2));
-                                                }
-                                            }
-
-                                            #endregion
-
-                                            requestBody = new MemoryStream();
-                                            requestBody.Write(buffer, lineBegin - c, bytesRead - lineBegin + c);
-
-                                            break;
-                                        }
-
-                                        lineBegin = lineEnd + 2;
-                                    }
-                                }
-                            }
-
-                            #region Handling POST bytes
-                            bool entityToLarge = false;
-                            while (contentLength > 0 && bytesReceived < contentLength)
-                            {
-                                if (!_client.Poll(300, SelectMode.SelectRead))
-                                    continue;
-
-                                avail = _client.Available;
-                                if (avail == 0)
-                                {
-                                    //Thread.Sleep(10);
-                                    continue;
-                                }
-#if(MF)
-                                // set all bytes to null byte (strings are ending with null byte in MF)
-                                Array.Clear(buffer, 0, buffer.Length);
-#endif
-
-                                int bytesRead = _client.Receive(buffer, avail > buffer.Length ? buffer.Length : avail, SocketFlags.None);
-                                bytesReceived += bytesRead;
-
-                                if (bytesRead + requestBody.Length <= MAX_BYTE_PER_REQUEST)
-                                    requestBody.Write(buffer, 0, bytesRead);
-                                else
-                                    entityToLarge = true;
-                            }
-
-                            if (entityToLarge)
-                            {
-                                RaiseError(HttpStatusCode.RequestEntitiyTooLarge);
-                                break;
-                            }
-
-                            #endregion
-
-
-                            if (bytesReceived == 0)
-                            {
-                                break;
-                            }
+                            if (avail == 0)
+                                Thread.Sleep(10);
                         }
                         catch
                         {
                             break;
                         }
+                    }
+                    while (avail == 0 && DateTime.Now <= maxWait);
 
-                        #endregion
+                    #endregion
 
+                    if (avail == 0)
+                        break;
 
-                        if (request == null)
-                        {
-                             break;
-                        }
-                        
+                    DateTime begin = DateTime.Now;
 
+                    HttpRequest httpRequest = new HttpRequest();
+                    httpRequest.ReadSocket(_client);
 
-                        if (request.HttpMethod == "POST" && 
+                    HttpContext ctx = new HttpContext();
+                    ctx.Request = httpRequest;
+                    ctx.Response = new HttpResponse();
 
+                    _handler.ProcessRequest(ctx);
 
-                            request.GetHeaderValue("Content-Length") != null)
-                        {
-                            if (requestBody == null || 
-                                requestBody.Length != request.ContentLength)
-                            {
-                                // TODO: maybe throw an exception?
-                            }
-                        }
+                    ctx.Response.WriteSocket(_client);
 
-                        if (requestBody != null && requestBody.Length > 0)
-                        {
-                            request.Body = requestBody.ToArray();
+                    LogAccess log = new LogAccess();
+                    log.ClientIP = httpRequest.UserHostAddress;
+                    log.BytesReceived = httpRequest.totalBytes;
+                    log.BytesSent = ctx.Response.totalBytes;
+                    log.Date = begin;
+                    log.Method = httpRequest.HttpMethod;
+                    log.RawUrl = httpRequest.RawUrl;
+                    log.UserAgent = httpRequest.UserAgent;
+                    log.HttpReferer = httpRequest.Referer;
 
-                            // TODO: parse MIME content
-                        }
-
-
-                        // parse request parameters
-                        if(httpRequest[1].IndexOf("?") >= 0)
-                        {
-                            string queryString = httpRequest[1].Substring(httpRequest[1].IndexOf("?") + 1);
-
-                            request.QueryString = queryString;
-                            request.Path = httpRequest[1].Substring(0, httpRequest[1].IndexOf("?"));
-
-                            if (queryString != null && queryString.Length > 0)
-                            {
-                                ArrayList ps = new ArrayList();
-
-                                foreach (string param in queryString.Split('&'))
-                                {
-                                    string[] keyvalue = param.Split('=');
-
-                                    HttpParameter p = new HttpParameter();
-                                    p.Name = keyvalue[0];
-
-                                    if (keyvalue.Length == 2)
-                                        p.Value = HttpServerUtility.UrlDecode(keyvalue[1]);
-
-                                    ps.Add(p);
-                                }
-
-                                request.Params = new HttpParameter[ps.Count];
-
-                                for (int i = 0; i < ps.Count; i++)
-                                    request.Params[i] = ps[i] as HttpParameter;
-                            }
-                        }
-
-                        LogAccess log = new LogAccess();
-                        log.ClientIP = (_client.RemoteEndPoint as IPEndPoint).Address;
-                        log.BytesReceived = bytesReceived;
-                        log.Date = _begin;
-                        log.Method = request.HttpMethod;
-                        log.RawUri = request.RawUrl;
-                        log.UserAgent = request.UserAgent;
-                        log.HttpReferer = request.GetHeaderValue("Referer");
-
-
-                        HttpContext ctx = new HttpContext();
-                        ctx.Request = request;
-                        ctx.Response = new HttpResponse();
-
-                        ctx.Response.Connection = request.GetHeaderValue("Connection");
-
-                        _handler.ProcessRequest(ctx);
-
-
-                        if (ctx != null && ctx.Response != null)
-                        {
-                            long bytesSent = Send(ctx.Response.GetResponseHeaderBytes());
-                            
 #if(MF)
-                            Thread.Sleep(10);
+                    log.Duration = (DateTime.Now.Ticks - begin.Ticks) / TimeSpan.TicksPerMillisecond;
+#else
+                    log.Duration = (long)(DateTime.Now - begin).TotalMilliseconds;
 #endif
 
-                            bytesSent += Send(ctx.Response.GetResponseBytes());
+                    _server.RaiseLogAccess(log);
 
-                            log.BytesSent = bytesSent;
-#if(!MF)
-                            log.Duration = (int)(DateTime.Now - log.Date).TotalMilliseconds;
-#endif
-                            _server.RaiseLogAccess(log);
+                    if (ctx.Response.Connection == null || ctx.Response.Connection != "Keep-Alive")
+                        break;
 
-                            if (bytesSent > 0)
-                            {
-                                if (ctx.Response.Connection != null && ctx.Response.Connection.ToLower() == "keep-alive")
-                                {
-                                    //Thread.Sleep(10);
-                                    continue;
-                                }
-                            }
-                        }
-                    }
-                    catch(Exception ex)
-                    {
-#if(!MF && DEBUG)
-                        Console.WriteLine("Error: " + ex.Message);
-                        Console.WriteLine("StackTrace: " + ex.StackTrace);
-#elif(MF && DEBUG)
-                        Microsoft.SPOT.Debug.Print("Error: " + ex.Message);
-                        Microsoft.SPOT.Debug.Print("StackTrace: " + ex.StackTrace);
-#endif
-                        RaiseError(HttpStatusCode.InternalServerError);
-                        return;
-                    }
-                    break;
+                    Thread.Sleep(15);
                 }
 
                 Close();
