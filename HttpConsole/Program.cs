@@ -25,8 +25,6 @@ namespace HttpConsole
             }
 
             Console.WriteLine("Done.");
-
-            thd.Abort();
 		}
 
         static void http_OnLogAccess(LogAccess data)
