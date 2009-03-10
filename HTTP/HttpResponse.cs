@@ -62,9 +62,9 @@ namespace MSchwarz.Net.Web
         {
             _content = new MemoryStream();
 
-            AddHeader("Cache-Control", "no-cache");
-            AddHeader("Pragma", "no-cache");
-            AddHeader("Expires", "-1");
+            //AddHeader("Cache-Control", "no-cache");
+            //AddHeader("Pragma", "no-cache");
+            //AddHeader("Expires", "-1");
 
             AddHeader("Content-Type", "text/plain; charset=utf-8");
             AddHeader("Server", "MSchwarz HTTP Server");
@@ -192,15 +192,25 @@ namespace MSchwarz.Net.Web
             RaiseError(null);
         }
 
+        public void RaiseError(HttpStatusCode status)
+        {
+            RaiseError(null, status);
+        }
+
         public void RaiseError(string details)
+        {
+            RaiseError(details, HttpStatusCode.InternalServerError);
+        }
+
+        public void RaiseError(string details, HttpStatusCode status)
         {
             Clear();
 
             ContentType = "text/html; charset=UTF-8";
 
             Write(@"<html><head><title>Error</title></head><body>
-<h2>" + (int)_httpStatus + " " + HttpStatusHelper.GetHttpStatusFromCode(_httpStatus) + @"</h2>
-" + (details != null ? details : "") + @"
+<h2>" + (int)status + " " + HttpStatusHelper.GetHttpStatusFromCode(status) + @"</h2>
+" + (details != null && details.Length > 0 ? "<p>" + details + "</p>": "") + @"
 </body></html>");
         }
 

@@ -48,6 +48,7 @@
     <Compile Include="Enums\LogEventType.cs" />
     <Compile Include="HttpContext.cs" />
     <Compile Include="Cookie\HttpCookie.cs" />
+    <Compile Include="HttpException.cs" />
     <Compile Include="HttpHeader.cs" />
     <Compile Include="Cookie\HttpCookieCollection.cs" />
     <Compile Include="HttpParameter.cs" />

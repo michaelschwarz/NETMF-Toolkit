@@ -53,25 +53,6 @@ namespace MSchwarz.Net.Web
             _server = Server;
         }
 
-        private void RaiseError(HttpStatusCode httpStatusCode)
-        {
-            RaiseError(httpStatusCode, null);
-        }
-
-        private void RaiseError(HttpStatusCode httpStatusCode, string details)
-        {
-            //HttpResponse res = new HttpResponse();
-
-            //res.Connection = "Close";
-            //res.HttpStatus = httpStatusCode;
-            //res.RaiseError(details);
-
-            //Send(res.GetResponseHeaderBytes());
-            //Send(res.GetResponseBytes());
-
-            Close();
-        } 
-
         private void Close()
         {
             if (_client != null)
@@ -93,7 +74,6 @@ namespace MSchwarz.Net.Web
 #if(!MF)
                     Console.WriteLine((_client.RemoteEndPoint as IPEndPoint).ToString());
 #endif
-
 
                     #region Wait for first byte (used for keep-alive, too)
 
@@ -124,20 +104,57 @@ namespace MSchwarz.Net.Web
                     DateTime begin = DateTime.Now;
 
                     HttpRequest httpRequest = new HttpRequest();
-                    httpRequest.ReadSocket(_client);
+                    HttpResponse httpResponse = null;
 
-                    HttpContext ctx = new HttpContext();
-                    ctx.Request = httpRequest;
-                    ctx.Response = new HttpResponse();
+                    try
+                    {
+                        httpRequest.ReadSocket(_client);
+                    }
+                    catch (HttpException ex)
+                    {
+                        httpResponse = new HttpResponse();
+                        httpResponse.RaiseError(ex.Message, ex.Code);
+                        httpResponse.AddHeader("Connection", "close");
+                    }
+                    catch (Exception)
+                    {
+                        httpResponse = new HttpResponse();
+                        httpResponse.RaiseError();
+                        httpResponse.AddHeader("Connection", "close");
+                    }
 
-                    _handler.ProcessRequest(ctx);
+                    if (httpResponse == null)
+                    {
+                        httpResponse = new HttpResponse();
 
-                    ctx.Response.WriteSocket(_client);
+                        HttpContext ctx = new HttpContext();
+                        ctx.Request = httpRequest;
+                        ctx.Response = httpResponse;
+
+                        try
+                        {
+                            _handler.ProcessRequest(ctx);
+                        }
+                        catch (HttpException ex)
+                        {
+                            httpResponse = new HttpResponse();
+                            httpResponse.RaiseError(ex.Message, ex.Code);
+                            httpResponse.AddHeader("Connection", "close");
+                        }
+                        catch (Exception)
+                        {
+                            httpResponse = new HttpResponse();
+                            httpResponse.RaiseError();
+                            httpResponse.AddHeader("Connection", "close");
+                        }
+                    }
+
+                    httpResponse.WriteSocket(_client);
 
                     LogAccess log = new LogAccess();
                     log.ClientIP = httpRequest.UserHostAddress;
                     log.BytesReceived = httpRequest.totalBytes;
-                    log.BytesSent = ctx.Response.totalBytes;
+                    log.BytesSent = httpResponse.totalBytes;
                     log.Date = begin;
                     log.Method = httpRequest.HttpMethod;
                     log.RawUrl = httpRequest.RawUrl;
@@ -152,7 +169,7 @@ namespace MSchwarz.Net.Web
 
                     _server.RaiseLogAccess(log);
 
-                    if (ctx.Response.Connection == null || ctx.Response.Connection != "Keep-Alive")
+                    if (httpResponse.Connection == null || httpResponse.Connection != "Keep-Alive")
                         break;
 
                     Thread.Sleep(15);

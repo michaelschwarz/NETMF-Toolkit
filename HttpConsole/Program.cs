@@ -8,13 +8,20 @@ using MSchwarz.Net.Dns;
 using System.Threading;
 using System.Net;
 using System.Net.Sockets;
+using MSchwarz.Net.XBee;
 
 namespace HttpConsole
 {
 	class Program
 	{
+        public static double temperature;
+
 		static void Main(string[] args)
 		{
+            Thread thd = new Thread(new ThreadStart(UpdateTemperature));
+            thd.IsBackground = true;
+            thd.Start();
+
             using (HttpServer http = new HttpServer(new MyHttpHandler(Path.Combine(Environment.CurrentDirectory, "..\\..\\root"))))
             {
                 http.OnLogAccess += new HttpServer.LogAccessHandler(http_OnLogAccess);
@@ -27,13 +34,58 @@ namespace HttpConsole
             Console.WriteLine("Done.");
 		}
 
+        static void UpdateTemperature()
+        {
+            using (XBee xbee = new XBee("COM4", ApiType.Enabled))
+            {
+                xbee.OnPacketReceived += new XBee.PacketReceivedHandler(xbee_OnPacketReceived);
+                xbee.Open();
+                
+                while (true)
+                {
+                    xbee.SendPacket(new NodeDiscover().GetPacket());
+
+                    Thread.Sleep(10 * 60 * 1000);
+                }
+            }
+        }
+
+        static void xbee_OnPacketReceived(XBee sender, XBeeResponse response)
+        {
+            AtCommandResponse res = response as AtCommandResponse;
+            if (res != null)
+            {
+                if (res.Data is NodeDiscoverData)
+                {
+                    NodeDiscoverData nd = res.Data as NodeDiscoverData;
+                    sender.SendPacket(new AtRemoteCommand(nd.Address16, nd.Address64, 0x00, new ForceSample(), 0x01).GetPacket());
+                }
+            }
+            AtRemoteCommandResponse res2 = response as AtRemoteCommandResponse;
+            if (res2 != null)
+            {
+                if (res2.Data is ForceSampleData)
+                {
+                    ForceSampleData d = res2.Data as ForceSampleData;
+
+                    double mVanalog = (((float)d.AD2) / 1023.0) * 1200.0;
+                    double temp_C = (mVanalog - 500.0) / 10.0 - 4.0;
+                    double lux = (((float)d.AD1) / 1023.0) * 1200.0;
+
+                    mVanalog = (((float)d.AD3) / 1023.0) * 1200.0;
+                    double hum = ((mVanalog * (108.2 / 33.2)) - 0.16) / (5 * 0.0062 * 1000.0);
+
+                    temperature = temp_C;
+                }
+            }
+        }
+
         static void http_OnLogAccess(LogAccess data)
         {
-            Console.WriteLine("------------------------------------------------------------");
-            Console.WriteLine(DateTime.Now.ToString());
-            Console.WriteLine(data.ClientIP + "\t" + data.RawUrl + "\t" + data.Method + "\t" + data.Duration + " msec\t" + data.BytesReceived + " bytes\t" + data.BytesSent + " bytes");
-            Console.WriteLine(data.UserAgent);
+            Console.WriteLine(data.ClientIP + "\t" + data.Method + "\t" + data.RawUrl + "\t" + data.Method + "\t" + data.Duration + " msec\t" + data.BytesReceived + " bytes\t" + data.BytesSent + " bytes");
+            //Console.WriteLine(data.UserAgent);
             if(data.HttpReferer != null) Console.WriteLine(data.HttpReferer);
+            Console.WriteLine("------------------------------------------------------------");
         }
 	}
 
@@ -73,6 +125,14 @@ namespace HttpConsole
 
             switch(context.Request.Path)
             {
+                case "/throwerror":
+                    throw new HttpException(MSchwarz.Net.Web.HttpStatusCode.InternalServerError);
+                    break;
+
+                case "/filenotfound":
+                    throw new HttpException(MSchwarz.Net.Web.HttpStatusCode.NotFound);
+                    break;
+
                 case "/imbot":
                     context.Response.ContentType = "text/html; charset=UTF-8";
 
@@ -154,11 +214,8 @@ setTimeout(test, 1);
 
                 case "/test.ajax":
 
-                    //if (context.Request.Connection.ToLower() == "keep-alive")
-                    //{
-                    //    context.Response.AddHeader("Connection", "Keep-Alive");
-                    //    context.Response.AddHeader("Keep-Alive", "timeout=15, max=100");
-                    //}
+                    context.Response.AddHeader("Cache-Control", "no-cache");
+                    context.Response.AddHeader("Pragma", "no-cache");
 
                     if(context.Request.Body != null && context.Request.Body.Length > 0)
                         context.Response.Write("ajax = " + Encoding.UTF8.GetString(context.Request.Body));
@@ -173,6 +230,8 @@ setTimeout(test, 1);
                     
                     
                     context.Response.Write("<h1>Welcome to my .NET Micro Framework web server</h1><p>This demo server is running on a Tahoe-II board using XBee modules to communicate with XBee sensors from Digi.</p><p>On my device the current date is " + DateTime.Now + "</b><p><b>RawUrl: " + context.Request.RawUrl + "</b><br/>" + context.Request.Headers["User-Agent"] + "</p>");
+
+                    context.Response.Write("<p>Current temperature: " + Program.temperature + "°C</p>");
 
                     if (context.Request.Params != null && context.Request.Params.Count > 0)
                     {

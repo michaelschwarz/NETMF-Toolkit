@@ -41,6 +41,8 @@ namespace MSchwarz.Net.XBee
         private byte[] _value;
         private IAtCommandData _data = null;
 
+        #region Public Properties
+
         public string Command
         {
             get { return _command; }
@@ -55,6 +57,13 @@ namespace MSchwarz.Net.XBee
         {
             get { return _value; }
         }
+
+        public IAtCommandData Data
+        {
+            get { return _data; }
+        }
+
+        #endregion
 
         public AtRemoteCommandResponse(short length, ByteReader br)
             : base(br)
