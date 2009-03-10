@@ -62,7 +62,7 @@ namespace MSchwarz.Net.Web
 
         internal long totalBytes = 0;
 
-        private const long MAX_BYTE_PER_REQUEST = 100 * 1024;
+        private const long MAX_CONTENT_LENGTH = 100 * 1024;
 
         public HttpRequest()
         {
@@ -379,6 +379,9 @@ namespace MSchwarz.Net.Web
                                 HttpMethod += (char)buffer[idx++];
                             else
                             {
+                                if (HttpMethod != "POST" && HttpMethod != "GET")
+                                    throw new HttpException(HttpStatusCode.MethodNotAllowed);
+
                                 idx++;
                                 state = RequestParserState.ReadUrl;
                             }
@@ -459,6 +462,9 @@ namespace MSchwarz.Net.Web
                                 HttpVersion += (char)buffer[idx++];
                             else
                             {
+                                if (HttpVersion != "HTTP/1.1")
+                                    throw new HttpException(HttpStatusCode.HttpVersionNotSupported);
+
                                 idx++;
                                 key = "";
                                 Headers = new NameValueCollection();
@@ -502,12 +508,18 @@ namespace MSchwarz.Net.Web
                             break;
                         case RequestParserState.ReadBody:
 
+                            if (ContentLength > MAX_CONTENT_LENGTH)
+                            {
+                                // TODO: how can I stop the client to cancel http request
+                                //throw new HttpException(HttpStatusCode.RequestEntitiyTooLarge);
+                            }
+
                             if (ms == null)
                                 ms = new MemoryStream();
 
                             ms.Write(buffer, idx, bytesRead - idx);
                             idx = bytesRead;
-
+                            
                             if (ms.Length >= ContentLength)
                             {
                                 state = RequestParserState.ReadDone;

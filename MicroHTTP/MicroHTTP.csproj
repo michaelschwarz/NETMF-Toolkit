@@ -69,6 +69,9 @@
     <Compile Include="..\HTTP\HttpContext.cs">
       <Link>HttpContext.cs</Link>
     </Compile>
+    <Compile Include="..\HTTP\HttpException.cs">
+      <Link>HttpException.cs</Link>
+    </Compile>
     <Compile Include="..\HTTP\HttpHeader.cs">
       <Link>HttpHeader.cs</Link>
     </Compile>

@@ -47,8 +47,41 @@ namespace MSchwarz.Net.XBee
 		private ushort _AD2;
 		private ushort _AD3;
 		private ushort _supplyVoltage;
- 
-		public void Fill(byte[] value)
+
+        #region Public Properties
+
+        public byte NumSamples
+        {
+            get { return _numSamples; }
+        }
+
+        // ...
+
+        public ushort AD0
+        {
+            get { return _AD0; }
+        }
+
+        public ushort AD1
+        {
+            get { return _AD1; }
+        }
+
+        public ushort AD2
+        {
+            get { return _AD2; }
+        }
+
+        public ushort AD3
+        {
+            get { return _AD3; }
+        }
+
+        // ...
+
+        #endregion
+
+        public void Fill(byte[] value)
 		{
 			ByteReader br = new ByteReader(value, ByteOrder.BigEndian);
 
