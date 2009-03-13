@@ -33,11 +33,11 @@ namespace MSchwarz.Net.Dns
     [Serializable]
     public class ResourceRecord
     {
-        private readonly string _domain;    // NAME
-        private readonly DnsType _qtype;
-        private readonly DnsClass _qclass;
-        private readonly int _ttl;
-        private readonly RecordBase _record;
+        private string _domain;    // NAME
+        private DnsType _qtype;
+        private DnsClass _qclass;
+        private int _ttl;
+        private RecordBase _record;
 
         #region Public Properties
 
@@ -47,16 +47,19 @@ namespace MSchwarz.Net.Dns
         public string Domain
         {
             get { return _domain; }
+            internal set { _domain = value; }
         }
         
         public DnsType Type 
         { 
-            get { return _qtype; } 
+            get { return _qtype; }
+            internal set { _qtype = value; }
         }
         
         public DnsClass Class 
         { 
-            get { return _qclass; } 
+            get { return _qclass; }
+            internal set { _qclass = value; }
         }
         
         /// <summary>
@@ -68,7 +71,8 @@ namespace MSchwarz.Net.Dns
         /// </summary>
         public int Ttl 
         { 
-            get { return _ttl; } 
+            get { return _ttl; }
+            internal set { _ttl = value; }
         }
 
         /// <summary>
@@ -76,10 +80,15 @@ namespace MSchwarz.Net.Dns
         /// </summary>
         public RecordBase Record 
         { 
-            get { return _record; } 
+            get { return _record; }
+            internal set { _record = value; }
         }
 
         #endregion
+
+        internal ResourceRecord()
+        {
+        }
 
         internal ResourceRecord(DnsReader br)
         {
@@ -99,7 +108,10 @@ namespace MSchwarz.Net.Dns
                     case DnsType.NS:    _record = new NSRecord(br);     break;
                     case DnsType.SOA:   _record = new SOARecord(br);    break;
                     case DnsType.TXT:   _record = new TXTRecord(br);    break;
-					case DnsType.PTR:	_record = new PTRERecord (br);	break;
+					case DnsType.PTR:	_record = new PTRERecord(br);	break;
+
+                    // NetBIOS related records
+                    case DnsType.NB:    _record = new NBRecord(br);     break;
                     
                     default:
                         br += recordLength;
@@ -111,6 +123,19 @@ namespace MSchwarz.Net.Dns
         public override string ToString()
         {
             return _domain + "\r\n" + _record.ToString();
+        }
+
+        internal void Write(DnsWriter bw)
+        {
+            bw.WriteDomain(Domain);
+            bw.Write((short)Type);
+            bw.Write((short)Class);
+            bw.Write(Ttl);
+
+            byte[] record = Record.GetBytes();
+
+            bw.Write((short)record.Length);
+            bw.Write(record);
         }
     }
 }

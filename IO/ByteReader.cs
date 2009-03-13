@@ -76,7 +76,9 @@ namespace MSchwarz.IO
 
         static ByteReader()
         {
-#if(!MF)
+#if(MF)
+            _defaultByteOrder = ByteOrder.LittleEndian;
+#else
             if (BitConverter.IsLittleEndian)
                 _defaultByteOrder = ByteOrder.LittleEndian;
             else

@@ -1,5 +1,5 @@
-﻿/* 
- * DnsClass.cs
+/* 
+ * NBRecord.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -22,36 +22,67 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
+ * MS   09-03-13    inital version
+ * 
  */
 using System;
+using System.Net;
+using MSchwarz.IO;
 
 namespace MSchwarz.Net.Dns
 {
-    /// <summary>
-    /// The DNS CLASS fields appear in resource records. (RFC 1035 3.2.4)
-    /// </summary>
-    public enum DnsClass : ushort
+    [Serializable]
+    public class NBRecord : RecordBase
     {
-        /// <summary>
-        ///  The Internet
-        /// </summary>
-        IN = 1,
+        private readonly ushort _flags;
+        private readonly IPAddress _ipAddress;
+
+        #region Public Properties
+
+        public bool G
+        {
+            get { return BitHelper.GetBit(_flags, 15); }
+        }
+
+        public ushort ONT
+        {
+            get { return BitHelper.GetBits(_flags, 13, 2); }
+        }
 
         /// <summary>
-        /// The CSNET class (Obsolete - used only for examples in 
-        /// some obsolete RFCs)
+        /// A 32 bit Internet address.
         /// </summary>
-        [Obsolete("Used only for examples in some obsolete RFCs.", true)]
-        CS = 2,
+        public IPAddress IPAddress
+        {
+            get { return _ipAddress; }
+        }
 
-        /// <summary>
-        /// The CHAOS class
-        /// </summary>
-        CH = 3,
+        #endregion
 
-        /// <summary>
-        /// Hesiod [Dyer 87]
-        /// </summary>
-        HS = 4
+        internal NBRecord(IPAddress address)
+        {
+            _ipAddress = address;
+        }
+
+        internal NBRecord(DnsReader br)
+        {
+            _flags = br.ReadUInt16();
+            _ipAddress = new IPAddress(br.ReadBytes(4));
+        }
+
+        public override string ToString()
+        {
+            return "    " + _ipAddress.ToString();
+        }
+
+        internal override byte[] GetBytes()
+        {
+            DnsWriter bw = new DnsWriter();
+
+            bw.Write(_flags);
+            bw.Write(_ipAddress.GetAddressBytes());
+
+            return bw.GetBytes();
+        }
     }
 }

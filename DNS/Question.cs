@@ -29,6 +29,7 @@
 using System;
 using System.Text;
 using System.Net;
+using MSchwarz.IO;
 #if(MF)
 using MSchwarz.Text;
 #endif
@@ -102,11 +103,18 @@ namespace MSchwarz.Net.Dns
 
 				_domain = sb.ToString ();
 			}
-			else
-				_domain = domain;
+            else
+                _domain = domain;
 
             _qtype = qtype;
             _qclass = qclass;
+        }
+
+        internal void Write(DnsWriter bw)
+        {
+            bw.WriteDomain(Domain);
+            bw.Write((short)Type);
+            bw.Write((short)Class);
         }
     }
 }

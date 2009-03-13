@@ -33,8 +33,14 @@
   </PropertyGroup>
   <Import Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <ItemGroup>
+    <Compile Include="..\DNS\DnsHeader.cs">
+      <Link>DnsHeader.cs</Link>
+    </Compile>
     <Compile Include="..\DNS\DnsRequest.cs">
       <Link>DnsRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\DNS\DnsResolver.cs">
+      <Link>DnsResolver.cs</Link>
     </Compile>
     <Compile Include="..\DNS\DnsResponse.cs">
       <Link>DnsResponse.cs</Link>
@@ -57,6 +63,9 @@
     <Compile Include="..\DNS\Helper\DnsWriter.cs">
       <Link>Helper\DnsWriter.cs</Link>
     </Compile>
+    <Compile Include="..\DNS\NetBIOS.cs">
+      <Link>NetBIOS.cs</Link>
+    </Compile>
     <Compile Include="..\DNS\Question.cs">
       <Link>Question.cs</Link>
     </Compile>
@@ -68,6 +77,9 @@
     </Compile>
     <Compile Include="..\DNS\Records\MXRecord.cs">
       <Link>Records\MXRecord.cs</Link>
+    </Compile>
+    <Compile Include="..\DNS\Records\NBRecord.cs">
+      <Link>Records\NBRecord.cs</Link>
     </Compile>
     <Compile Include="..\DNS\Records\NSRecord.cs">
       <Link>Records\NSRecord.cs</Link>
@@ -83,9 +95,6 @@
     </Compile>
     <Compile Include="..\DNS\Records\TXTRecord.cs">
       <Link>Records\TXTRecord.cs</Link>
-    </Compile>
-    <Compile Include="..\DNS\Resolver.cs">
-      <Link>Resolver.cs</Link>
     </Compile>
     <Compile Include="..\DNS\ResourceRecords\Additional.cs">
       <Link>ResourceRecords\Additional.cs</Link>

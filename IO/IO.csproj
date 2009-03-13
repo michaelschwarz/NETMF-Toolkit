@@ -44,6 +44,7 @@
     <Compile Include="ByteReader.cs" />
     <Compile Include="ByteUtil.cs" />
     <Compile Include="ByteWriter.cs" />
+    <Compile Include="Helper\BitHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

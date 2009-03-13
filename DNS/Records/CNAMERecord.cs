@@ -33,7 +33,7 @@ namespace MSchwarz.Net.Dns
     [Serializable]
     public class CNAMERecord : RecordBase
     {
-        internal string _domain;
+        private readonly string _domain;
 
         #region Public Properties
 

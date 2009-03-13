@@ -37,9 +37,7 @@ namespace MSchwarz.Net.Dns
 {
     public class DnsResponse
     {
-        private readonly short _messageID;
-        private readonly byte _flag1;
-        private readonly byte _flag2;
+        private readonly DnsHeader _header;
         private readonly short _numQuestions;
         private readonly short _numAnswers;
         private readonly short _numNameServers;
@@ -59,9 +57,9 @@ namespace MSchwarz.Net.Dns
 
         #region Public Properties
 
-        public short MessageID
+        public DnsHeader Header
         {
-            get { return _messageID; }
+            get { return _header; }
         }
 
 #if(MF)
@@ -111,12 +109,7 @@ namespace MSchwarz.Net.Dns
 
         internal DnsResponse(DnsReader br)
         {
-            // Header (RFC 1035 4.1.1)
-            _messageID = br.ReadInt16();
-
-            // TODO: all flags
-            _flag1 = br.ReadByte();
-            _flag2 = br.ReadByte();
+            _header = new DnsHeader(br);
 
             _numQuestions = br.ReadInt16();
             _numAnswers = br.ReadInt16();
