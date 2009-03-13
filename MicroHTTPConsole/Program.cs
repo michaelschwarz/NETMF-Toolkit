@@ -5,7 +5,6 @@ using System.Threading;
 using System.Text;
 using System.Net;
 using Microsoft.SPOT.Net.NetworkInformation;
-using MSchwarz.Net.Dns;
 using MSchwarz.Net.Ntp;
 using System.IO;
 
