@@ -30,12 +30,15 @@ using System.IO;
 using MSchwarz.IO;
 using System.Text;
 using System.Collections;
+#if(MF)
+using MSchwarz.Text;
+#endif
 
 namespace MSchwarz.Net.Web
 {
     public class HttpServerUtility
     {
-        static bool IsSafe(char c)
+        private static bool IsSafe(char c)
         {
 #if(!MF)
             if (char.IsLetterOrDigit(c))
@@ -118,6 +121,35 @@ namespace MSchwarz.Net.Web
 #else
             return Encoding.UTF8.GetString(b, 0, b.Length);
 #endif
+        }
+
+        public static string HtmlEncode(string s)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            foreach (char c in s)
+            {
+                switch(c)
+                {
+                    case '&':
+                        sb.Append("&amp;");
+                        break;
+                    case '<':
+                        sb.Append("&lt;");
+                        break;
+                    case '>':
+                        sb.Append("&gt;");
+                        break;
+                    default:
+                        if ((int)(c) > 127)
+                            sb.Append("&#" + (int)(c) + ";");
+                        else
+                            sb.Append(c);
+                        break;
+                }
+            }
+		
+            return sb.ToString();
         }
     }
 }
