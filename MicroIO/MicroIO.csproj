@@ -45,6 +45,9 @@
     <Compile Include="..\IO\ByteWriter.cs">
       <Link>ByteWriter.cs</Link>
     </Compile>
+    <Compile Include="..\IO\Helper\BitHelper.cs">
+      <Link>Helper\BitHelper.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StringBuilder.cs" />
   </ItemGroup>

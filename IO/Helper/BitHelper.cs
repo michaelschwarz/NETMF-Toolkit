@@ -1,5 +1,5 @@
 ﻿/* 
- * DnsClass.cs
+ * BitHelper.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -22,36 +22,46 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
+ * MS   09-03-13    initial version
+ * 
  */
 using System;
 
-namespace MSchwarz.Net.Dns
+namespace MSchwarz.IO
 {
-    /// <summary>
-    /// The DNS CLASS fields appear in resource records. (RFC 1035 3.2.4)
-    /// </summary>
-    public enum DnsClass : ushort
+    public class BitHelper
     {
-        /// <summary>
-        ///  The Internet
-        /// </summary>
-        IN = 1,
+        public static ushort SetBit(ref ushort value, int position, bool flag)
+        {
+            return SetBits(ref value, position, 1, (flag ? (ushort)1 : (ushort)0));
+        }
 
-        /// <summary>
-        /// The CSNET class (Obsolete - used only for examples in 
-        /// some obsolete RFCs)
-        /// </summary>
-        [Obsolete("Used only for examples in some obsolete RFCs.", true)]
-        CS = 2,
+        public static ushort SetBits(ref ushort value, int position, int length, ushort bits)
+        {
+            if (length <= 0 || position >= 16)
+                return value;
 
-        /// <summary>
-        /// The CHAOS class
-        /// </summary>
-        CH = 3,
+            int mask = (2 << (length - 1)) - 1;
 
-        /// <summary>
-        /// Hesiod [Dyer 87]
-        /// </summary>
-        HS = 4
+            value &= (ushort)~(mask << position);
+            value |= (ushort)((bits & mask) << position);
+
+            return value;
+        }
+
+        public static bool GetBit(ushort value, int position)
+        {
+            return (GetBits(value, position, 1) == 1);
+        }
+
+        public static ushort GetBits(ushort value, int position, int length)
+        {
+            if (length <= 0 || position >= 16)
+                return 0;
+
+            int mask = (2 << (length - 1)) - 1;
+
+            return (ushort)((value >> position) & mask);
+        }
     }
 }

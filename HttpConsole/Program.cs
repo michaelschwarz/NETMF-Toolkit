@@ -14,13 +14,13 @@ namespace HttpConsole
 {
 	class Program
 	{
-        public static double temperature;
+        public static double temperature = 17.235;
 
 		static void Main(string[] args)
 		{
-            Thread thd = new Thread(new ThreadStart(UpdateTemperature));
-            thd.IsBackground = true;
-            thd.Start();
+            //Thread thd = new Thread(new ThreadStart(UpdateTemperature));
+            //thd.IsBackground = true;
+            //thd.Start();
 
             using (HttpServer http = new HttpServer(new MyHttpHandler(Path.Combine(Environment.CurrentDirectory, "..\\..\\root"))))
             {
@@ -36,7 +36,7 @@ namespace HttpConsole
 
         static void UpdateTemperature()
         {
-            using (XBee xbee = new XBee("COM4", ApiType.Enabled))
+            using (XBee xbee = new XBee("COM5", ApiType.Enabled))
             {
                 xbee.OnPacketReceived += new XBee.PacketReceivedHandler(xbee_OnPacketReceived);
                 xbee.Open();
@@ -82,10 +82,10 @@ namespace HttpConsole
 
         static void http_OnLogAccess(LogAccess data)
         {
-            Console.WriteLine(data.ClientIP + "\t" + data.Method + "\t" + data.RawUrl + "\t" + data.Method + "\t" + data.Duration + " msec\t" + data.BytesReceived + " bytes\t" + data.BytesSent + " bytes");
-            //Console.WriteLine(data.UserAgent);
+            Console.WriteLine(data.Date + "\t" + data.ClientIP + "\t" + data.Method + "\t" + data.RawUrl);
+            Console.WriteLine(data.UserAgent);
             if(data.HttpReferer != null) Console.WriteLine(data.HttpReferer);
-            Console.WriteLine("------------------------------------------------------------");
+            //Console.WriteLine("------------------------------------------------------------");
         }
 	}
 
@@ -138,23 +138,37 @@ namespace HttpConsole
 
                     switch (context.Request.Form["step"])
                     {
+                        case "1":
+                            context.Response.Write("Hi, what's your name?");
+                            break;
+
                         case "2":
-                            context.Response.WriteLine("Hi " + context.Request["value1"] + ", where do you live?");
+                            context.Response.Write("Hi " + HttpServerUtility.HtmlEncode(context.Request["value1"]) + ", where do you live?");
                             break;
 
                         case "3":
-                            context.Response.WriteLine("Well, welcome to this hello world bot, " + context.Request["value1"] + " from " + context.Request["value2"] + ".");
-                            context.Response.WriteLine("<br/>");
-                            context.Response.WriteLine("Visit my blog at http://netmicroframework.blogspot.com/");
-                            context.Response.WriteLine("<reset>");
+                            context.Response.WriteLine("Well, welcome to this hello world bot, " + HttpServerUtility.HtmlEncode(context.Request["value1"]) + " from " + HttpServerUtility.HtmlEncode(context.Request["value2"]) + ".");
+                            context.Response.WriteLine("<br>");
+                            context.Response.Write("Which temperature do you want to read?<br>A : Kitchen<br>B : Simulated<br>Hit A or B and press enter...");
                             break;
 
-                        case "1":
-                            context.Response.WriteLine("Hi, what's your name?");
+                        case "4":
+                            if (context.Request["value3"] == "A")
+                                context.Response.WriteLine("In the kitchen it is " + Program.temperature + HttpServerUtility.HtmlEncode(" °C."));
+                            else if (context.Request["value3"] == "B")
+                                context.Response.WriteLine("In the simulated room it is " + new Random().Next(17, 20) + HttpServerUtility.HtmlEncode(" °C."));
+                            else
+                                context.Response.WriteLine("I don't know this room.");
+
+                            context.Response.WriteLine("<br>");
+                            context.Response.WriteLine("<br>");
+                            context.Response.WriteLine("Visit my blog at http://netmicroframework.blogspot.com/");
+                            context.Response.Write("<reset>");
                             break;
+
 
                         default:
-                            context.Response.WriteLine("<goto=1>");
+                            context.Response.Write("<goto=1>");
                             break;
                     }
 

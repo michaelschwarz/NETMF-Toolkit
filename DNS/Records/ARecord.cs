@@ -39,7 +39,7 @@ namespace MSchwarz.Net.Dns
     [Serializable]
     public class ARecord : RecordBase
     {
-        internal IPAddress _ipAddress;
+        private readonly IPAddress _ipAddress;
 
         #region Public Properties
 

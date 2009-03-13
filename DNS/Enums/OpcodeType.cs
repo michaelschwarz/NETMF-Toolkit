@@ -28,12 +28,13 @@ using System;
 namespace MSchwarz.Net.Dns
 {
     /// <summary>
-    /// The Query Types (OPCODE) that specifies kind of query in a message. (RFC 1035 4.1.1)
+    /// The Query Types (OPCODE) that specifies kind of query in a message.
+    /// (RFC 1035 4.1.1 and 1002 4.2.1.1)
     /// </summary>
     public enum OpcodeType
     {
         /// <summary>
-        /// A standard query (QUERY)
+        /// A standard query (QUERY); used for NetBIOS, too
         /// </summary>
         Query = 0,
 
@@ -50,66 +51,75 @@ namespace MSchwarz.Net.Dns
         /// <summary>
         /// Reserved for future use
         /// </summary>
+        [Obsolete("Reserved for future use.")]
         Reserverd3 = 3,
 
         /// <summary>
         /// Reserved for future use
         /// </summary>
+        [Obsolete("Reserved for future use.")]
         Reserverd4 = 4,
 
         /// <summary>
-        /// Reserved for future use
+        /// NetBIOS registration
         /// </summary>
-        Reserverd5 = 5,
+        Registration = 5,
+
+        /// <summary>
+        /// NetBIOS release
+        /// </summary>
+        Release = 6,
+
+        /// <summary>
+        /// NetBIOS WACK
+        /// </summary>
+        WACK = 7,
+
+        /// <summary>
+        /// NetBIOS refresh
+        /// </summary>
+        Refresh = 8,
 
         /// <summary>
         /// Reserved for future use
         /// </summary>
-        Reserverd6 = 6,
-
-        /// <summary>
-        /// Reserved for future use
-        /// </summary>
-        Reserverd7 = 7,
-
-        /// <summary>
-        /// Reserved for future use
-        /// </summary>
-        Reserverd8 = 8,
-
-        /// <summary>
-        /// Reserved for future use
-        /// </summary>
+        [Obsolete("Reserved for future use.")]
         Reserverd9 = 9,
 
         /// <summary>
         /// Reserved for future use
         /// </summary>
+        [Obsolete("Reserved for future use.")]
         Reserverd10 = 10,
 
         /// <summary>
         /// Reserved for future use
         /// </summary>
+        [Obsolete("Reserved for future use.")]
         Reserverd11 = 11,
 
         /// <summary>
         /// Reserved for future use
         /// </summary>
+        [Obsolete("Reserved for future use.")]
         Reserverd12 = 12,
 
         /// <summary>
         /// Reserved for future use
         /// </summary>
+        [Obsolete("Reserved for future use.")]
         Reserverd13 = 13,
 
         /// <summary>
         /// Reserved for future use
         /// </summary>
+        [Obsolete("Reserved for future use.")]
         Reserverd14 = 14,
 
         /// <summary>
         /// Reserved for future use
         /// </summary>
+        [Obsolete("Reserved for future use.")]
         Reserverd15 = 15
     }
 }

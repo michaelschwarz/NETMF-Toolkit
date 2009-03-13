@@ -1,5 +1,5 @@
 ﻿/* 
- * Resolver.cs
+ * DnsResolver.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -42,6 +42,7 @@ namespace MSchwarz.Net.Dns
         private IPEndPoint _endPoint;
         private readonly int _maxRetryAttemps = 2;
         private Exception _lastException = null;
+        private ushort _nextMessageID = 1;
 
         public DnsResolver()
         {
@@ -128,6 +129,9 @@ namespace MSchwarz.Net.Dns
         {
             int attempts = 0;
 
+            if (request.Header.MessageID == 0)
+                request.Header.MessageID = _nextMessageID++;
+
             while (attempts <= _maxRetryAttemps)
             {
                 byte[] bytes = request.GetMessage();
@@ -167,7 +171,7 @@ namespace MSchwarz.Net.Dns
                     DnsReader br = new DnsReader(responseMessage);
                     DnsResponse res = new DnsResponse(br);
 
-                    if (request.MessageID == res.MessageID)
+                    if (request.Header.MessageID == res.Header.MessageID)
                         return res;
 
                     _lastException = new Exception("Not the answer for the current query.");

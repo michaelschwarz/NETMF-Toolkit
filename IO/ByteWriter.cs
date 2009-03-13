@@ -103,7 +103,9 @@ namespace MSchwarz.IO
 
         static ByteWriter()
         {
-#if(!MF)
+#if(MF)
+            _defaultByteOrder = ByteOrder.LittleEndian;
+#else
             if (BitConverter.IsLittleEndian)
                 _defaultByteOrder = ByteOrder.LittleEndian;
             else

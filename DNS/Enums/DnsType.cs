@@ -30,10 +30,8 @@ namespace MSchwarz.Net.Dns
     /// <summary>
     /// The DNS TYPE fields are used in resource records. (RFC 1035 3.2.2)
     /// </summary>
-    public enum DnsType : short
+    public enum DnsType : ushort
     {
-        None = 0,
-
         /// <summary>
         /// A host address
         /// </summary>
@@ -118,6 +116,16 @@ namespace MSchwarz.Net.Dns
         /// <summary>
         /// Text strings
         /// </summary>
-        TXT = 16
+        TXT = 16,
+
+        /// <summary>
+        /// NetBIOS general Name Service Resource Record
+        /// </summary>
+        NB = 32,
+
+        /// <summary>
+        /// NetBIOS NODE STATUS Resource Record
+        /// </summary>
+        NBSTAT = 33
     }
 }

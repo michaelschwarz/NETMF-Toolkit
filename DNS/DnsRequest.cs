@@ -36,39 +36,61 @@ namespace MSchwarz.Net.Dns
 {
     public class DnsRequest
     {
-        private short _messageID;
-        //private readonly byte _flag1;
-        //private readonly byte _flag2;
+        #region Private Variables
+
+        private DnsHeader _header;
 
 #if(MF)
         private Question[] _questions;
+        private Additional[] _additionalRecords;
 #else
         private List<Question> _questions = new List<Question>();
+        private List<Additional> _additionalRecords = new List<Additional>();
 #endif
-
+        #endregion
 
         #region Public Properties
 
-        public short MessageID
+        public DnsHeader Header
         {
-            get { return _messageID; }
-            internal set { _messageID = value; }
+            get { return _header; }
+            set { _header = value; }
         }
 
 #if(MF)
         public Question[] Questions
-#else
-        public List<Question> Questions
-#endif
         {
             get { return _questions; }
             set { _questions = value; }
         }
 
+        public Additional[] AdditionalRecords
+        {
+            get { return _additionalRecords; }
+            set { _additionalRecords = value; }
+        }
+#else
+        public List<Question> Questions
+        {
+            get { return _questions; }
+            set { _questions = value; }
+        }
+
+        public List<Additional> AdditionalRecords
+        {
+            get { return _additionalRecords; }
+            set { _additionalRecords = value; }
+        }
+#endif
+
         #endregion
 
         public DnsRequest()
         {
+            _header = new DnsHeader();
+
+            _header.QR = false;
+            _header.Opcode = OpcodeType.Query;
         }
 
         public DnsRequest(Question question)
@@ -85,19 +107,10 @@ namespace MSchwarz.Net.Dns
         {
             DnsWriter bw = new DnsWriter();
 
-            // Header (RFC 1035 4.1.1)
-
-            bw.Write(_messageID);
-            
-            // TODO: all flags
-            bw.Write(new byte[]
-            {
-                0x1, 0x0        // status field, here it is recursion desired bit
-            });
+            _header.WriteBytes(bw);
 
 
             // Question
-
 #if(MF)
             bw.Write((short)_questions.Length);
 #else
@@ -110,15 +123,25 @@ namespace MSchwarz.Net.Dns
             bw.Write(new byte[]
             {
                 0x0, 0x0,       // how many answers
-                0x0, 0x0,       // how many name server records
-                0x0, 0x0        // how many additional records
+                0x0, 0x0       // how many name server records                
             });
+
+            // Additional
+
+#if(MF)
+            bw.Write((short)_additionalRecords.Length);
+#else
+            bw.Write((short)_additionalRecords.Count);
+#endif
 
             foreach (Question q in _questions)
             {
-                bw.WriteDomain(q.Domain);
-                bw.Write((short)q.Type);
-                bw.Write((short)q.Class);
+                q.Write(bw);
+            }
+
+            foreach (Additional a in _additionalRecords)
+            {
+                a.Write(bw);
             }
 
             return bw.GetBytes();

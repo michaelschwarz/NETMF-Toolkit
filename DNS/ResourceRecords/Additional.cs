@@ -33,6 +33,7 @@ namespace MSchwarz.Net.Dns
     [Serializable]
     public class Additional : ResourceRecord
     {
+        internal Additional() : base() { }
         internal Additional(DnsReader br) : base(br) { }
     }
 }
