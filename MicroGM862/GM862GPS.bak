@@ -1,0 +1,1671 @@
+/*************************************************************
+ * Class to interface a GM862GPS Device
+ * The GM862 is a GSM module from Telit with build-in GPRS and GPS
+ *
+ * (C)opyright 2009 Elze Kool, http://www.microframework.nl
+ *
+ * This Sourcecode is Public Domain. You are free to use this class Non-Commercialy and Commercialy.
+ *
+ * This sourcecode is provided AS-IS. I take no responsibility for direct or indirect
+ * damage coused by this program/class. 
+ *************************************************************/
+
+using System;
+using System.Collections;
+using System.Text;
+using System.Threading;
+using System.IO;
+using System.IO.Ports;
+
+using Microsoft.SPOT;
+using Microsoft.SPOT.Hardware;
+
+// Ringbuffer
+using ElzeKool.Utilities;
+
+namespace ElzeKool.Devices
+{
+    /// <summary>
+    /// Class to interface a GM862GPS Device
+    /// The GM862 is a GSM module from Telit with build-in GPRS and GPS
+    ///
+    /// (C)opyright 2009 Elze Kool, http://www.microframework.nl
+    /// 
+    /// This Sourcecode is Public Domain. You are free to use this class Non-Commercialy and Commercialy.
+    /// 
+    /// This sourcecode is provided AS-IS. I take no responsibility for direct or indirect
+    /// damage coused by this program/class. 
+    /// </summary>
+    public class GM862GPS : IDisposable
+    {
+        #region Private Internal Variables
+
+        // Used to find "NO CARRIER" string
+        static readonly byte[] NO_CARRIER = new byte[] { (byte)'\r', (byte)'\n', (byte)'N', (byte)'O', (byte)' ', (byte)'C', (byte)'A', (byte)'R', (byte)'R', (byte)'I', (byte)'E', (byte)'R', (byte)'\r', (byte)'\n' };
+
+        // Serialport used to communicate with GM862
+        private SerialPort _ComPort;
+
+        // Variable to check if this object is disposed
+        private bool _Disposed = false;
+
+        // Serial FIFO for RAW Data
+        private RingBuffer _SerialFIFO_DataMode;
+
+        // Serial FIFO for Command mode responses
+        private String _SerialFIFO_CommandMode;
+
+        // Serial FIFO for Idle mode responses (Unsolicitated Responses)
+        private String _SerialFIFI_IdleMode;
+
+        // Current GM862 State
+        private GM862GPSStates _CurrentState;
+        private Object _CurrentStateLock = new Object();
+
+        // Auto reset event used to signal data reception
+        private AutoResetEvent WaitForDataToArrive = new AutoResetEvent(false);
+
+        // Thread that monitors Unsolicitated Responses
+        private Thread _ParseUnsolicitatedResponses;
+
+        // Allow outputmessages to be diverted
+        public delegate void DoDebugMessage(String S);
+        public static DoDebugMessage DebugMessage = delegate(String S) { Debug.Print(S); };
+
+        // Allow clients to subscibe to status changes
+        public delegate void OnStatusChangeHandler(String S);
+        public event OnStatusChangeHandler OnStatusChange;
+
+        #endregion
+
+        #region Public Classes
+
+        /// <summary>
+        /// States where GM862 can be in
+        /// </summary>
+        public enum GM862GPSStates
+        {
+            /// <summary>
+            /// GM862 is Idle. Event is triggered when data arrives
+            /// </summary>
+            Idle,
+
+            /// <summary>
+            /// GM862 is in Command mode. An AT command has been send en
+            /// data is parsed until a valid response code is returned
+            /// </summary>
+            Command,
+
+            /// <summary>
+            /// GM862 is in Data mode, no commands may be fired except '+++' escape sequence
+            /// </summary>
+            Data
+        }
+
+        /// <summary>
+        /// VT25 AT Response Codes
+        /// </summary>
+        public enum ResponseCodes
+        {
+            OK,
+            CONNECT,
+            RING,
+            NO_CARRIER,
+            ERROR,
+            NO_DIALTONE,
+            BUSY,
+            NO_ANSWER,
+            SEND_SMS_DATA
+        }
+
+        /// <summary>
+        /// Exception used for GM862 related errors
+        /// </summary>
+        public class GM862GPSException : Exception
+        {
+            public GM862GPSException(String Message) : base(Message) { }
+        }
+
+        /// <summary>
+        /// Class used to return SMS message in it's structure
+        /// </summary>
+        public class SMSMessage
+        {
+            public readonly String Memory;
+            public readonly int Location;
+            public readonly String Status;
+            public readonly String Orginator;
+            public readonly String ArrivalTime;
+            public readonly String Message;
+
+            /// <summary>
+            /// Instantiate a new SMS 
+            /// </summary>
+            public SMSMessage(String Memory, int Location, String Status, String Orginator, String ArrivalTime, String Message)
+            {
+                this.Memory = Memory;
+                this.Location = Location;
+                this.Status = Status;
+                this.Orginator = Orginator;
+                this.ArrivalTime = ArrivalTime;
+                this.Message = Message;
+            }
+        }
+
+        #endregion
+
+        #region Event Handlers
+
+        /// <summary>
+        /// Unsolicited response recieved. Allow code to handle response
+        /// </summary>
+        /// <param name="Response">Recieved response</param>
+        public delegate void UnsolicitedResponseEvent(String Response);
+        public event UnsolicitedResponseEvent OnUnsolicitedResponse;
+
+        /// <summary>
+        /// Event triggered when called
+        /// </summary>
+        public delegate void RecievingCallEvent();
+        public event RecievingCallEvent OnRecievingCall;
+
+        /// <summary>
+        /// Event triggered when a SMS is recieved
+        /// </summary>
+        /// <param name="Storage">Storage for recieved SMS</param>
+        /// <param name="Number">Number of recieved SMS</param>
+        public delegate void RecievedSMS(String Storage, int Number);
+        public event RecievedSMS OnRecievedSMS;
+
+        /// <summary>
+        /// Called when there is a PIN request (Like SIM PIN/PUK etc.)
+        /// </summary>
+        /// <param name="PINType">Type of PIN requested</param>
+        /// <returns>Required PIN</returns>
+        public delegate string PINRequestHandler(String PINType);
+        public PINRequestHandler getRequestedPIN;
+
+        #endregion
+
+        #region Private helper functions
+
+        public static int _find_array_last(byte[] needle, byte[] haystack)
+        {
+            return _find_array_last(needle, haystack, haystack.Length - 1);
+        }
+
+        public static int _find_array_last(byte[] needle, byte[] haystack, int start)
+        {
+            if (start == 0) return -1;
+
+            int _needle_pos = needle.Length - 1;
+            int _haystak_pos = start;
+
+            for (_haystak_pos = start; _haystak_pos >= 0; _haystak_pos--)
+            {
+                if (haystack[_haystak_pos] == needle[_needle_pos])
+                    _needle_pos--;
+                else
+                    _needle_pos = needle.Length - 1;
+
+                if (_needle_pos == -1)
+                {
+                    return (_haystak_pos - _needle_pos + 1);
+                }
+            }
+
+            return -1;
+        }
+
+        public static int _find_array(byte[] needle, byte[] haystack)
+        {
+            int _needle_pos = 0;
+            int _haystak_pos = 0;
+
+            for (_haystak_pos = 0; _haystak_pos < haystack.Length; _haystak_pos++)
+            {
+                if (haystack[_haystak_pos] == needle[_needle_pos])
+                    _needle_pos++;
+                else
+                    _needle_pos = 0;
+
+                if (_needle_pos == needle.Length)
+                {
+                    return (_haystak_pos - _needle_pos + 1);
+                }
+            }
+
+            return -1;
+
+        }
+
+
+        /// <summary>
+        /// Internal function used to convert DDDMM.MMMM string to degrees
+        /// </summary>
+        /// <param name="S">Latitude/Longitude in DDDMM.MMMM format</param>
+        /// <returns>Latitude/Longitude in degrees</returns>
+        private static double _decodeDM(String S)
+        {
+            // Internal values used to store values
+            double Result = 0F;
+            double Degrees = 0F;
+            double Minutes = 0F;
+
+            // Internal values used to convert value to double
+            bool negativeR = false;
+            bool afterDot = false;
+            double m = 0.1F;
+
+            foreach (char c in S)
+            {
+                // Stop when character is not a valid character
+                if ("0123456789.EWNS".IndexOf(c) == -1) break;
+
+                // Check for Dot
+                if (c == '.')
+                {
+                    afterDot = true;
+                    continue;
+                }
+                // If West and South Negative number
+                else if ((c == 'W') || (c == 'S'))
+                {
+                    negativeR = true;
+                    continue;
+                }
+                // If North/East ignore 
+                else if ((c == 'N') || (c == 'E'))
+                {
+                    continue;
+                }
+                // Number
+                else if (!afterDot)
+                {
+                    Degrees *= 10F;
+                    Degrees += (double)(c - '0');
+                }
+                else
+                {
+                    Degrees += ((double)(c - '0')) * m;
+                    m /= 10F;
+                }
+            }
+
+            // Now convert from DD.MMSSSS to Degrees
+            Minutes = Degrees % 100F;
+            Degrees = System.Math.Floor(Degrees / 100F);
+
+            Result = Degrees + (Minutes / 60F);
+
+            // Make it negative when in West or South    
+            if (negativeR)
+                Result = -Result;
+
+            return Result;
+        }
+
+
+
+#endregion
+
+        #region Constructor/Destructor
+
+        /// <summary>
+        /// Create new GM862GPS instance
+        /// </summary>
+        /// <param name="Port">Serial Port to use</param>
+        /// <param name="Baudrate">Baudrate to use</param>
+        public GM862GPS(String Port, int Baudrate)
+        {
+            // We begin in IDLE state
+            _CurrentState = GM862GPSStates.Idle;
+            _SerialFIFO_CommandMode = "";
+            _SerialFIFI_IdleMode = "";
+            _SerialFIFO_DataMode = new RingBuffer(64 * 1024);
+ 
+            try
+            {
+                // Create new SerialPort Object
+                _ComPort = new SerialPort(Port, Baudrate, Parity.None, 8, StopBits.One);
+                _ComPort.Handshake = Handshake.RequestToSend;
+                _ComPort.Open();
+                _ComPort.DataReceived += new SerialDataReceivedEventHandler(_ComPort_DataReceived);
+            }
+            catch
+            {
+                // If failed throw error
+                throw new GM862GPSException("Failed to initialize GM862");
+            }
+            
+
+            // Create thread that handles Unsolicited Responses
+            _ParseUnsolicitatedResponses = new Thread(new ThreadStart(ParseUnsolicitedResponse));
+            _ParseUnsolicitatedResponses.Priority = ThreadPriority.BelowNormal;
+            _ParseUnsolicitatedResponses.Start();
+
+            // Add onUnsolicitedResponse Handler to check for incomming SMS and Call
+            OnUnsolicitedResponse += new UnsolicitedResponseEvent(CheckForNewSMS);
+            OnUnsolicitedResponse += new UnsolicitedResponseEvent(CheckForCall);
+        }
+
+        /// <summary>
+        /// Dispose Object
+        /// </summary>
+        public void Dispose()
+        {
+            try
+            {
+                _Disposed = true;
+                _ComPort.Dispose();
+                _ParseUnsolicitatedResponses.Abort();
+            }
+            catch
+            {
+            }
+        }
+
+        #endregion
+
+
+        /// <summary>
+        /// Initializes basic GSM Functions and settings
+        /// </summary>
+        public void InitializeBasicGSM()
+        {
+            // Check if disposed
+            if (_Disposed) throw new ObjectDisposedException();
+
+            // Select extended instruction set
+            if (ExecuteCommand("AT#SELINT=2", 1000) != GM862GPS.ResponseCodes.OK)
+                throw new GM862GPSException("Failed to select extended instruction set");
+
+            // Reset to factory settings
+            if (ExecuteCommand("AT&F1", 1000) != GM862GPS.ResponseCodes.OK)
+                throw new GM862GPSException("Failed to reset to factory settings");
+
+            // Disable local echo
+            if (ExecuteCommand("ATE0", 1000) != GM862GPS.ResponseCodes.OK)
+                throw new GM862GPSException("Failed to disable local echo");
+
+            // Hardware Mono-directional Flowcontrol
+            if (ExecuteCommand("AT&K1", 1000) != ResponseCodes.OK)
+                throw new GM862GPSException("Failed to set Hardware Mono-directional Flow control");
+
+            // Parse all PIN requests
+            while (CheckPIN() == false) { Thread.Sleep(10); }
+        }
+
+        /// <summary>
+        /// Initialize basic SMS Settings
+        /// </summary>
+        public void InitializeSMS()
+        {
+            // Check if disposed
+            if (_Disposed) throw new ObjectDisposedException();
+
+            // Select standard SMS instruction set
+            if (ExecuteCommand("AT#SMSMODE=0", 500) != GM862GPS.ResponseCodes.OK)
+                throw new GM862GPSException("Failed to select standard SMS instruction set");
+
+            // Select Unsolicited SMS code to be buffered and in form +CMTI: <mem>, <id>
+            if (ExecuteCommand("AT+CNMI=2,1,0,0,0", 500) != GM862GPS.ResponseCodes.OK)
+                throw new GM862GPSException("Failed to select standard SMS instruction set");
+
+            // Select Text Message Format
+            if (ExecuteCommand("AT+CMGF=1", 500) != GM862GPS.ResponseCodes.OK)
+                throw new GM862GPSException("Failed to select Text SMS format");
+        }
+
+        /// <summary>
+        /// Initialze GPRS and Activate GPRS Context
+        /// </summary>
+        /// <param name="ContextID">Context to create/activate</param>
+        /// <param name="APN">Access Point</param>
+        /// <param name="Username">Username</param>
+        /// <param name="Password">Password</param>
+        public void ActivateGPRSContext(int ContextID, String APN, String Username, String Password, String StaticIP)
+        {
+            // Check if disposed
+            if (_Disposed) throw new ObjectDisposedException();
+
+            // Create new GPRS Context
+            if (ExecuteCommand("AT+CGDCONT=" + ContextID.ToString() + ",\"IP\", \"" + APN + "\",\"" + StaticIP + "\",0,0", 500) != GM862GPS.ResponseCodes.OK)
+                throw new GM862GPSException("Failed to create new GPRS Context");
+
+            // Set UserID
+            if (ExecuteCommand("AT#USERID=\"" + Username + "\"", 500) != GM862GPS.ResponseCodes.OK)
+                throw new GM862GPSException("Failed to set Username");
+
+            // Set Password
+            if (ExecuteCommand("AT#PASSW=\"" + Password + "\"", 500) != GM862GPS.ResponseCodes.OK)
+                throw new GM862GPSException("Failed to set Password");
+
+            // Check if Context is Active
+            String CheckActiveContext;
+            if (ExecuteCommand("AT#GPRS?", 500, out CheckActiveContext) != ResponseCodes.OK)
+                throw new GM862GPSException("Failed to check if context active");
+
+            // Check if context isn't active
+            if (CheckActiveContext.IndexOf("\r\n#GPRS: 1") == -1)
+            {
+                if (ExecuteCommand("AT#GPRS=1", 10000) != GM862GPS.ResponseCodes.OK)
+                    throw new GM862GPSException("Failed to activate GPRS context");
+            }
+
+            //// Setup Socket Config
+            if (ExecuteCommand("AT#SCFG=1,1,128,90,1000,1", 1000) != GM862GPS.ResponseCodes.OK)
+                throw new GM862GPSException("Failed to setup Socket config");
+
+            // Setup Socket Config
+            if (ExecuteCommand("AT#SCFGEXT=1, 0, 1, 0, 0, 0", 1000) != GM862GPS.ResponseCodes.OK)
+                throw new GM862GPSException("Failed to setup Socket config");
+        }
+
+        /// <summary>
+        /// Sends escape sequence and reset 
+        /// </summary>
+        public void ResetStatus()
+        {
+            // Discard all data in input buffers
+            lock (_ComPort)
+            {
+                _ComPort.DiscardInBuffer();
+            }
+
+            lock (_SerialFIFO_CommandMode)
+            {
+                _SerialFIFO_CommandMode = "";
+            }
+
+            lock (_SerialFIFI_IdleMode)
+            {
+                _SerialFIFI_IdleMode = "";
+            }
+
+            // Send Escape sequence
+            try { Escape(false); }
+            catch { }
+
+            // Set state back to IDLE
+            lock (_CurrentStateLock)
+            {
+                _CurrentState = GM862GPSStates.Idle;
+            }
+        }
+
+        /// <summary>
+        /// Request HTML page from Server
+        /// </summary>
+        public byte[] WebRequest(int SocketID, String URL, String Referer)
+        {
+            return WebRequest(SocketID, URL, Referer, "GET", String.Empty, String.Empty);
+        }
+
+        /// <summary>
+        /// Request HTML page from Server
+        /// </summary>
+        public byte[] WebRequest(int SocketID, String URL, String Referer, String RequestMethod, String POSTContentType, String POSTBody)
+        {
+            // Check if disposed
+            if (_Disposed) throw new ObjectDisposedException();
+
+            // Check if Context is Active
+            String CheckActiveContext;
+            if (ExecuteCommand("AT#GPRS?", 500, out CheckActiveContext) != ResponseCodes.OK)
+                throw new GM862GPSException("Failed to check if context active");
+
+            // Check if context isn't active
+            if (CheckActiveContext.IndexOf("\r\n#GPRS: 1") == -1)
+            {
+                if (ExecuteCommand("AT#GPRS=1", 10000) != GM862GPS.ResponseCodes.OK)
+                    throw new GM862GPSException("Failed to activate GPRS context");
+            }
+
+            // Check for HTTP and remove it from the URL
+            if (URL.IndexOf("http://") != 0) { return null; }
+            URL = URL.Substring(7);
+
+            // Get Server
+            String Server = URL.Substring(0, URL.IndexOf("/"));
+
+            // Get Path
+            String Path = URL.Substring(URL.IndexOf("/"));
+
+            // Get Port
+            Int32 Port = 80;
+            if (Server.IndexOf(':') != -1)
+            {
+                String[] sServer = Server.Split(new char[] { '|' });
+                Server = sServer[0];
+                Port = ElzeKool.Utilities.NumberParser.StringToInt(sServer[1]);
+            }
+
+
+            // Enforce garbage collection. This helps prevent the GC to kick in while loading data
+            Debug.GC(true);
+
+            if (OnStatusChange != null)
+                OnStatusChange("Connecting to server");
+
+
+            // Say we want to connect to Socket
+            if (ExecuteCommand("AT#SD=" + SocketID.ToString() + ", 0, " + Port.ToString() + ",\"" + Server + "\", 255, 0, 0", 2500000 /* Extremely long delay */) != ResponseCodes.CONNECT)
+            {
+                Escape(false);
+                throw new GM862GPSException("Did not recieve CONNECT response");
+            }
+
+            if (DebugMessage != null)
+                DebugMessage("Connection made, send request");
+
+
+
+            ////////////////////////////////////////////////////////////////////////////////////
+            //
+            //                              SEND REQUEST
+            //
+            ////////////////////////////////////////////////////////////////////////////////////
+
+
+            if (OnStatusChange != null)
+                OnStatusChange("Sending request");
+
+
+            byte[] Response = new byte[0xffff];
+            int ResponseBufferPos = 0;
+
+            lock (_SerialFIFO_DataMode)
+            {
+                _SerialFIFO_DataMode.Clear();
+            }
+
+            // Create request header
+            String Request = RequestMethod + " " + Path + " HTTP/1.0\r\n";                                       // Request URI
+            Request += "Host: " + Server + "\r\n";                                                  // HTTP1.0 Host
+            Request += "Connection: Close\r\n";                                                     // HTTP1.0 Close connection after request
+            Request += "Pragma:	no-cache\r\n";
+            Request += "Cache-Control: no-cache\r\n";
+            Request += "User-Agent: GM862 (.NET Micro Framework 3.0)\r\n";
+
+            if (Referer != String.Empty)
+            {
+                Request += "Referer: " + Referer + "\r\n";                                          // HTTP1.1 Referer
+            }
+
+            if ((RequestMethod == "POST") & (POSTContentType != String.Empty))
+            {
+                Request += "Content-Type: " + POSTContentType + "\r\n";
+            }
+
+            if (POSTBody != String.Empty)
+            {
+                Request += "Content-Length: " + POSTBody.Length + "\r\n";
+                Request += "\r\n";
+                Request += POSTBody;
+            }
+            else
+            {
+                Request += "\r\n";
+            }
+
+            // Send request
+            byte[] OutBuffer = System.Text.Encoding.UTF8.GetBytes(Request);
+            lock (_ComPort) { _ComPort.Write(OutBuffer, 0, OutBuffer.Length); }
+
+            if (DebugMessage != null)
+                DebugMessage("Request send, recieve data");
+
+            // Wait time is 5 seconds for recieving first data
+            DateTime TimeOut = DateTime.Now.AddSeconds(5);
+            int inBuffer;
+
+            if (OnStatusChange != null)
+                OnStatusChange("Recieving data");
+
+            ////////////////////////////////////////////////////////////////////////////////////
+            //
+            //                              RECIEVE DATA
+            //
+            ////////////////////////////////////////////////////////////////////////////////////
+
+            // Header End Signature
+            byte[] END_OF_HEADER = new byte[] { 13, 10, 13, 10 };
+
+            // Container for raw response buffer
+            byte[] HeaderRAW;
+            String ResponseHeader = String.Empty;
+
+            int ExpectedSize = -1;
+
+            // Read data from Socket until timeout
+            while ((DateTime.Now < TimeOut))
+            {
+
+                // Wait for data
+                if (WaitForDataToArrive.WaitOne(100, true))
+                {
+                    // Reset Timeout Timer
+                    TimeOut = DateTime.Now.AddMilliseconds(10000);
+                }
+
+                lock (_SerialFIFO_DataMode)
+                {
+                    inBuffer = _SerialFIFO_DataMode.Count;
+
+                    if (inBuffer <= 0)
+                        continue;
+
+
+                    // Increase buffer size if it is to small for incomming data
+                    if ((inBuffer + ResponseBufferPos) > Response.Length)
+                    {
+                        byte[] ResponseTemp = new byte[Response.Length + inBuffer + 0xffff];
+                        Array.Copy(Response, ResponseTemp, Response.Length);
+                        Response = ResponseTemp;
+                    }
+
+                    // Read Data from FIFO into buffer
+                    _SerialFIFO_DataMode.Read(Response, ResponseBufferPos, inBuffer);
+                    ResponseBufferPos += inBuffer;
+
+                    // Search for header End
+                    if (ResponseHeader == String.Empty)
+                    {
+                        int HeaderEnd = _find_array(END_OF_HEADER, Response);
+                        if (HeaderEnd != -1)
+                        {
+                            HeaderRAW = new byte[HeaderEnd];
+                            Array.Copy(Response, HeaderRAW, HeaderRAW.Length);
+
+                            try
+                            {
+                                ResponseHeader = new String(Encoding.UTF8.GetChars(HeaderRAW)) + "\r\n";
+                            }
+                            catch
+                            {
+                                continue;
+                            }
+                            String ResponseHeaderLower = ResponseHeader.ToLower();
+
+                            Debug.Print("Response Header:");
+                            Debug.Print(ResponseHeader);
+
+                            if (ResponseHeaderLower.IndexOf("content-length:") != -1)
+                            {
+                                // Get Content Length
+                                Int32 SizeStart = ResponseHeaderLower.IndexOf("content-length: ") + 10;
+                                Int32 SizeEnd = ResponseHeader.IndexOf("\r\n", SizeStart);
+
+                                ExpectedSize = ElzeKool.Utilities.NumberParser.StringToInt(ResponseHeader.Substring(SizeStart, SizeEnd - SizeStart));
+                                Debug.Print("Expected size: " + ExpectedSize.ToString());
+
+                            }
+
+                            // Check for a location header
+                            if (ResponseHeaderLower.IndexOf("location: ") != -1)
+                            {
+                                // Get Location
+                                Int32 LocationStart = ResponseHeaderLower.IndexOf("location: ") + 10;
+                                Int32 LocationEnd = ResponseHeader.IndexOf("\r\n", LocationStart);
+
+                                String newLocation = ResponseHeader.Substring(LocationStart, LocationEnd - LocationStart);
+
+                                // Retrieve and return from the new location
+                                try
+                                {
+                                    Escape(true);
+                                }
+                                catch
+                                {
+
+                                }
+
+                                lock (_CurrentStateLock)
+                                {
+                                    _CurrentState = GM862GPSStates.Idle;
+                                }
+
+                                ExecuteCommand("AT#SH=" + SocketID.ToString(), 1000);
+
+                                return WebRequest(SocketID, newLocation, URL, RequestMethod, POSTContentType, POSTBody);
+                            }
+
+                            // Strip header from response
+                            ResponseBufferPos -= HeaderEnd + 4;
+                            byte[] ResponseTemp = new byte[Response.Length - HeaderEnd - 4];
+                            Array.Copy(Response, HeaderEnd + 4, ResponseTemp, 0, ResponseTemp.Length);
+                            Response = ResponseTemp;
+                        }
+                    }
+
+                    // Close connection when we've reached the expected size
+                    if ((ExpectedSize != -1) & (ResponseBufferPos >= ExpectedSize))
+                    {
+                        Debug.Print("Expected: " + ExpectedSize.ToString() + " / Current: " + ResponseBufferPos.ToString());
+                        break;
+                    }
+
+                    continue;
+                }
+
+            }
+
+            ////////////////////////////////////////////////////////////////////////////////////
+            //
+            //                              CLOSING SOCKET
+            //
+            ////////////////////////////////////////////////////////////////////////////////////
+
+            
+            try
+            {
+                Escape(true);
+            }
+            catch
+            {
+
+            }
+
+            lock (_CurrentStateLock)
+            {
+                _CurrentState = GM862GPSStates.Idle;
+            }
+
+            // Close socket
+            ExecuteCommand("AT#SH=" + SocketID.ToString(), 1000);
+
+            // Update status
+            if (OnStatusChange != null)
+                OnStatusChange("Connection closed");
+
+            // Check header
+            if (ResponseHeader == String.Empty)
+                throw new GM862GPSException("No response header recieved!");
+
+            // Check size
+            if ((ExpectedSize != -1) & (ExpectedSize > ResponseBufferPos))
+                throw new GM862GPSException("Return size isn't as expected!");
+
+            if ((ExpectedSize != -1) & (ResponseBufferPos > ExpectedSize))
+                ResponseBufferPos = ExpectedSize;
+
+            // Strip unused bytes from input buffer
+            byte[] ResponseConcat = new byte[ResponseBufferPos];
+            Array.Copy(Response, ResponseConcat, ResponseBufferPos);
+
+            // Return data
+            return ResponseConcat;
+
+
+            throw new GM862GPSException("Unkown HTTP Response!");
+        }
+
+        /// <summary>
+        /// Get GPS Location and Fix Data 
+        /// </summary>
+        /// <param name="Fix">Dimensions of Fix (0 = No fix, 2 = 2D fix, 3 = 3D fix)</param>
+        /// <param name="NoSatelites">Number of tracked satelites (Valid when fix>0)</param>
+        /// <param name="Latitude">Latitude in degrees (Valid when fix>0)</param>
+        /// <param name="Longitude">Longitude in degrees (Valid when fix>0)</param>
+        /// <param name="Speed">Speed in KM/H (Valid when fix>0)</param>
+        /// <param name="GPSTime">UTC/GPS Time (Valid when fix>0)</param>
+        public void ReadGPS(out byte Fix, out byte NoSatelites, out Double Latitude, out Double Longitude, out Double Speed, out DateTime GPSTime)
+        {
+            // Check if disposed
+            if (_Disposed) throw new ObjectDisposedException();
+
+            // Send Command
+            String GPSResponseBody = "";
+            if (ExecuteCommand("AT$GPSACP", 1500, out GPSResponseBody) != ResponseCodes.OK)
+                throw new GM862GPSException("Failed to get GPS information");
+
+            // Parse response
+            int GPSResponseStart;
+            int GPSResponseEnd;
+            GPSResponseStart = GPSResponseBody.IndexOf("$GPSACP: ");
+            if (GPSResponseStart == -1)
+                throw new GM862GPSException("Unkown $GPSACP response!");
+            GPSResponseStart += "$GPSACP: ".Length;
+            GPSResponseEnd = GPSResponseBody.IndexOf("\r\n", GPSResponseStart);
+            if (GPSResponseEnd == -1)
+                throw new GM862GPSException("Unkown $GPSACP response!");
+            GPSResponseBody = GPSResponseBody.Substring(GPSResponseStart, GPSResponseEnd - GPSResponseStart);
+
+            // Split message on comma
+            String[] SplitResponse = GPSResponseBody.Split(new char[] { ',' });
+
+            // Check for Fix
+            Fix = (byte) ElzeKool.Utilities.NumberParser.StringToInt(SplitResponse[5]);
+            if (Fix > 0)
+            {
+                // If Fix get Satelites, Lat and Lon
+                NoSatelites = (byte)ElzeKool.Utilities.NumberParser.StringToInt(SplitResponse[10]);
+                Latitude = _decodeDM(SplitResponse[1]);
+                Longitude = _decodeDM(SplitResponse[2]);
+                Speed = ElzeKool.Utilities.NumberParser.StringToDouble(SplitResponse[7]);
+
+                // Create DateTime Object
+                int year = ElzeKool.Utilities.NumberParser.StringToInt(SplitResponse[9].Substring(4, 2)) + 2000;
+                int month = ElzeKool.Utilities.NumberParser.StringToInt(SplitResponse[9].Substring(2, 2));
+                int day = ElzeKool.Utilities.NumberParser.StringToInt(SplitResponse[9].Substring(0, 2));
+
+                int hour = ElzeKool.Utilities.NumberParser.StringToInt(SplitResponse[0].Substring(0, 2));
+                int minute = ElzeKool.Utilities.NumberParser.StringToInt(SplitResponse[0].Substring(2, 2));
+                int second = ElzeKool.Utilities.NumberParser.StringToInt(SplitResponse[0].Substring(4, 2));
+
+                GPSTime = new DateTime(year, month, day, hour, minute, second);
+
+            }
+            else
+            {
+                // If not return 0
+                NoSatelites = 0;
+                Latitude = 0F;
+                Longitude = 0F;
+                Speed = 0F;
+                GPSTime = new DateTime();
+            }
+        }
+
+        /// <summary>
+        /// Read Message from Memory
+        /// </summary>
+        /// <param name="Memory">Memory to read from</param>
+        /// <param name="Location">Location of message</param>
+        /// <returns>SMS Message</returns>
+        public SMSMessage ReadMessage(String Memory, int Location)
+        {
+            // Check if disposed
+            if (_Disposed) throw new ObjectDisposedException();
+
+            String ResponseBody;
+            int HeaderStart;
+            int HeaderEnd;
+            int MessageStart;
+            int MessageEnd;
+
+            String Status = "";
+            String Orginator = "";
+            String ArrivalTime = "";
+            String Message = "";
+
+            // Select Memory location
+            if (ExecuteCommand("AT+CPMS=" + Memory, 15000) != GM862GPS.ResponseCodes.OK)
+                throw new Exception("Failed to set SMS Storage");
+
+            // Read Message from Location
+            if (ExecuteCommand("AT+CMGR=" + Location.ToString(), 15000, out ResponseBody) != GM862GPS.ResponseCodes.OK)
+                throw new Exception("Failed to read SMS Storage");
+
+            // Make sure there is no unsolicitated text in our message
+            if (ResponseBody.IndexOf("\r\n\r\n") != -1)
+                ResponseBody = ResponseBody.Substring(0, ResponseBody.IndexOf("\r\n\r\n") + 2);
+
+            // Check response 
+            HeaderStart = ResponseBody.IndexOf("+CMGR: ");
+            if (HeaderStart == -1)
+                throw new GM862GPSException("Malformed +CMGR response");
+            HeaderStart += "+CMGR: ".Length;
+            HeaderEnd = ResponseBody.IndexOf("\r\n", HeaderStart);
+            if (HeaderEnd == -1)
+                throw new GM862GPSException("Malformed +CMGR response");
+
+            // Skip <cr><lf>
+            MessageStart = HeaderEnd + 2;
+            MessageEnd = ResponseBody.Length;
+            if (MessageEnd == -1)
+                throw new GM862GPSException("Malformed +CMGR response");
+
+            Message = ResponseBody.Substring(MessageStart, (MessageEnd - MessageStart) - 2);
+
+            // Break up header
+            System.Collections.ArrayList Header = new System.Collections.ArrayList();
+            String HeaderPart = "";
+            bool WithinQuote = false;
+            foreach (char c in ResponseBody.Substring(HeaderStart, HeaderEnd + 2 - HeaderStart))
+            {
+                if (c == '"') { WithinQuote = !WithinQuote; continue; }
+                if (WithinQuote) { HeaderPart += c; continue; }
+                if (c == ' ') { continue; }
+                if (c == ',') { Header.Add(HeaderPart); HeaderPart = ""; continue; }
+                if ((c == '\r') | (c == '\n')) { Header.Add(HeaderPart); HeaderPart = ""; break; }
+            }
+
+            // Return message
+            Status = (String)Header[0];
+            Orginator = (String)Header[1];
+            ArrivalTime = (String)Header[3];
+            return new SMSMessage(Memory, Location, Status, Orginator, ArrivalTime, Message);
+        }
+
+        /// <summary>
+        /// Send SMS Message
+        /// </summary>
+        /// <param name="Destination">Destination for SMS</param>
+        /// <param name="Message">Message to Send</param>
+        public void SendSMSMessage(String Destination, String Message)
+        {
+            // Check if disposed
+            if (_Disposed) throw new ObjectDisposedException();
+
+            // Add format identification to destination
+            if (Destination.IndexOf('+') != -1)
+                Destination = "\"" + Destination + "\",157"; // Internation format
+            else
+                Destination = "\"" + Destination + "\",129"; // National format
+
+            // Say we want to send message
+            if (ExecuteCommand("AT+CMGS=" + Destination, 1000) != ResponseCodes.SEND_SMS_DATA)
+                throw new GM862GPSException("Did not recieve SEND_SMS_DATA response");
+
+            // Send Message, End with ^Z
+            byte[] OutBuffer = System.Text.Encoding.UTF8.GetBytes(Message + "\x1A");
+            lock (_ComPort) { _ComPort.Write(OutBuffer, 0, OutBuffer.Length); }
+
+            // Now we wait for OK response
+            int ResponseStart;
+            int ResponseLength;
+            if (WaitForResponse(out ResponseStart, out ResponseLength, 10000) != ResponseCodes.OK)
+                throw new GM862GPSException("Failed to send SMS");
+        }
+
+        /// <summary>
+        /// Returns RSSI (0-31) value
+        /// </summary>
+        /// <returns>0-31 indicating signal quality</returns>
+        public int SignalQuality()
+        {
+            // Check if disposed
+            if (_Disposed) throw new ObjectDisposedException();
+
+            String ResponseBody = "";
+            int ResponseStart;
+            int ResponseEnd;
+
+            // Do Signal Quality request
+            if (ExecuteCommand("AT+CSQ", 2500, out ResponseBody) != ResponseCodes.OK)
+                throw new GM862GPSException("Signal Quality request Failed");
+
+            // Check response
+            ResponseStart = ResponseBody.IndexOf("+CSQ: ");
+            if (ResponseStart == -1)
+                throw new GM862GPSException("Malformed +CSQ? response");
+            ResponseStart += "+CSQ: ".Length;
+            ResponseEnd = ResponseBody.IndexOf("\r\n", ResponseStart);
+            if (ResponseEnd == -1)
+                throw new GM862GPSException("Malformed +CSQ? response");
+
+            // ResponseBody now holds requested Signal Quality
+            ResponseBody = ResponseBody.Substring(ResponseStart, ResponseEnd - ResponseStart);
+
+            // Parse Response
+            return ElzeKool.Utilities.NumberParser.StringToInt(ResponseBody.Substring(0, ResponseBody.IndexOf(',')));
+        }
+
+        /// <summary>
+        /// Return Current Operator name
+        /// </summary>
+        /// <returns>Current Operator name</returns>
+        public String Operator()
+        {
+            // Check if disposed
+            if (_Disposed) throw new ObjectDisposedException();
+
+            String ResponseBody = "";
+            int ResponseStart;
+            int ResponseEnd;
+
+            // Do Operator Name request
+            if (ExecuteCommand("AT+COPS?", 2500, out ResponseBody) != ResponseCodes.OK)
+                throw new GM862GPSException("Operator Name Request Failed");
+
+            // Check response
+            ResponseStart = ResponseBody.IndexOf("COPS: ");
+            if (ResponseStart == -1)
+                throw new GM862GPSException("Malformed +COPS? response");
+            ResponseStart += "COPS: ".Length;
+            ResponseEnd = ResponseBody.IndexOf("\r\n", ResponseStart);
+            if (ResponseEnd == -1)
+                throw new GM862GPSException("Malformed +COPS? response");
+
+            ResponseStart = ResponseBody.IndexOf(",",ResponseStart+1);
+            if (ResponseStart == -1)
+                throw new GM862GPSException("Malformed +COPS? response");
+
+            ResponseStart = ResponseBody.IndexOf(",", ResponseStart + 1);
+            if (ResponseStart == -1)
+                throw new GM862GPSException("Malformed +COPS? response");
+
+            // ResponseBody now holds requested Network Registration
+            ResponseBody = ResponseBody.Substring(ResponseStart+1, ResponseEnd - ResponseStart - 1);
+
+            // Remove quotes
+            if (ResponseBody[0] == '"')
+            {
+                ResponseBody = ResponseBody.Substring(1, ResponseBody.LastIndexOf('"') - 1);
+            }
+
+            return ResponseBody;
+        }
+
+        /// <summary>
+        /// Checks if connected to a network.
+        /// </summary>
+        /// <param name="AllowRoaming">Also return true on roaming networks</param>
+        /// <returns></returns>
+        public bool RegisteredOnNetwork(bool AllowRoaming)
+        {
+            // Check if disposed
+            if (_Disposed) throw new ObjectDisposedException();
+
+            String ResponseBody = "";
+            int ResponseStart;
+            int ResponseEnd;
+
+            // Do Network Registration request
+            if (ExecuteCommand("AT+CREG?", 2500, out ResponseBody) != ResponseCodes.OK)
+                throw new GM862GPSException("Network Registration Check Failed");
+
+            // Check response
+            ResponseStart = ResponseBody.IndexOf("+CREG: ");
+            if (ResponseStart == -1)
+                throw new GM862GPSException("Malformed +CREG? response");
+            ResponseStart += "+CREG: ".Length;
+            ResponseEnd = ResponseBody.IndexOf("\r\n", ResponseStart);
+            if (ResponseEnd == -1)
+                throw new GM862GPSException("Malformed +CREG? response");
+
+            // ResponseBody now holds requested Network Registration
+            ResponseBody = ResponseBody.Substring(ResponseStart, ResponseEnd - ResponseStart);
+
+            // Parse Response
+            switch (ElzeKool.Utilities.NumberParser.StringToInt(ResponseBody.Substring(ResponseBody.LastIndexOf(','))))
+            {
+                case 1:
+                    return true;  // Home network
+                case 5:
+                    if (AllowRoaming) return true;  // Roaming
+                    break;
+            }
+
+            // No network
+            return false;
+        }
+
+        /// <summary>
+        /// Checks if connected to a GPRS network.
+        /// </summary>
+        /// <param name="AllowRoaming">Also return true on roaming networks</param>
+        /// <returns></returns>
+        public bool RegisteredOnGPRS(bool AllowRoaming)
+        {
+            // Check if disposed
+            if (_Disposed) throw new ObjectDisposedException();
+
+            String ResponseBody = "";
+            int ResponseStart;
+            int ResponseEnd;
+
+            // Do Network Registration request
+            if (ExecuteCommand("AT+CGREG?", 2500, out ResponseBody) != ResponseCodes.OK)
+                throw new GM862GPSException("Network Registration Check Failed");
+
+            // Check response
+            ResponseStart = ResponseBody.IndexOf("+CGREG: ");
+            if (ResponseStart == -1)
+                throw new GM862GPSException("Malformed +CGREG? response");
+            ResponseStart += "+CGREG: ".Length;
+            ResponseEnd = ResponseBody.IndexOf("\r\n", ResponseStart);
+            if (ResponseEnd == -1)
+                throw new GM862GPSException("Malformed +CGREG? response");
+
+            // ResponseBody now holds requested Network Registration
+            ResponseBody = ResponseBody.Substring(ResponseStart, ResponseEnd - ResponseStart);
+
+            // Parse Response
+            switch (ElzeKool.Utilities.NumberParser.StringToInt(ResponseBody.Substring(ResponseBody.LastIndexOf(','))))
+            {
+                case 1:
+                    return true;  // Home network
+                case 5:
+                    if (AllowRoaming) return true;  // Roaming
+                    break;
+            }
+
+            // No network
+            return false;
+        }
+
+        /// <summary>
+        /// Check if there is an outstanding PIN request
+        /// If so try to get PIN from getRequestedPIN() funtion
+        /// </summary>
+        /// <returns>True when all codes are entered</returns>
+        private bool CheckPIN()
+        {
+            // Check if disposed
+            if (_Disposed) throw new ObjectDisposedException();
+
+            String ResponseBody = "";
+            int RequestTypeStart;
+            int RequestTypeEnd;
+
+            // Do PIN request
+            if (ExecuteCommand("AT+CPIN?", 2500, out ResponseBody) != ResponseCodes.OK)
+            {
+                throw new GM862GPSException("PIN Request Check Failed");
+            }
+
+            // Check response
+            RequestTypeStart = ResponseBody.IndexOf("+CPIN: ");
+            if (RequestTypeStart == -1)
+                throw new GM862GPSException("Malformed +CPIN? response");
+            RequestTypeStart += "+CPIN: ".Length;
+            RequestTypeEnd = ResponseBody.IndexOf("\r\n", RequestTypeStart);
+            if (RequestTypeEnd == -1)
+                throw new GM862GPSException("Malformed +CPIN? response");
+
+            // ResponseBody now holds requested PIN type
+            ResponseBody = ResponseBody.Substring(RequestTypeStart, RequestTypeEnd - RequestTypeStart);
+
+            // No more PIN request
+            if (ResponseBody == "READY")
+                return true;
+
+            // Check for a getRequestedPIN handler
+            if (getRequestedPIN == null)
+                throw new GM862GPSException("No PIN Request Handler");
+
+            // Send PIN code
+            if (ExecuteCommand("AT+CPIN=" + getRequestedPIN(ResponseBody), 2500, out ResponseBody) != ResponseCodes.OK)
+                throw new GM862GPSException("Enter PIN Failed");
+
+            // Check for next PIN request
+            return false;
+        }
+
+
+        #region Unsolicited Response Thread and Events
+
+        String UnsolicitedResponse = "";
+        int UnsolicitedResponseStart = 0;
+        int UnsolicitedResponseEnd = 0;
+
+        /// <summary>
+        /// Tread that parses Unsolicited Responses
+        /// </summary>
+        private void ParseUnsolicitedResponse()
+        {
+            // Loop
+            while (true)
+            {
+                // Try to find Unsolicited Response
+                UnsolicitedResponse = "";
+                lock (_SerialFIFI_IdleMode)
+                {
+                    // Check if there is data in FIFO
+                    if (_SerialFIFI_IdleMode.Length > 4)
+                    {
+                        // Find start and end
+                        UnsolicitedResponseStart = 0;
+                        UnsolicitedResponseEnd = _SerialFIFI_IdleMode.IndexOf("\r\n", UnsolicitedResponseStart + 2);
+                        if (UnsolicitedResponseEnd != -1)
+                        {
+                            UnsolicitedResponse = _SerialFIFI_IdleMode.Substring(0, UnsolicitedResponseEnd - UnsolicitedResponseStart + 2);
+                            _SerialFIFI_IdleMode = _SerialFIFI_IdleMode.Substring(UnsolicitedResponseEnd);
+                        }
+                        else
+                        {
+                            Thread.Sleep(100);
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        Thread.Sleep(100);
+                        continue;
+                    }
+                }
+
+                Debug.Print("Unsolicited response: " + UnsolicitedResponse);
+
+                // Trigger event if set
+                if (OnUnsolicitedResponse != null)
+                {
+                    OnUnsolicitedResponse(UnsolicitedResponse);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Check if Unsolicitate response is a New SMS response.
+        /// If so it fires a OnRecievedSMS event
+        /// </summary>
+        /// <param name="Response">Recieve response</param>
+        private void CheckForNewSMS(string Response)
+        {
+
+            // Check for +CMTI: in string
+            if (Response.IndexOf("+CMTI: ") == -1)
+                return;
+
+            int ResponseStart;
+            int ResponseEnd;
+
+            // Select only <mem>, <id>
+            ResponseStart = Response.IndexOf("+CMTI: ");
+            if (ResponseStart == -1)
+                return;
+            ResponseStart += "+CMTI: ".Length;
+            ResponseEnd = Response.IndexOf("\r\n", ResponseStart);
+            if (ResponseEnd == -1)
+                return;
+            Response = Response.Substring(ResponseStart, ResponseEnd - ResponseStart);
+
+            // SMS event
+            if (OnRecievedSMS != null)
+                OnRecievedSMS(Response.Substring(0, Response.IndexOf(',')), ElzeKool.Utilities.NumberParser.StringToInt(Response.Substring(Response.IndexOf(',') + 1)));
+        }
+
+        /// <summary>
+        /// Check if Unsolicitate response is a Recieving Call response.
+        /// If so it fires a OnRecievingCall event
+        /// </summary>
+        /// <param name="Response">Recieve response</param>
+        private void CheckForCall(string Response)
+        {
+            // Check for RING
+            if (Response.IndexOf("\r\nRING\r\n") == -1)
+                return;
+
+            // Call event
+            if (OnRecievingCall != null)
+                OnRecievingCall();
+        }
+
+        #endregion
+
+        
+        /// <summary>
+        /// Execute AT Command. Wait until response is recieved.
+        /// </summary>
+        /// <param name="Command">Command to execute</param>
+        /// <param name="Timeout">Timeout for response</param>
+        /// <returns>Recieved response code</returns>
+        public ResponseCodes ExecuteCommand(String Command, int Timeout)
+        {
+
+            String DummyResponseBody;
+            return ExecuteCommand(Command, Timeout, out DummyResponseBody);
+        }
+
+        /// <summary>
+        /// Execute AT Command. Wait until response is recieved.
+        /// </summary>
+        /// <param name="Command">Command to execute</param>
+        /// <param name="Timeout">Timeout for response in miliseconds</param>
+        /// <param name="ResponseBody">Returns the Response body</param>
+        /// <returns>Recieved response code</returns>
+        public ResponseCodes ExecuteCommand(String Command, int Timeout, out String ResponseBody)
+        {
+            if (DebugMessage != null)
+                DebugMessage("Command: " + Command);
+
+            /*
+             * Send Command
+             * Wait until command is send
+             * Wait for last unsolicited response text is recieved
+             * Go to command mode
+             * Send \r\n to execute command
+             * Wait until \r\n is send
+             * Wait for response
+             * Save command response body
+             * Return response
+            */
+
+            // Check if disposed
+            if (_Disposed) throw new ObjectDisposedException();
+
+            // Recieved response code
+            ResponseCodes RecievedResponse;
+
+            // Check if we are ready for Command
+            lock (_CurrentStateLock)
+            {
+                if (_CurrentState != GM862GPSStates.Idle)
+                    throw new GM862GPSException("Not in IDLE state");
+            }
+
+            // Send AT to Serial Port 
+            byte[] OutBuffer = System.Text.Encoding.UTF8.GetBytes(Command);
+            lock (_ComPort)
+            {
+                _ComPort.Write(OutBuffer, 0, OutBuffer.Length);
+
+                // Wait until command is send
+                while (_ComPort.BytesToWrite > 0)
+                {
+                    WaitForDataToArrive.WaitOne(10, false);
+                }
+            }
+
+            // Check if in Idle State and set Command state
+            lock (_CurrentStateLock)
+            {
+                if (_CurrentState != GM862GPSStates.Idle)
+                    throw new GM862GPSException("Not in IDLE state");
+
+                // Now where in command state
+                _CurrentState = GM862GPSStates.Command;
+            }
+
+            // Wait for last data to arrive
+            // WaitOne returns true when no data recieved in given time
+            // So this loop exits when for the last 10 mSec no data has arrived
+            while (WaitForDataToArrive.WaitOne(10, false)) { }
+
+            // Clear input buffer
+            lock (_SerialFIFO_CommandMode)
+            {
+                _SerialFIFO_CommandMode = "";
+            }
+
+
+            // Send \r\n
+            OutBuffer = System.Text.Encoding.UTF8.GetBytes("\r\n");
+            lock (_ComPort)
+            {
+                _ComPort.Write(OutBuffer, 0, OutBuffer.Length);
+
+                // Wait until send
+                while (_ComPort.BytesToWrite > 0)
+                {
+                    WaitForDataToArrive.WaitOne(10, false);
+                }
+            }
+
+            // Now we wait for a response to come in
+            int ResponseStart;
+            int ResponseLength;
+            RecievedResponse = WaitForResponse(out ResponseStart, out ResponseLength, Timeout);
+
+            // Now get response body and delete response from FIFO
+            lock (_SerialFIFO_CommandMode)
+            {
+                ResponseBody = _SerialFIFO_CommandMode.Substring(0, ResponseStart);
+                _SerialFIFO_CommandMode = _SerialFIFO_CommandMode.Substring(ResponseStart + ResponseLength);
+            }
+
+            // Return recieved response
+            return RecievedResponse;
+        }
+
+        /// <summary>
+        /// Send Escape Sequence '+++'
+        /// </summary>
+        /// <returns>Return code</returns>
+        public ResponseCodes Escape(bool Short)
+        {
+            // Check if disposed
+            if (_Disposed) throw new ObjectDisposedException();
+
+            ResponseCodes RecievedResponse;
+            int ResponseStart;
+            int ResponseLength;
+
+            // Set Command state
+            lock (_CurrentStateLock)
+            {
+                // Now where in command state
+                _CurrentState = GM862GPSStates.Command;
+            }
+
+            if (!Short)
+                Thread.Sleep(2500);
+            else
+                Thread.Sleep(250);
+
+            // Send Command to Serial Port
+            byte[] OutBuffer = System.Text.Encoding.UTF8.GetBytes("+++");
+            lock (_ComPort) { _ComPort.Write(OutBuffer, 0, OutBuffer.Length); }
+
+            if (!Short)
+                Thread.Sleep(2500);
+            else
+                Thread.Sleep(250);
+
+            // Now we wait for a response to come in
+            RecievedResponse = WaitForResponse(out ResponseStart, out ResponseLength, 5000);
+
+            // Delete response from FIFO
+            lock (_SerialFIFO_CommandMode)
+            {
+                _SerialFIFO_CommandMode = _SerialFIFO_CommandMode.Substring(ResponseStart + ResponseLength);
+            }
+
+            // Return recieved response
+            return RecievedResponse;
+        }
+
+        /// <summary>
+        /// Waits until it recieves a valid response code. 
+        /// This command automaticly sets the state to IDLE or DATA
+        /// Throws exception when no response is recieved within timeout time.
+        /// </summary>
+        /// <param name="ResponseStart">Returns the position in the FIFO of response</param>
+        /// <param name="ResponseLength">Returns the length of the response</param>
+        /// <param name="Timeout">Timeout in miliseconds</param>
+        /// <returns>Received response code</returns>
+        private ResponseCodes WaitForResponse(out int ResponseStart, out int ResponseLength, int Timeout)
+        {
+            // Check if disposed
+            if (_Disposed) throw new ObjectDisposedException();
+
+            // Set TimeOut
+            DateTime TimeOutAt = DateTime.Now.AddMilliseconds(Timeout*2);
+
+            // Check if in Command or Data State
+            lock (_CurrentStateLock)
+            {
+                if ((_CurrentState != GM862GPSStates.Command) && (_CurrentState != GM862GPSStates.Data))
+                    throw new GM862GPSException("Not in COMMAND or DATA state");
+            }
+
+            // Search for response until timeout
+            while (DateTime.Now < TimeOutAt)
+            {
+                // TODO: 
+                // Check if it's better to release/aquire lock for each response check
+                lock (_SerialFIFO_CommandMode)
+                {
+                    //Debug.Print(_SerialFIFO_CommandMode);
+
+                    // OK response
+                    ResponseStart = _SerialFIFO_CommandMode.IndexOf("\r\nOK\r\n");
+                    if (ResponseStart != -1)
+                    {
+                        ResponseLength = "\r\nOK\r\n".Length;
+                        lock (_CurrentStateLock) { _CurrentState = GM862GPSStates.Idle; }
+                        return ResponseCodes.OK;
+                    }
+
+                    // ERROR response
+                    ResponseStart = _SerialFIFO_CommandMode.IndexOf("\r\nERROR\r\n");
+                    if (ResponseStart != -1)
+                    {
+                        ResponseLength = "\r\nERROR\r\n".Length;
+                        lock (_CurrentStateLock) { _CurrentState = GM862GPSStates.Idle; }
+                        return ResponseCodes.ERROR;
+                    }
+
+                    // RING response
+                    ResponseStart = _SerialFIFO_CommandMode.IndexOf("\r\nRING\r\n");
+                    if (ResponseStart != -1)
+                    {
+                        ResponseLength = "\r\nRING\r\n".Length;
+                        lock (_CurrentStateLock) { _CurrentState = GM862GPSStates.Idle; }
+                        return ResponseCodes.RING;
+                    }
+
+                    // BUSY response
+                    ResponseStart = _SerialFIFO_CommandMode.IndexOf("\r\nBUSY\r\n");
+                    if (ResponseStart != -1)
+                    {
+                        ResponseLength = "\r\nBUSY\r\n".Length;
+                        lock (_CurrentStateLock) { _CurrentState = GM862GPSStates.Idle; }
+                        return ResponseCodes.BUSY;
+                    }
+
+                    // NO CARRIER response
+                    ResponseStart = _SerialFIFO_CommandMode.IndexOf("\r\nNO CARRIER\r\n");
+                    if (ResponseStart != -1)
+                    {
+                        ResponseLength = "\r\nNO CARRIER\r\n".Length;
+                        lock (_CurrentStateLock) { _CurrentState = GM862GPSStates.Idle; }
+                        return ResponseCodes.NO_CARRIER;
+                    }
+
+                    // NO DIALTONE response
+                    ResponseStart = _SerialFIFO_CommandMode.IndexOf("\r\nNO DIALTONE\r\n");
+                    if (ResponseStart != -1)
+                    {
+                        ResponseLength = "\r\nNO DIALTONE\r\n".Length;
+                        lock (_CurrentStateLock) { _CurrentState = GM862GPSStates.Idle; }
+                        return ResponseCodes.NO_DIALTONE;
+                    }
+
+                    // NO ANSWER response
+                    ResponseStart = _SerialFIFO_CommandMode.IndexOf("\r\nNO ANSWER\r\n");
+                    if (ResponseStart != -1)
+                    {
+                        ResponseLength = "\r\nNO ANSWER\r\n".Length;
+                        lock (_CurrentStateLock) { _CurrentState = GM862GPSStates.Idle; }
+                        return ResponseCodes.NO_ANSWER;
+                    }
+
+                    // CONNECT response
+                    ResponseStart = _SerialFIFO_CommandMode.IndexOf("CONNECT");
+                    if (ResponseStart != -1)
+                    {
+                        ResponseLength = _SerialFIFO_CommandMode.IndexOf("\r\n", ResponseStart + 2);
+                        if (ResponseLength != -1)
+                        {
+                            ResponseLength = (ResponseLength - ResponseStart) + 2;
+                            WaitForDataToArrive.Reset();
+                            lock (_CurrentStateLock) { _CurrentState = GM862GPSStates.Data; }
+                            return ResponseCodes.CONNECT;
+                        }
+                    }
+
+                    // SEND_SMS_DATA (>) response
+                    ResponseStart = _SerialFIFO_CommandMode.IndexOf("\r\n>");
+                    if (ResponseStart != -1)
+                    {
+                        ResponseLength = "\r\n>".Length;
+                        WaitForDataToArrive.Reset();
+                        lock (_CurrentStateLock) { _CurrentState = GM862GPSStates.Data; }
+                        return ResponseCodes.SEND_SMS_DATA;
+                    }
+                }
+
+                WaitForDataToArrive.WaitOne(50, false);
+            }
+
+            // Response Timeout
+            lock (_CurrentStateLock) { _CurrentState = GM862GPSStates.Idle; }
+            ResponseStart = 0;
+            ResponseLength = 0;
+            return ResponseCodes.ERROR;
+
+        }
+
+
+        /// <summary>
+        /// Event Handler for Serial Port, Data Recieved
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void _ComPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            if (e.EventType == SerialData.Chars)
+            {
+                // String to hold new text if in IDLE/COMMAND State
+                String NewText = "";
+
+                // Int to hold the number of bytes to read
+                int BytesToRead;
+
+                // Buffer to read daae into
+                byte[] inBuffer;
+
+                // Get number of bytes in input fifo
+                lock (_ComPort)
+                {
+                    BytesToRead = _ComPort.BytesToRead;
+                }
+
+                // Create new buffer
+                inBuffer = new byte[BytesToRead];
+
+                // Read data from fifo
+                lock (_ComPort)
+                {
+                    // Read data 
+                    _ComPort.Read(inBuffer, 0, inBuffer.Length);
+                }
+
+                // Lock the current state
+                lock (_CurrentStateLock)
+                {
+                    // Check if in DATA state
+                    if (_CurrentState == GM862GPSStates.Data)
+                    {
+                        // If so lock DataMode FIFO
+                        lock (_SerialFIFO_DataMode)
+                        {
+                            // Write serial data to fifo and return
+                            _SerialFIFO_DataMode.Write(inBuffer);
+                            WaitForDataToArrive.Set();
+                            return;
+                        }
+                    }
+                }
+
+
+                // We are in IDLE or COMMAND state, Parse text      
+                // Try to parse text
+                char[] MkString = new char[inBuffer.Length];
+                for (int x = 0; x < inBuffer.Length; x++)
+                    MkString[x] = (char)inBuffer[x];
+                NewText = new String(MkString);
+
+                // Lock current state
+                lock (_CurrentStateLock)
+                {
+
+                    // Check if idle state, if so add it to idle fifo
+                    if (_CurrentState == GM862GPSStates.Idle)
+                    {
+                        lock (_SerialFIFI_IdleMode)
+                        {
+                            _SerialFIFI_IdleMode += NewText;
+                        }
+                    }
+                    // if in command state add it to command fifo
+                    else
+                    {
+                        lock (_SerialFIFO_CommandMode)
+                        {
+                            _SerialFIFO_CommandMode += NewText;
+                        }
+
+                        WaitForDataToArrive.Set();
+                    }
+                }
+            }
+        }
+
+
+    }
+}
