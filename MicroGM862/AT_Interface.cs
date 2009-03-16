@@ -644,7 +644,7 @@ namespace MFToolkit.MicroGM862
                 recievedLine = _uartReadLine(Timeout);
 
                 // OK Response
-                if (recievedLine == "\r\nOK\r\n")
+                if ((recievedLine == "\r\nOK\r\n") || (recievedLine == " \r\nOK\r\n"))
                 {
                     State = States.IDLE;
                     Thread.Sleep(20);
@@ -713,6 +713,9 @@ namespace MFToolkit.MicroGM862
                 // SEND_SMS_DATA Response
                 else if (recievedLine.IndexOf("\r\n>") == 0)
                 {
+                    lock (_bufferedlinedata)
+                        _bufferedlinedata = "";
+
                     State = States.DATA;
                     return ResponseCodes.SEND_SMS_DATA;
                 }
@@ -733,6 +736,7 @@ namespace MFToolkit.MicroGM862
 
                 // Unkown response line add it to to the response body
                 ResponseBody += recievedLine;
+                if (recievedLine == " ") recievedLine = "";
             }
 
 
