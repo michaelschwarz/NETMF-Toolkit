@@ -33,7 +33,6 @@
   </PropertyGroup>
   <Import Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <ItemGroup>
-    <None Include="GM862GPS.bak" />
     <Compile Include="AT_Interface.cs" />
     <Compile Include="Modules\GPRS.cs" />
     <Compile Include="Modules\GPS.cs" />

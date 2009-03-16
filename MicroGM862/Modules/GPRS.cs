@@ -25,6 +25,7 @@
  */
 
 using System;
+using MFToolkit.MicroUtilities;
 
 namespace MFToolkit.MicroGM862.Modules
 {
@@ -248,10 +249,10 @@ namespace MFToolkit.MicroGM862.Modules
         /// <param name="Protocol">Protocol (UDP/TCP)</param>
         /// <param name="EndPointAddr">Endpoint address (IP or DNS)</param>
         /// <param name="EndPointPort">Endpoint Port</param>
-        /// <param name="CloseOnDisconect">Close On Disconect</param>
-        /// <param name="OnlineMode">true to return to IDLE state after connect</param>
+        /// <param name="CloseOnDisconnect">Close On Disconect</param>
+        /// <param name="OnlineMode">True to return to IDLE state after connect</param>
         /// <returns>True on succes</returns>
-        public bool SocketDail(int SocketNo, SocketProtocols Protocol, string EndPointAddr, int EndPointPort, bool CloseOnDisconect, bool CommandMode)
+        public bool SocketDail(int SocketNo, SocketProtocols Protocol, string EndPointAddr, int EndPointPort, bool CloseOnDisconnect, bool CommandMode)
         {
             // Check if GPRS functions has been initialized
             if (!_gprs_initialized)
@@ -265,7 +266,7 @@ namespace MFToolkit.MicroGM862.Modules
 
             // Dail socket
             if (_device.ExecuteCommand(
-                "AT#SD=" + SocketNo.ToString() + "," + ((int)Protocol).ToString() + "," + EndPointPort.ToString() + ",\"" + EndPointAddr + "\"," + (CloseOnDisconect ? "0" : "255") + "," + EndPointPort.ToString() + "," + (CommandMode ? "1" : "0"),
+                "AT#SD=" + SocketNo.ToString() + "," + ((int)Protocol).ToString() + "," + EndPointPort.ToString() + ",\"" + EndPointAddr + "\"," + (CloseOnDisconnect ? "0" : "255") + "," + EndPointPort.ToString() + "," + (CommandMode ? "1" : "0"),
                 out responseBody,
                 60000) != expectedResponse)
                 return false;
@@ -275,7 +276,93 @@ namespace MFToolkit.MicroGM862.Modules
         }
 
         /// <summary>
-        /// Close opened socket
+        /// Start listening for TCP Incomming Connections
+        /// [UNTESTED]
+        /// </summary>
+        /// <param name="SocketNo">Socket Number (1-6)</param>
+        /// <param name="LocalPort">Local Port</param>
+        /// <param name="CloseOnDisconnect">Close On Disconnect</param>
+        /// <returns>True on succes</returns>
+        public bool SocketStartListen(int SocketNo, int LocalPort, bool CloseOnDisconnect)
+        {
+            // Check if GPRS functions has been initialized
+            if (!_gprs_initialized)
+                throw new GM862Exception(GM862Exception.WRONGARGUMENT);
+
+            // Used when executing commands
+            string responseBody;
+
+            // Listen Socket Start
+            if (_device.ExecuteCommand(
+                "AT#SL=" + SocketNo.ToString() + ",1," + LocalPort.ToString() + "," + (CloseOnDisconnect ? "0" : "255"),
+                out responseBody,
+                1500) != AT_Interface.ResponseCodes.OK)
+                return false;
+
+            // Succes 
+            return true;
+        }
+
+        /// <summary>
+        /// Stop listening for TCP Incomming Connections
+        /// [UNTESTED]
+        /// </summary>
+        /// <param name="SocketNo">Socket Number (1-6)</param>
+        /// <param name="LocalPort">Local Port</param>
+        /// <param name="CloseOnDisconnect">Close On Disconnect</param>
+        /// <returns>True on succes</returns>
+        public bool SocketStopListen(int SocketNo, int LocalPort, bool CloseOnDisconnect)
+        {
+            // Check if GPRS functions has been initialized
+            if (!_gprs_initialized)
+                throw new GM862Exception(GM862Exception.WRONGARGUMENT);
+
+            // Used when executing commands
+            string responseBody;
+
+            // Listen Socket Stop
+            if (_device.ExecuteCommand(
+                "AT#SL=" + SocketNo.ToString() + ",0," + LocalPort.ToString() + "," + (CloseOnDisconnect ? "0" : "255"),
+                out responseBody,
+                1500) != AT_Interface.ResponseCodes.OK)
+                return false;
+
+            // Succes 
+            return true;
+        }
+
+        /// <summary>
+        /// Accept incomming TCP connection
+        /// [UNTESTED]
+        /// </summary>
+        /// <param name="SocketNo">Socket Number (1-6)</param>
+        /// <param name="CommandMode">True to return to IDLE state after connect</param>
+        /// <returns>True on succes</returns>
+        public bool SocketAccept(int SocketNo, bool CommandMode)
+        {
+            // Check if GPRS functions has been initialized
+            if (!_gprs_initialized)
+                throw new GM862Exception(GM862Exception.WRONGARGUMENT);
+
+            // Used when executing commands
+            string responseBody;
+
+            // Select witch response code to expect
+            AT_Interface.ResponseCodes expectedResponse = (CommandMode) ? AT_Interface.ResponseCodes.OK : AT_Interface.ResponseCodes.CONNECT;
+
+            // Accept socket connection
+            if (_device.ExecuteCommand(
+                "AT#SA=" + SocketNo.ToString() + "," + (CommandMode ? "1" : "0"),
+                out responseBody,
+                60000) != expectedResponse)
+                return false;
+
+            // Succes 
+            return true;
+        }
+
+        /// <summary>
+        /// Close opened socket or deny incomming connection
         /// </summary>
         /// <param name="SocketNo">Socket Number (1-6)</param>
         /// <returns>True on succes</returns>
@@ -317,6 +404,120 @@ namespace MFToolkit.MicroGM862.Modules
             // Succes 
             return true;
         }
+
+        /// <summary>
+        /// Send Data to Socket while in IDLE state
+        /// </summary>
+        /// <param name="SocketNo">Socket Number (1-6)</param>
+        /// <param name="DataToSend">Data to send, max 1024 bytes</param>
+        /// <returns>True on succes</returns>
+        public bool SocketSendData(int SocketNo, byte[] DataToSend)
+        {
+            // Check if GPRS functions has been initialized
+            if (!_gprs_initialized)
+                throw new GM862Exception(GM862Exception.WRONGARGUMENT);
+
+            // Check data to send
+            if (DataToSend == null)
+                throw new GM862Exception(GM862Exception.WRONGARGUMENT);
+            if (DataToSend.Length > 1024)
+                throw new GM862Exception(GM862Exception.WRONGARGUMENT);
+
+            // Used when executing commands
+            string responseBody;
+
+            // Say we want to send data
+            if (_device.ExecuteCommand("AT#SSEND=" + SocketNo.ToString(), out responseBody, 15000) != AT_Interface.ResponseCodes.SEND_SMS_DATA)
+                return false;
+
+            // Wait a little before sending the message
+            System.Threading.Thread.Sleep(20);
+
+          
+            // Send Data
+            _device.SendRawData(DataToSend, 0, DataToSend.Length);
+
+            // End data
+            _device.SendRawData(new byte[] { 0x1A }, 0, 1);
+
+            // Wait for response
+            if (_device.WaitForResponse(out responseBody, 15000) != AT_Interface.ResponseCodes.OK)
+                return false;
+
+            // Succes
+            return true;
+        }
+
+        /// <summary>
+        /// Read Data from Socket while in IDLE state
+        /// </summary>
+        /// <param name="SocketNo">Socket Number (1-6)</param>
+        /// <param name="MaxBytesToRead">Maximum number of bytes to read (Max 1500)</param>
+        /// <param name="RecievedData">Recieved data</param>
+        /// <param name="HexMode">True if socket is in Hex data mode</param>
+        /// <returns>True on succes</returns>
+        public bool SocketReadData(int SocketNo, int MaxBytesToRead, out byte[] RecievedData, bool HexMode)
+        {
+            // Check if GPRS functions has been initialized
+            if (!_gprs_initialized)
+                throw new GM862Exception(GM862Exception.WRONGARGUMENT);
+
+            // Check data to send
+            if (MaxBytesToRead > 1500)
+                throw new GM862Exception(GM862Exception.WRONGARGUMENT);
+
+            // Used when executing commands
+            string responseBody;
+
+            // Read Data from socket
+            if (_device.ExecuteCommand("AT#SRECV=" + SocketNo.ToString() + "," + MaxBytesToRead.ToString(), out responseBody, 60000) != AT_Interface.ResponseCodes.OK)
+            {
+                RecievedData = null;
+                return false;
+            }
+
+            // Check response body
+            if (responseBody.IndexOf("\r\n#SRECV: ") != 0)
+            {
+                RecievedData = null;
+                return false;
+            }
+
+            // Response first line: #SRECV <socket>, <size><cr><lf>DATA<cr><lf>
+            string responseHeader = responseBody.Substring(10, responseBody.IndexOf('\r',10) - 10);
+            responseBody = responseBody.Substring(responseBody.IndexOf('\n', 10) + 1);
+
+            // Get number of bytes to read
+            MaxBytesToRead = NumberParser.StringToInt(responseHeader.Substring(responseHeader.IndexOf(',') + 1));
+
+            // Create buffer
+            RecievedData = new byte[MaxBytesToRead];
+
+            // Check if we want to read in HEX mode
+            if (HexMode)
+            {
+                // Used to convert hex to byte
+                string hexToNibble = "0123456789ABCDEF";
+
+                // Get read data
+                for (int noByte = 0; noByte < MaxBytesToRead; noByte++)
+                {
+                    RecievedData[noByte] = (byte) hexToNibble.IndexOf(responseBody[(noByte*2)+1]);
+                    RecievedData[noByte] |= (byte) (hexToNibble.IndexOf(responseBody[(noByte * 2)]) << 4);
+                }
+            }
+            else
+            {
+                // Get read data
+                for (int noByte = 0; noByte < MaxBytesToRead; noByte++)
+                    RecievedData[noByte] = (byte)responseBody[noByte];
+            }
+
+            // Succes
+            return true;
+
+        }
+
 
     }
 }
