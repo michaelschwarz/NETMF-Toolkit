@@ -172,7 +172,7 @@ namespace MFToolkit.MicroGM862.Modules
             string responseBody;
 
             // Request GPS information
-            if (_device.ExecuteCommand("AT$GPSACP", out responseBody, 1500) != AT_Interface.ResponseCodes.OK)
+            if (_device.ExecuteCommand("AT$GPSACP", out responseBody, 2500) != AT_Interface.ResponseCodes.OK)
                 throw new GM862Exception(GM862Exception.BAD_RESPONSEBODY);
 
             // Check response body

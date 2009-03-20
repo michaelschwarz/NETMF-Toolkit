@@ -88,6 +88,10 @@ namespace MFToolkit.MicroGM862
         /// </summary>
         public Modules.Networking Networking;
 
+        /// <summary>
+        /// Used to compensate for the change in speed when using lower baudrates
+        /// </summary>
+        public int TimeOutMultiplyer;
 
         #endregion
 
@@ -214,7 +218,7 @@ namespace MFToolkit.MicroGM862
             // Call function trough interface
             lock (_interface)
             {
-                return _interface.ExecuteCommand(Command, out ResponseBody, Timeout);
+                return _interface.ExecuteCommand(Command, out ResponseBody,Timeout * TimeOutMultiplyer);
             }
         }
 
@@ -235,7 +239,7 @@ namespace MFToolkit.MicroGM862
             // Call function trough interface
             lock (_interface)
             {
-                return _interface.WaitForResponse(out ResponseBody, Timeout);
+                return _interface.WaitForResponse(out ResponseBody, Timeout * TimeOutMultiplyer);
             }
         }
 
@@ -289,7 +293,7 @@ namespace MFToolkit.MicroGM862
             if (_disposed)
                 throw new GM862Exception(GM862Exception.DISPOSED);
 
-            return _interface.EscapeSequence(PauseBefore, PauseAfter, Timeout);
+            return _interface.EscapeSequence(PauseBefore, PauseAfter, Timeout * TimeOutMultiplyer);
         }
 
     }

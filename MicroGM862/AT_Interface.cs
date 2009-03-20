@@ -532,7 +532,7 @@ namespace MFToolkit.MicroGM862
             while (true)
             {
                 // Read line from FIFO
-                String Unsolicitated = _uartReadLine(250);
+                String Unsolicitated = _uartReadLine(400);
                 if (Unsolicitated != "")
                 {
                     // If response starts with \r\n strip it
