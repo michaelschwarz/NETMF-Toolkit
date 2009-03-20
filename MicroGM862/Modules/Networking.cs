@@ -453,122 +453,145 @@ namespace MFToolkit.MicroGM862.Modules
             // Open online data mode
             if (!_device.GPRS.SocketRestore(1)) { Contents = null; return false; }
 
-            // Send request
-            _device.SendRawData(requestHeaderRAW, 0, requestHeaderRAW.Length);
-
-            // Variables used for parsing response 
-            byte[] responseBuffer = new byte[0xffff];
-            int responseLength = 0;
-            
-            byte[] END_OF_HEADER = new byte[] { 13, 10, 13, 10 };
-            String responseHeader = String.Empty;
-            byte[] responseHeaderRAW;
-
-            DateTime timeoutAt = DateTime.Now.AddSeconds(120);
-            int bytesRead;
-            int expectedSize = -1;
-
-            // Read data from Socket until timeout
-            while ((DateTime.Now < timeoutAt))
+            // This part of code in a try block.
+            // To prevent an Thread.Abort messing up the current device state
+            try
             {
-                // Read as many bytes as posible from GM862
-                bytesRead = _device.ReadRawData(responseBuffer, responseLength, responseBuffer.Length - responseLength);
+                // Send request
+                _device.SendRawData(requestHeaderRAW, 0, requestHeaderRAW.Length);
 
-                // If we have data reset timeout
-                if (bytesRead > 0)
-                {
-                    // Reset Timeout Timer
-                    timeoutAt = DateTime.Now.AddMilliseconds(10000);
+                // Variables used for parsing response 
+                byte[] responseBuffer = new byte[0xffff];
+                int responseLength = 0;
 
-                    // Increase read position
-                    responseLength += bytesRead;
-                }
-                else
-                {
-                    System.Threading.Thread.Sleep(10);
-                    continue;
-                }
+                byte[] END_OF_HEADER = new byte[] { 13, 10, 13, 10 };
+                String responseHeader = String.Empty;
+                byte[] responseHeaderRAW;
 
-                // If our response buffer gets somewhat small increase it
-                if ((responseBuffer.Length - responseLength) < 32)
-                {
-                    byte[] ResponseTemp = new byte[responseBuffer.Length + 0xffff];
-                    Array.Copy(responseBuffer, ResponseTemp, responseBuffer.Length);
-                    responseBuffer = ResponseTemp;
-                }
+                DateTime timeoutAt = DateTime.Now.AddSeconds(120);
+                int bytesRead;
+                int expectedSize = -1;
 
-                // Search for header End
-                if (responseHeader == String.Empty)
+                // Read data from Socket until timeout
+                while ((DateTime.Now < timeoutAt))
                 {
-                    int HeaderEnd = _find_array(END_OF_HEADER, responseBuffer);
-                    if (HeaderEnd != -1)
+                    // Read as many bytes as posible from GM862
+                    bytesRead = _device.ReadRawData(responseBuffer, responseLength, responseBuffer.Length - responseLength);
+
+                    // If we have data reset timeout
+                    if (bytesRead > 0)
                     {
-                        // Copy data from header
-                        responseHeaderRAW = new byte[HeaderEnd];
-                        Array.Copy(responseBuffer, responseHeaderRAW, responseHeaderRAW.Length);
+                        // Reset Timeout Timer
+                        timeoutAt = DateTime.Now.AddMilliseconds(10000);
 
-                        // Try to parse header
-                        try
-                        {
-                            responseHeader = new String(System.Text.Encoding.UTF8.GetChars(responseHeaderRAW)) + "\r\n";
-                        }
-                        catch
-                        {
-                            continue;
-                        }
+                        // Increase read position
+                        responseLength += bytesRead;
+                    }
+                    else
+                    {
+                        System.Threading.Thread.Sleep(10);
+                        continue;
+                    }
 
-                        // Create lower case variant
-                        String ResponseHeaderLower = responseHeader.ToLower();
-
-                        // Find an expected length 
-                        if (ResponseHeaderLower.IndexOf("content-length:") != -1)
-                        {
-                            // Get Content Length
-                            Int32 SizeStart = ResponseHeaderLower.IndexOf("content-length: ") + 10;
-                            Int32 SizeEnd = responseHeader.IndexOf("\r\n", SizeStart);
-
-                            expectedSize = NumberParser.StringToInt(responseHeader.Substring(SizeStart, SizeEnd - SizeStart));
-                        }
-
-                        // Check for a location header
-                        if (ResponseHeaderLower.IndexOf("location: ") != -1)
-                        {
-                            // Get Location
-                            Int32 LocationStart = ResponseHeaderLower.IndexOf("location: ") + 10;
-                            Int32 LocationEnd = responseHeader.IndexOf("\r\n", LocationStart);
-
-                            String newLocation = responseHeader.Substring(LocationStart, LocationEnd - LocationStart);
-
-                            // Close online connection
-                            if (_device.EscapeSequence(1500, 1500, 5000) != AT_Interface.ResponseCodes.OK)
-                            {
-                                Contents = null;
-                                return false;
-                            }
-
-                            // Close socket
-                            if (!_device.GPRS.SocketShutdown(SocketID))
-                            {
-                                Contents = null;
-                                return false;
-                            }
-
-                            // Pass on WebRequest
-                            return WebRequest(SocketID, newLocation, URL, out Contents, RequestMethod, POSTContentType, POSTBody);
-                        }
-
-                        // Strip header from response
-                        responseLength -= HeaderEnd + 4;
-                        byte[] ResponseTemp = new byte[responseBuffer.Length - HeaderEnd - 4];
-                        Array.Copy(responseBuffer, HeaderEnd + 4, ResponseTemp, 0, ResponseTemp.Length);
+                    // If our response buffer gets somewhat small increase it
+                    if ((responseBuffer.Length - responseLength) < 32)
+                    {
+                        byte[] ResponseTemp = new byte[responseBuffer.Length + 0xffff];
+                        Array.Copy(responseBuffer, ResponseTemp, responseBuffer.Length);
                         responseBuffer = ResponseTemp;
                     }
 
+                    // Search for header End
+                    if (responseHeader == String.Empty)
+                    {
+                        int HeaderEnd = _find_array(END_OF_HEADER, responseBuffer);
+                        if (HeaderEnd != -1)
+                        {
+                            // Copy data from header
+                            responseHeaderRAW = new byte[HeaderEnd];
+                            Array.Copy(responseBuffer, responseHeaderRAW, responseHeaderRAW.Length);
+
+                            // Try to parse header
+                            try
+                            {
+                                responseHeader = new String(System.Text.Encoding.UTF8.GetChars(responseHeaderRAW)) + "\r\n";
+                            }
+                            catch
+                            {
+                                continue;
+                            }
+
+                            // Create lower case variant
+                            String ResponseHeaderLower = responseHeader.ToLower();
+
+                            // Find an expected length 
+                            if (ResponseHeaderLower.IndexOf("content-length:") != -1)
+                            {
+                                // Get Content Length
+                                Int32 SizeStart = ResponseHeaderLower.IndexOf("content-length: ") + 10;
+                                Int32 SizeEnd = responseHeader.IndexOf("\r\n", SizeStart);
+
+                                expectedSize = NumberParser.StringToInt(responseHeader.Substring(SizeStart, SizeEnd - SizeStart));
+                            }
+
+                            // Check for a location header
+                            if (ResponseHeaderLower.IndexOf("location: ") != -1)
+                            {
+                                // Get Location
+                                Int32 LocationStart = ResponseHeaderLower.IndexOf("location: ") + 10;
+                                Int32 LocationEnd = responseHeader.IndexOf("\r\n", LocationStart);
+
+                                String newLocation = responseHeader.Substring(LocationStart, LocationEnd - LocationStart);
+
+                                // Close online connection
+                                if (_device.EscapeSequence(1500, 1500, 5000) != AT_Interface.ResponseCodes.OK)
+                                {
+                                    Contents = null;
+                                    return false;
+                                }
+
+                                // Close socket
+                                if (!_device.GPRS.SocketShutdown(SocketID))
+                                {
+                                    Contents = null;
+                                    return false;
+                                }
+
+                                // Pass on WebRequest
+                                return WebRequest(SocketID, newLocation, URL, out Contents, RequestMethod, POSTContentType, POSTBody);
+                            }
+
+                            // Strip header from response
+                            responseLength -= HeaderEnd + 4;
+                            byte[] ResponseTemp = new byte[responseBuffer.Length - HeaderEnd - 4];
+                            Array.Copy(responseBuffer, HeaderEnd + 4, ResponseTemp, 0, ResponseTemp.Length);
+                            responseBuffer = ResponseTemp;
+                        }
+
+                    }
+
+                    // Close connection when we've reached the expected size
+                    if ((expectedSize != -1) & (responseLength >= expectedSize))
+                        break;
+                }
+            }
+            catch (System.Threading.ThreadAbortException ex)
+            {
+                // Close online connection
+                if (_device.EscapeSequence(1500, 1500, 5000) != AT_Interface.ResponseCodes.OK)
+                {
+                    Contents = null;
+                    return false;
                 }
 
-                // Close connection when we've reached the expected size
-                if ((expectedSize != -1) & (responseLength >= expectedSize))
-                    break;
+                // Close socket
+                if (!_device.GPRS.SocketShutdown(SocketID))
+                {
+                    Contents = null;
+                    return false;
+                }
+                Contents = null;
+                return false;
             }
 
             // Close online connection
@@ -609,6 +632,7 @@ namespace MFToolkit.MicroGM862.Modules
 
             // Succes
             return true;
+
         }
     }
 }
