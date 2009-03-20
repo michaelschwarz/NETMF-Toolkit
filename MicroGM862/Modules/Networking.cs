@@ -453,24 +453,24 @@ namespace MFToolkit.MicroGM862.Modules
             // Open online data mode
             if (!_device.GPRS.SocketRestore(1)) { Contents = null; return false; }
 
+            // Variables used for parsing response 
+            byte[] responseBuffer = new byte[0xffff];
+            int responseLength = 0;
+
+            byte[] END_OF_HEADER = new byte[] { 13, 10, 13, 10 };
+            String responseHeader = String.Empty;
+            byte[] responseHeaderRAW;
+
+            DateTime timeoutAt = DateTime.Now.AddSeconds(120);
+            int bytesRead;
+            int expectedSize = -1;
+
             // This part of code in a try block.
             // To prevent an Thread.Abort messing up the current device state
             try
             {
                 // Send request
                 _device.SendRawData(requestHeaderRAW, 0, requestHeaderRAW.Length);
-
-                // Variables used for parsing response 
-                byte[] responseBuffer = new byte[0xffff];
-                int responseLength = 0;
-
-                byte[] END_OF_HEADER = new byte[] { 13, 10, 13, 10 };
-                String responseHeader = String.Empty;
-                byte[] responseHeaderRAW;
-
-                DateTime timeoutAt = DateTime.Now.AddSeconds(120);
-                int bytesRead;
-                int expectedSize = -1;
 
                 // Read data from Socket until timeout
                 while ((DateTime.Now < timeoutAt))
