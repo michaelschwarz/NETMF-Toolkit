@@ -25,30 +25,17 @@
  */
 using System;
 
-namespace MSchwarz.Net.Web
+namespace MFToolkit.Net.Web
 {
     public class HttpContext
     {
-        //private HttpApplication _application;
         private HttpRequest _request;
         private HttpResponse _response;
-        private HttpServerUtility _server;
-
-        //public HttpApplication Application
-        //{
-        //    internal set { _application = value; }
-        //    get { return _application; }
-        //}
-
+        
         public HttpRequest Request
         {
             internal set { _request = value; }
             get { return _request; }
-        }
-
-        public HttpServerUtility Server
-        {
-            get { return _server; }
         }
 
         public HttpResponse Response

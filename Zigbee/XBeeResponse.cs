@@ -28,20 +28,16 @@
  */
 using System;
 using System.Text;
-using MSchwarz.IO;
+using MFToolkit.IO;
 
-namespace MSchwarz.Net.XBee
+namespace MFToolkit.Net.XBee
 {
     public abstract class XBeeResponse
     {
         private XBeeApiType _apiId;
         private DateTime _dtRcv;
 
-        public XBeeResponse(ByteReader br)
-        {
-            _apiId = (XBeeApiType)br.ReadByte();
-            _dtRcv = DateTime.Now;
-        }
+        #region Public Properties
 
         public XBeeApiType ApiID
         {
@@ -52,6 +48,14 @@ namespace MSchwarz.Net.XBee
         public DateTime DateTimeReceived
         {
             get { return _dtRcv; }
+        }
+
+        #endregion
+
+        public XBeeResponse(short length, ByteReader br)
+        {
+            _apiId = (XBeeApiType)br.ReadByte();
+            _dtRcv = DateTime.Now;
         }
     }
 }

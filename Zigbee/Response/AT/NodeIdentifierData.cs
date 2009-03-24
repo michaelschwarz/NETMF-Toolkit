@@ -25,20 +25,21 @@
  */
 using System;
 using System.Text;
-using MSchwarz.IO;
+using MFToolkit.IO;
 
-namespace MSchwarz.Net.XBee
+namespace MFToolkit.Net.XBee
 {
+    /// <summary>
+    /// Represents a node identifier command response structure
+    /// </summary>
 	public class NodeIdentifierData : IAtCommandData
 	{
 		private string _ni;
- 
-		public void Fill(byte[] value)
-		{
-			ByteReader nd = new ByteReader(value, ByteOrder.BigEndian);
 
-			if (nd.AvailableBytes > 0)
-				_ni = nd.ReadString((int)nd.AvailableBytes);
+        public void ReadBytes(ByteReader br)
+		{
+			if (br.AvailableBytes > 0)
+				_ni = br.ReadString((int)br.AvailableBytes);
 		}
 
 		public override string ToString()

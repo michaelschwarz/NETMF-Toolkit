@@ -26,12 +26,9 @@
 using System;
 using System.Text;
 using System.IO;
-using MSchwarz.IO;
-#if(!MF)
-using System.Collections.Generic;
-#endif
+using MFToolkit.IO;
 
-namespace MSchwarz.Net.XBee
+namespace MFToolkit.Net.XBee
 {
     public class XBeePacket
     {
@@ -40,38 +37,52 @@ namespace MSchwarz.Net.XBee
         public const byte PACKET_XON = 0x11;
         public const byte PACKET_XOFF = 0x13;
 
-        private byte[] _bytes;
-
-        public XBeePacket(byte[] bytes)
+        public XBeePacket()
         {
-			_bytes = bytes;
 		}
 
-		private byte[] GetBytesInternal()
+        internal virtual void WriteApiBytes(ByteWriter bw)
+        {
+        }
+
+        internal virtual void WriteAtBytes(ByteWriter bw)
+        {
+        }
+
+        #region Internal Methods
+
+        internal byte[] GetAtPacket()
 		{
-            ushort length = (ushort)_bytes.Length;
+            ByteWriter bw = new ByteWriter(ByteOrder.BigEndian);
+            WriteAtBytes(bw);
+
+            return bw.GetBytes();
+        }
+
+        internal byte[] GetApiPacket()
+		{
+            ByteWriter bw = new ByteWriter(ByteOrder.BigEndian);
+            WriteApiBytes(bw);
+
+            byte[] bytes = bw.GetBytes();
+            ushort length = (ushort)bytes.Length;
 
             XBeeChecksum checksum = new XBeeChecksum();
-            checksum.AddBytes(_bytes);
+            checksum.AddBytes(bytes);
 
-            ByteWriter bw = new ByteWriter(length + 1 /* start byte */ + 2 /* bytes for length */ + 1 /* checksum byte */, ByteOrder.BigEndian);
+            bw = new ByteWriter(length + 1 /* start byte */ + 2 /* bytes for length */ + 1 /* checksum byte */, ByteOrder.BigEndian);
 
             bw.Write(PACKET_STARTBYTE);
             bw.Write(length);
-            bw.Write(_bytes);
+            bw.Write(bytes);
             bw.Write(checksum.Compute());
 
 			return bw.GetBytes();
         }
 
-		public byte[] GetBytes()
-        {
-			return GetBytesInternal();
-        }
-
-		public byte[] GetEscapedBytes()
+		internal byte[] GetEscapedApiPacket()
 		{
-			return EscapePacket(GetBytesInternal());
+            return EscapePacket(GetApiPacket());
 		}
 
         internal static bool IsSpecialByte(byte b)
@@ -102,5 +113,7 @@ namespace MSchwarz.Net.XBee
 
             return ms.ToArray();
         }
+
+        #endregion
     }
 }

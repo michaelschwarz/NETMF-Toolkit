@@ -27,60 +27,87 @@
  * 
  * 
  */
-using MSchwarz.IO;
+using MFToolkit.IO;
 
-namespace MSchwarz.Net.XBee
+namespace MFToolkit.Net.XBee
 {
+    /// <summary>
+    /// Represents a node discover command response structure
+    /// </summary>
     public class NodeDiscoverData : IAtCommandData
     {
         private const byte terminationCharacter = 0x00;
 
-        private ushort _addr16;
-        private ulong _addr64;
+        private XBeeAddress64 _address64;
+        private XBeeAddress16 _address16;
         private string _ni;
-        private ushort _parent16;
+        private XBeeAddress16 _parent16;
         private byte _deviceType;
-        private byte _sourceAction;
+        private byte _status;
         private ushort _profileID;
         private ushort _manufactureID;
 
         #region Public Properties
 
-        public ushort Address16
+        /// <summary>
+        /// Serial Number (SH SL)
+        /// </summary>
+        public XBeeAddress64 SerialNumber
         {
-            get { return _addr16; }
+            get { return _address64; }
         }
 
-        public ulong Address64
+        /// <summary>
+        /// Short Address (MY)
+        /// </summary>
+        public XBeeAddress16 ShortAddress
         {
-            get { return _addr64; }
+            get { return _address16; }
         }
 
+        /// <summary>
+        /// Node Identifier (NI)
+        /// </summary>
         public string NodeIdentifier
         {
             get { return _ni; }
         }
 
-        public ushort ParentAddress
+        /// <summary>
+        /// Parent Network Address (MP)
+        /// </summary>
+        public XBeeAddress16 ParentAddress
         {
             get { return _parent16; }
         }
 
+        /// <summary>
+        /// Device Type
+        /// </summary>
         public ZigBeeDeviceType DeviceType
         {
             get { return (ZigBeeDeviceType)_deviceType; }
         }
 
+        /// <summary>
+        /// Status (reserved)
+        /// </summary>
         public byte Status
         {
-            get { return _sourceAction; }
+            get { return _status; }
         }
 
+        /// <summary>
+        /// Profile ID
+        /// </summary>
         public ushort ProfileID
         {
             get { return _profileID; }
         }
 
+        /// <summary>
+        /// Manufacturer ID
+        /// </summary>
         public ushort ManufacturerID
         {
             get { return _manufactureID; }
@@ -88,30 +115,34 @@ namespace MSchwarz.Net.XBee
 
         #endregion
 
-        public void Fill(byte[] frameData)
+        public void ReadBytes(ByteReader br)
         {
-            using (ByteReader reader = new ByteReader(frameData, ByteOrder.BigEndian))
-            {
-                _addr16 = reader.ReadUInt16();
-                _addr64 = reader.ReadUInt64();
-                _ni = reader.ReadString(terminationCharacter);
-                _parent16 = reader.ReadUInt16();
-                _deviceType = reader.ReadByte();
-                _sourceAction = reader.ReadByte();
-                _profileID = reader.ReadUInt16();
-                _manufactureID = reader.ReadUInt16();
-            }
+            _address16 = XBeeAddress16.ReadBytes(br);
+            _address64 = XBeeAddress64.ReadBytes(br);
+
+            _ni = br.ReadString(terminationCharacter);
+
+            _parent16 = XBeeAddress16.ReadBytes(br);
+            _deviceType = br.ReadByte();
+            _status = br.ReadByte();
+            _profileID = br.ReadUInt16();
+            _manufactureID = br.ReadUInt16();
         }
 
         public override string ToString()
         {
-#if(MF)
-            return "Address: " + Address16.ToString() + ", Serial: " + Address64.ToString() + 
-                   ", ID: " + NodeIdentifier + ", Type: " + DeviceType.ToString();
-#else
-            return string.Format("Address: {0:X}, Serial: {1:X}, ID: {2}, Type: {3}",
-                Address16, Address64, NodeIdentifier, DeviceType.ToString());
-#endif
+            string s = "";
+
+            s += "SerialNumber: " + SerialNumber + "\r\n";
+            s += "ShortAddress: " + ShortAddress + "\r\n";
+            s += "NI: " + NodeIdentifier + "\r\n";
+            s += "Parent: " + ParentAddress + "\r\n";
+            s += "DeviceType: " + DeviceType + "\r\n";
+            s += "Status: " + Status + "\r\n";
+            s += "ProfileID: " + ProfileID + "\r\n";
+            s += "ManufactureID: " + ManufacturerID;
+
+            return s;
         }
     }
 }

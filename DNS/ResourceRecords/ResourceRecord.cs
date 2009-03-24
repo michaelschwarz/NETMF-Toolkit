@@ -25,7 +25,7 @@
  */
 using System;
 
-namespace MSchwarz.Net.Dns
+namespace MFToolkit.Net.Dns
 {
     /// <summary>
     /// Represents a Resource Record (RFC1035 4.1.3)

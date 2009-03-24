@@ -34,12 +34,12 @@ using System.Net.Sockets;
 using System.Text;
 using System.Net;
 #if(MF)
-using MSchwarz.Collection.Spezialized;
+using MFToolkit.Collection.Spezialized;
 #else
 using System.Collections.Specialized;
 #endif
 
-namespace MSchwarz.Net.Web
+namespace MFToolkit.Net.Web
 {
     public class HttpRequest
     {
@@ -584,7 +584,6 @@ namespace MSchwarz.Net.Web
 
                         case RequestParserState.ReadDone:
                             return true;
-                            break;
 
                         default:
                             //idx++;

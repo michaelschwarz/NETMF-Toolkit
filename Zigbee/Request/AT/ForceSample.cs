@@ -26,7 +26,7 @@
 using System;
 using System.Text;
 
-namespace MSchwarz.Net.XBee
+namespace MFToolkit.Net.XBee
 {
 	/// <summary>
 	/// IO Settings: The IS command is used to force

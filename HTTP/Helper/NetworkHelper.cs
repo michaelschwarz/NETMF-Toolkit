@@ -31,7 +31,7 @@ using System.Net;
 using System.Net.Sockets;
 using Socket = System.Net.Sockets.Socket;
 
-namespace MSchwarz.Net
+namespace MFToolkit.Net
 {
 	public class NetworkHelper
 	{

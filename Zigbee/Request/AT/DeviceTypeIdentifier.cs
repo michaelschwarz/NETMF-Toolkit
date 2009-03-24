@@ -25,9 +25,9 @@
  */
 using System;
 using System.Text;
-using MSchwarz.IO;
+using MFToolkit.IO;
 
-namespace MSchwarz.Net.XBee
+namespace MFToolkit.Net.XBee
 {
 	/// <summary>
 	/// Serial Interfacing: The AP command is used to

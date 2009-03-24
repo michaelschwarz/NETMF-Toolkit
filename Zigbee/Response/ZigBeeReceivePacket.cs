@@ -25,48 +25,72 @@
  */
 using System;
 using System.Text;
-using MSchwarz.IO;
+using MFToolkit.IO;
 
-namespace MSchwarz.Net.XBee
+namespace MFToolkit.Net.XBee
 {
+    /// <summary>
+    /// Represents a ZigBee receive packet response
+    /// </summary>
 	public class ZigBeeReceivePacket : XBeeResponse
 	{
-		private ushort _address16;
-		private ulong _address64;
+        private XBeeAddress64 _address64;
+        private XBeeAddress16 _address16;
 		private byte _options;
-		private byte[] _rfdata;
+		private byte[] _value;
 
 		#region Public Properties
 
-		// ...
+        /// <summary>
+        /// Serial Number
+        /// </summary>
+        public XBeeAddress64 SerialNumber
+        {
+            get { return _address64; }
+        }
 
-		public byte[] RFData
+        /// <summary>
+        /// Short Address
+        /// </summary>
+        public XBeeAddress16 ShortAddress
+        {
+            get { return _address16; }
+        }
+
+        public byte Options
+        {
+            get { return _options; }
+        }
+
+        public ZigBeeReceiveOptionType ReceiveOption
+        {
+            get { return (ZigBeeReceiveOptionType)_options; }
+        }
+
+		public byte[] Value
 		{
-			get { return _rfdata; }
+			get { return _value; }
 		}
-
-		// ...
 
 		#endregion
 
 		public ZigBeeReceivePacket(short length, ByteReader br)
-			: base(br)
+			: base(length, br)
 		{
-			_address64 = br.ReadUInt64();
-			_address16 = br.ReadUInt16();
+            _address64 = XBeeAddress64.ReadBytes(br);
+            _address16 = XBeeAddress16.ReadBytes(br);
 			_options = br.ReadByte();
-
-			_rfdata = br.ReadBytes(length - 12);
+			_value = br.ReadBytes(length - 12);
 		}
 
 		public override string ToString()
 		{
 			string s = "";
 
-			s += "\taddress64 = " + _address64 + "\r\n";
-			s += "\taddress16 = " + _address16 + "\r\n";
-			s += "\toptions   = " + ByteUtil.PrintByte(_options) + "\r\n";
-			s += "\tvalue     = " + ByteUtil.PrintBytes(_rfdata);
+			s += "\taddress64   = " + SerialNumber + "\r\n";
+            s += "\taddress16   = " + ShortAddress + "\r\n";
+			s += "\toptions   = " + ByteUtil.PrintByte(Options) + "\r\n";
+			s += "\tvalue     = " + ByteUtil.PrintBytes(Value);
 
 			return s;
 		}

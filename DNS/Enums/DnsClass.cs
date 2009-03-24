@@ -25,7 +25,7 @@
  */
 using System;
 
-namespace MSchwarz.Net.Dns
+namespace MFToolkit.Net.Dns
 {
     /// <summary>
     /// The DNS CLASS fields appear in resource records. (RFC 1035 3.2.4)

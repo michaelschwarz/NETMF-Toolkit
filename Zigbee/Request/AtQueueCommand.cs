@@ -25,73 +25,16 @@
  */
 using System;
 using System.Text;
-using MSchwarz.IO;
+using MFToolkit.IO;
 
-namespace MSchwarz.Net.XBee
+namespace MFToolkit.Net.XBee
 {
-    public class AtQueueCommand : XBeeRequest
+    public class AtQueueCommand : AtCommand
     {
-        private byte _frameID;
-        private string _command;
-        private byte[] _value;
-
-        public string Command
-        {
-            get { return _command; }
-            set
-            {
-                if (value == null || value.Length == 0)		// String.IsNullOrEmpty(value))
-                    throw new NullReferenceException("The command cannot be null or empty.");
-
-                if (value.Length < 2)
-                    throw new ArgumentException("The command must have at least 2 characters.", "value");
-
-                _command = value;
-            }
-        }
-
-        public byte[] Value
-        {
-            get { return _value; }
-            set { _value = value; }
-        }
-
-        public AtQueueCommand(string command)
-            : this(command, new byte[0])
-        {
-        }
-
-        public AtQueueCommand(string command, byte value)
-            : this(command, new byte[] { value })
-        {
-        }
-
         public AtQueueCommand(string command, byte[] value)
-            : this(command, value, 1)
-        {
-        }
-
-        public AtQueueCommand(string command, byte[] value, byte frameID)
+            : base(command, value)
         {
             this.ApiID = XBeeApiType.ATCommandQueueParameterValue;
-            this.Command = command;
-            this.Value = value;
-            _frameID = frameID;
-        }
-
-
-        public override byte[] GetBytes()
-        {
-            ByteWriter bw = new ByteWriter(ByteOrder.BigEndian);
-
-            bw.Write((byte)ApiID);
-            bw.Write(_frameID);
-            bw.Write(Command);
-
-            if (_value != null)
-                bw.Write(_value);
-
-            return bw.GetBytes();
         }
     }
 }

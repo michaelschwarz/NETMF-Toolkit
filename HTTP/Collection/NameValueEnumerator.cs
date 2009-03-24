@@ -29,7 +29,7 @@
 using System;
 using System.Collections;
 
-namespace MSchwarz.Collection.Spezialized
+namespace MFToolkit.Collection.Spezialized
 {
     public class NameValueEnumerator : IEnumerator
     {

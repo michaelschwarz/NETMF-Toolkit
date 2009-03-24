@@ -33,7 +33,7 @@ using System.Text;
 using System.Collections.Generic;
 #endif
 
-namespace MSchwarz.Net.Dns
+namespace MFToolkit.Net.Dns
 {
     public class DnsResponse
     {

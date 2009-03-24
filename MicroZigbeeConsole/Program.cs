@@ -25,7 +25,7 @@
  */
 using System;
 using Microsoft.SPOT;
-using MSchwarz.Net.XBee;
+using MFToolkit.Net.XBee;
 using System.Threading;
 
 namespace MicroZigbeeConsole
@@ -43,7 +43,7 @@ namespace MicroZigbeeConsole
 				xbee.Open();
 
 				// read power supply
-				xbee.SendPacket(new SupplyVoltage().GetPacket());
+				xbee.Execute (new SupplyVoltage());
 
 				Thread.Sleep(10 * 60 * 1000);
 			}

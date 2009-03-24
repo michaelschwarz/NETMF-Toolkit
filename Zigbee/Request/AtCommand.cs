@@ -29,29 +29,23 @@
  */
 using System;
 using System.Text;
-using MSchwarz.IO;
+using MFToolkit.IO;
 
-namespace MSchwarz.Net.XBee
+namespace MFToolkit.Net.XBee
 {
-    public class AtCommand : XBeeRequest
+    public class AtCommand : XBeeFrameRequest
     {
-        private byte _frameID = 0x51;
         private string _command;
+        private byte[] _value;
 
-        protected byte[] _value;
-
-		public byte FrameID
-		{
-			get { return _frameID; }
-			set { _frameID = value; }
-		}
+        #region Public Properties
 
         public string Command
         {
             get { return _command; }
             set
             {
-				if (value == null || value.Length == 0)		// String.IsNullOrEmpty(value))
+				if (value == null || value.Length == 0)
                     throw new NullReferenceException("The command cannot be null or empty.");
 
                 if (value.Length < 2)
@@ -67,6 +61,10 @@ namespace MSchwarz.Net.XBee
             set { _value = value; }
         }
 
+        #endregion
+
+        #region Constructor
+
         public AtCommand(string command)
             : this(command, new byte[0])
         {
@@ -78,30 +76,31 @@ namespace MSchwarz.Net.XBee
         }
 
         public AtCommand(string command, byte[] value)
-            : this(command, value, 0x51)
-        {
-        }
-
-        public AtCommand(string command, byte[] value, byte frameID)
         {
             this.ApiID = XBeeApiType.ATCommand;
             this.Command = command;
-            this.Value = value;
-            _frameID = frameID;
         }
 
-		public override byte[] GetBytes()
-        {
-            ByteWriter bw = new ByteWriter(ByteOrder.BigEndian);
+        #endregion
 
-            bw.Write((byte)ApiID);
-            bw.Write(_frameID);
+        internal virtual void WriteBytesCommand(ByteWriter bw)
+        {
             bw.Write(Command);
 
-            if (_value != null)
-                bw.Write(_value);
+            if (Value != null)
+                bw.Write(Value);
+        }
 
-            return bw.GetBytes();
+        internal override void WriteApiBytes(ByteWriter bw)
+        {
+            base.WriteApiBytes(bw);
+
+            WriteBytesCommand(bw);
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + "\r\nCommand = " + Command;
         }
     }
 }

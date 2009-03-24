@@ -27,14 +27,14 @@
  */
 using System;
 using System.IO;
-using MSchwarz.IO;
+using MFToolkit.IO;
 using System.Text;
 using System.Collections;
 #if(MF)
-using MSchwarz.Text;
+using MFToolkit.Text;
 #endif
 
-namespace MSchwarz.Net.Web
+namespace MFToolkit.Net.Web
 {
     public class HttpServerUtility
     {

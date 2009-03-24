@@ -38,7 +38,7 @@ using Socket = System.Net.Sockets.Socket;
 using System.Diagnostics;
 using System.IO;
 
-namespace MSchwarz.Net.Web
+namespace MFToolkit.Net.Web
 {
     internal sealed class ProcessClientRequest
     {

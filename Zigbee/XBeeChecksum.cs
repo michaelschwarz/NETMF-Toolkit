@@ -25,10 +25,13 @@
  */
 using System;
 using System.Text;
-using MSchwarz.IO;
+using MFToolkit.IO;
 
-namespace MSchwarz.Net.XBee
+namespace MFToolkit.Net.XBee
 {
+    /// <summary>
+    /// Represents a XBee checksum
+    /// </summary>
     public class XBeeChecksum
     {
         private int _checksum = 0;
@@ -36,6 +39,8 @@ namespace MSchwarz.Net.XBee
         public XBeeChecksum()
         {
         }
+
+        #region Public Methods
 
         public void AddByte(byte b)
         {
@@ -60,5 +65,7 @@ namespace MSchwarz.Net.XBee
         {
 			return (checksum == _checksum);
         }
+
+        #endregion
     }
 }

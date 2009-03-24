@@ -27,9 +27,9 @@
  */
 using System;
 using System.Net;
-using MSchwarz.IO;
+using MFToolkit.IO;
 
-namespace MSchwarz.Net.Dns
+namespace MFToolkit.Net.Dns
 {
     [Serializable]
     public class NBRecord : RecordBase

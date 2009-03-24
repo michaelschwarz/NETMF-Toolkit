@@ -30,7 +30,7 @@ using System;
 using Microsoft.SPOT;
 using System.Collections;
 
-namespace MSchwarz.Text
+namespace MFToolkit.Text
 {
     public class StringBuilder
     {

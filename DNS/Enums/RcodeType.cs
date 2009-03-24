@@ -25,7 +25,7 @@
  */
 using System;
 
-namespace MSchwarz.Net.Dns
+namespace MFToolkit.Net.Dns
 {
     /// <summary>
     /// These are the return codes (RCODE) the server can send back. (RFC 1035 4.1.1)

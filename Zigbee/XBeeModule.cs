@@ -31,21 +31,40 @@ using System;
 using System.Text;
 using System.IO.Ports;
 
-namespace MSchwarz.Net.XBee
+namespace MFToolkit.Net.XBee
 {
-    public class XBeeModule : IDisposable
+    /// <summary>
+    /// Represents a XBee module
+    /// </summary>
+    public class XBeeModule : XBee
     {
-        public XBeeModule(SerialPort port)
+        #region Constructor
+
+        public XBeeModule(string port)
+            : base(port)
         {
         }
 
-        #region IDisposable Members
-
-        public void Dispose()
+        public XBeeModule(string port, int baudRate)
+            : base(port, baudRate)
         {
-            throw new NotImplementedException();
+        }
+
+        public XBeeModule(string port, int baudRate, ApiType apiType)
+            : base(port, baudRate, apiType)
+        {
         }
 
         #endregion
+
+        public bool SetNodeIdentification(string identifier)
+        {
+            AtCommandResponse res = Execute(new NodeIdentifier(identifier)) as AtCommandResponse;
+
+            if (res == null)
+                return false;
+
+            return true;
+        }
     }
 }

@@ -31,7 +31,7 @@ using System.Text;
 using System.Net;
 using System.Net.Sockets;
 
-namespace MSchwarz.Net.Ntp
+namespace MFToolkit.Net.Ntp
 {
     public class NtpClient
     {

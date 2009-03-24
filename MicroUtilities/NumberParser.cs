@@ -22,15 +22,20 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
+ * 
+ * MS   09-03-23    changed using culture fields instead of English hard-coded
+ * 
  */
-
 using System;
 using Microsoft.SPOT;
+using System.Globalization;
 
 namespace MFToolkit.MicroUtilities
 {
     public static class NumberParser
     {
+        private static readonly char CULTURE_DECIMAL_POINT = CultureInfo.CurrentUICulture.NumberFormat.NumberDecimalSeparator[0];
+
         /// <summary>
         /// Convert a numeric string to an integer
         /// </summary>
@@ -79,7 +84,7 @@ namespace MFToolkit.MicroUtilities
                     negative = true;
                     continue;
                 }
-                else if (c == '.')
+                else if (c == CultureInfo.CurrentUICulture.NumberFormat.NumberDecimalSeparator[0])
                 {
                     afterDot = true;
                     continue;

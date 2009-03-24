@@ -34,7 +34,7 @@ using System.Net.Sockets;
 using System.Collections;
 using System.Threading;
 using Socket = System.Net.Sockets.Socket;
-namespace MSchwarz.Net.Web
+namespace MFToolkit.Net.Web
 {
 	public class HttpServer : IDisposable
 	{

@@ -25,10 +25,13 @@
  */
 using System;
 using System.Text;
-using MSchwarz.IO;
+using MFToolkit.IO;
 
-namespace MSchwarz.Net.XBee
+namespace MFToolkit.Net.XBee
 {
+    /// <summary>
+    /// Represents a node identification response
+    /// </summary>
     public class NodeIdentification : XBeeResponse
     {
         private ulong _address64;
@@ -57,7 +60,7 @@ namespace MSchwarz.Net.XBee
 		#endregion
 
 		public NodeIdentification(short length, ByteReader br)
-            : base(br)
+            : base(length, br)
         {
             _address64 = br.ReadUInt64();
             _address16 = br.ReadUInt16();

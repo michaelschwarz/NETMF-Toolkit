@@ -27,7 +27,7 @@
  */
 using System;
 
-namespace MSchwarz.IO
+namespace MFToolkit.IO
 {
     public class BitHelper
     {
@@ -49,6 +49,19 @@ namespace MSchwarz.IO
             return value;
         }
 
+        public static ushort SetBit(ref byte value, int position, bool flag)
+        {
+            if (position >= 8)
+                return value;
+
+            int mask = (2 << (1 - 1)) - 1;
+
+            value &= (byte)~(mask << position);
+            value |= (byte)(((flag ? (byte)1 : (byte)0) & mask) << position);
+
+            return value;
+        }
+
         public static bool GetBit(ushort value, int position)
         {
             return (GetBits(value, position, 1) == 1);
@@ -62,6 +75,16 @@ namespace MSchwarz.IO
             int mask = (2 << (length - 1)) - 1;
 
             return (ushort)((value >> position) & mask);
+        }
+
+        public static bool GetBit(byte value, int position)
+        {
+            if (position >= 8)
+                return false;
+
+            int mask = (2 << (1 - 1)) - 1;
+
+            return ((byte)((value >> position) & mask)) == 1;
         }
     }
 }

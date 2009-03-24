@@ -25,16 +25,19 @@
  */
 using System;
 using System.Text;
-using MSchwarz.IO;
+using MFToolkit.IO;
 
-namespace MSchwarz.Net.XBee
+namespace MFToolkit.Net.XBee
 {
 	// TODO: not sure if this is the correct implementation
 
+    /// <summary>
+    /// Represents a XBee sensor read response
+    /// </summary>
     public class XBeeSensorRead : XBeeResponse
     {
-        private ulong _address64;
-        private ushort _address16;
+        private XBeeAddress64 _address64;
+        private XBeeAddress16 _address16;
         private byte _options;
         private byte _sensors;
         private ushort _sensorA;
@@ -43,27 +46,81 @@ namespace MSchwarz.Net.XBee
         private ushort _sensorD;
         private ushort _temperature;
 
-		public XBeeSensorRead(short length, ByteReader br)
-            : base(br)
+        #region Public Properties
+
+        /// <summary>
+        /// Serial Number
+        /// </summary>
+        public XBeeAddress64 SerialNumber
         {
-            _address64 = br.ReadUInt64();
-            _address16 = br.ReadUInt16();
+            get { return _address64; }
+        }
+
+        /// <summary>
+        /// Short Address
+        /// </summary>
+        public XBeeAddress16 ShortAddress
+        {
+            get { return _address16; }
+        }
+
+        public ZigBeeReceiveOptionType ReceiveOption
+        {
+            get { return (ZigBeeReceiveOptionType)_options; }
+        }
+
+        public ushort SensorA
+        {
+            get { return _sensorA; }
+        }
+
+        public ushort SensorB
+        {
+            get { return _sensorB; }
+        }
+
+        public ushort SensorC
+        {
+            get { return _sensorC; }
+        }
+
+        public ushort SensorD
+        {
+            get { return _sensorD; }
+        }
+
+        public ushort Temperature
+        {
+            get { return _temperature; }
+        }
+
+        #endregion
+
+        public XBeeSensorRead(short length, ByteReader br)
+            : base(length, br)
+        {
+            _address64 = XBeeAddress64.ReadBytes(br);
+            _address16 = XBeeAddress16.ReadBytes(br);
+
             _options = br.ReadByte();
 
             _sensors = br.ReadByte();
+
             _sensorA = br.ReadUInt16();
             _sensorB = br.ReadUInt16();
             _sensorC = br.ReadUInt16();
             _sensorD = br.ReadUInt16();
+
             _temperature = br.ReadUInt16();
         }
 
 		public override string ToString()
 		{
-			string s = "Sensor A = " + _sensorA + "\r\n";
-			s += "Sensor B = " + _sensorB + "\r\n";
-			s += "Sensor C = " + _sensorC + "\r\n";
-			s += "Sensor D = " + _sensorD;
+			string s = "Sensor A = " + SensorA + "\r\n";
+			s += "Sensor B = " + SensorB + "\r\n";
+			s += "Sensor C = " + SensorC + "\r\n";
+            s += "Sensor D = " + SensorD + "\r\n";
+            s += "Temperature = " + Temperature;
 
 			return s;
 		}

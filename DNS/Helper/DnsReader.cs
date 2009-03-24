@@ -26,12 +26,12 @@
 using System;
 using System.Text;
 using System.IO;
-using MSchwarz.IO;
+using MFToolkit.IO;
 #if(MF)
-using MSchwarz.Text;
+using MFToolkit.Text;
 #endif
 
-namespace MSchwarz.Net.Dns
+namespace MFToolkit.Net.Dns
 {
     internal class DnsReader : ByteReader
     {

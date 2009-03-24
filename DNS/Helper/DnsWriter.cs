@@ -26,9 +26,9 @@
 using System;
 using System.Text;
 using System.IO;
-using MSchwarz.IO;
+using MFToolkit.IO;
 
-namespace MSchwarz.Net.Dns
+namespace MFToolkit.Net.Dns
 {
     internal class DnsWriter : ByteWriter
     {

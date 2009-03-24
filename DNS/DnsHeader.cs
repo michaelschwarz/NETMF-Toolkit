@@ -28,9 +28,9 @@
  * 
  */
 using System;
-using MSchwarz.IO;
+using MFToolkit.IO;
 
-namespace MSchwarz.Net.Dns
+namespace MFToolkit.Net.Dns
 {
     /// <summary>
     /// Header (RFC 1035 4.1.1, 1002 4.2.1)
