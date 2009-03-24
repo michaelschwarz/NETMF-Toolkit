@@ -56,6 +56,10 @@
       <Project>{A3B69586-127A-4287-9EA1-E64E2C42131C}</Project>
       <Name>IO</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MicroUtilities\MicroUtilities.csproj">
+      <Project>{25F61F25-06B4-4539-8AD3-F2317316A548}</Project>
+      <Name>MicroUtilities</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Zigbee\Zigbee.csproj">
       <Project>{712410B3-03CB-4771-9AFE-75CA1C65EC3E}</Project>
       <Name>Zigbee</Name>
@@ -64,6 +68,7 @@
   <ItemGroup>
     <Content Include="root\index.htm" />
     <Content Include="root\ms.jpg" />
+    <Content Include="root\robots.txt" />
     <Content Include="root\test.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

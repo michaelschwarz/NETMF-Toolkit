@@ -26,7 +26,7 @@
 using System;
 using System.Text;
 
-namespace MSchwarz.Net.XBee
+namespace MFToolkit.Net.XBee
 {
 	public class FirmwareVersion : AtCommand
 	{
@@ -34,5 +34,14 @@ namespace MSchwarz.Net.XBee
 			: base("VR")
 		{
 		}
+
+        public FirmwareVersion(bool beaconEnabled)
+            : this()
+        {
+            if (beaconEnabled)
+                Value = new byte[] { 0x01 };
+            else
+                Value = new byte[] { 0x00 };
+        }
 	}
 }

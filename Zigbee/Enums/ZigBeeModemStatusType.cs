@@ -26,7 +26,7 @@
  * PH   09-01-28    initial version
  * 
  */
-namespace MSchwarz.Net.XBee
+namespace MFToolkit.Net.XBee
 {
 	public enum ZigBeeModemStatusType : byte
 	{
@@ -35,7 +35,6 @@ namespace MSchwarz.Net.XBee
         Associated = 0x02,
         Disassociated = 0x03,
         SynchronizationLost = 0x04,
-        // (Beacon-enabled only)
         CoordinatorRealignment = 0x05,
         CoordinatorStarted = 0x06
 	}

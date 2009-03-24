@@ -8,7 +8,7 @@
     <ProjectGuid>{712410B3-03CB-4771-9AFE-75CA1C65EC3E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MSchwarz.Net.XBee</RootNamespace>
+    <RootNamespace>MFToolkit.Net.XBee</RootNamespace>
     <AssemblyName>XBee</AssemblyName>
     <TargetFrameworkVersion>v3.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -40,6 +40,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Request\AT\SerialNumberLow.cs" />
+    <Compile Include="Request\AT\SerialNumberHigh.cs" />
+    <Compile Include="Request\AT\DestinationNode.cs" />
+    <Compile Include="Request\AT\DestinationAddressHigh.cs" />
+    <Compile Include="Request\AT\DestinationAddressLow.cs" />
+    <Compile Include="XBeeFrameResponse.cs" />
+    <Compile Include="XBeeFrameRequest.cs" />
+    <Compile Include="XBeeAddress16.cs" />
     <Compile Include="Enums\ApiType.cs" />
     <Compile Include="Enums\ZigBeeModemStatusType.cs" />
     <Compile Include="Enums\ZigBeeReceiveOptionType.cs" />
@@ -95,6 +103,7 @@
     <Compile Include="Response\ZigBeeReceivePacket.cs" />
     <Compile Include="XBee.cs" />
     <Compile Include="Enums\XBeeApiType.cs" />
+    <Compile Include="XBeeAddress64.cs" />
     <Compile Include="XBeeChecksum.cs" />
     <Compile Include="XBeeModule.cs" />
     <Compile Include="XBeePacket.cs" />

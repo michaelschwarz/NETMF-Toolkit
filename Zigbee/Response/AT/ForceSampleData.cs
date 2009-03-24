@@ -22,18 +22,19 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
- */
-/*
  * MS   09-02-06    fixed work item 3711
  * 
  * 
  */
 using System;
 using System.Text;
-using MSchwarz.IO;
+using MFToolkit.IO;
 
-namespace MSchwarz.Net.XBee
+namespace MFToolkit.Net.XBee
 {
+    /// <summary>
+    /// Represents a force sample command response structure
+    /// </summary>
 	public class ForceSampleData : IAtCommandData
 	{
 		private byte _numSamples;
@@ -81,10 +82,8 @@ namespace MSchwarz.Net.XBee
 
         #endregion
 
-        public void Fill(byte[] value)
+        public void ReadBytes(ByteReader br)
 		{
-			ByteReader br = new ByteReader(value, ByteOrder.BigEndian);
-
 			_numSamples = br.ReadByte();
 			_digitalChannelMask1 = br.ReadByte();
 			_digitalChannelMask2 = br.ReadByte();
@@ -122,7 +121,7 @@ namespace MSchwarz.Net.XBee
 			if ((_analogChannelMask & 0x08) == 0x08) s += "AD3 = " + _AD3 + "\r\n";
 			if ((_analogChannelMask & 0x80) == 0x80) s += "supplyVoltage = " + _supplyVoltage;
 
-#if(!MF && DEBUG)
+#if(!MF && !WindowsCE && DEBUG)
 			double mVanalog = (((float)_AD2) / 1023.0) * 1200.0;
 			double temp_C = (mVanalog - 500.0) / 10.0 - 4.0;
 			double lux = (((float)_AD1) / 1023.0) * 1200.0;
@@ -130,11 +129,10 @@ namespace MSchwarz.Net.XBee
 			mVanalog = (((float)_AD3) / 1023.0) * 1200.0;
 			double hum = ((mVanalog * (108.2 / 33.2)) - 0.16) / (5 * 0.0062 * 1000.0);
 
-			s += "\r\n\r\ntemperature = " + temp_C + " °C\r\n";
+			s += "\r\ntemperature = " + temp_C + " °C\r\n";
 			s += "light = " + lux + " lux\r\n";
-			s += "humidity = " + hum + "\r\n";
+			s += "humidity = " + hum;
 #endif
-
 			return s;
 		}
 	}

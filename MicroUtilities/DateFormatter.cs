@@ -22,10 +22,14 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
+ * 
+ * MS   09-03-23    changed using culture fields instead of English hard-coded
+ * 
+ * 
  */
-
 using System;
 using Microsoft.SPOT;
+using System.Globalization;
 
 namespace MFToolkit.MicroUtilities
 {
@@ -252,24 +256,22 @@ namespace MFToolkit.MicroUtilities
                     return _padding(2, _week_first_monday(TimeToFormat), '0');
 
                 case 'a': // Abr. weekday name
-                    return Days[_dayofweek(TimeToFormat.DayOfWeek, 0)].Substring(0,3).ToLower();
+                    return DateTimeFormatInfo.CurrentInfo.AbbreviatedDayNames[_dayofweek(TimeToFormat.DayOfWeek, 0)];
 
                 case 'A': // Full weekday name
-                    return Days[_dayofweek(TimeToFormat.DayOfWeek, 0)];
+                    return DateTimeFormatInfo.CurrentInfo.DayNames[_dayofweek(TimeToFormat.DayOfWeek, 0)];
 
                 case 'b': // Abr month name
-                    return Months[TimeToFormat.Month-1].Substring(0,3).ToLower();
+                    return DateTimeFormatInfo.CurrentInfo.AbbreviatedMonthNames[TimeToFormat.Month - 1];
 
                 case 'h': // Abr month name
-                    return Months[TimeToFormat.Month - 1].Substring(0, 3).ToLower();
+                    return DateTimeFormatInfo.CurrentInfo.AbbreviatedMonthNames[TimeToFormat.Month - 1];
 
                 case 'B': // Full month name
-                    return Months[TimeToFormat.Month-1];
+                    return DateTimeFormatInfo.CurrentInfo.MonthNames[TimeToFormat.Month - 1];
 
                 case 'C': // Century
                     return _padding(2, (int) System.Math.Floor(TimeToFormat.Year / 100F), '0');
-
-
             }
 
             return c.ToString();

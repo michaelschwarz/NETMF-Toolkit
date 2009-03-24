@@ -27,7 +27,7 @@ using System;
 using System.Text;
 using System.IO;
 
-namespace MSchwarz.IO
+namespace MFToolkit.IO
 {
     public class ByteReader : IDisposable
     {

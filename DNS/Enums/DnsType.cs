@@ -25,7 +25,7 @@
  */
 using System;
 
-namespace MSchwarz.Net.Dns
+namespace MFToolkit.Net.Dns
 {
     /// <summary>
     /// The DNS TYPE fields are used in resource records. (RFC 1035 3.2.2)

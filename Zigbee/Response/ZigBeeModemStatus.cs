@@ -26,29 +26,28 @@
  * PH   09-01-28    inital version
  * 
  */
-using MSchwarz.IO;
+using MFToolkit.IO;
 
-namespace MSchwarz.Net.XBee
+namespace MFToolkit.Net.XBee
 {
+    /// <summary>
+    /// Represents a ZigBee modem status response
+    /// </summary>
 	public class ZigBeeModemStatus : XBeeResponse
 	{
 		private byte _modemStatus;
 
 		#region Public Properties
 
-		// ...
-
         public ZigBeeModemStatusType ModemStatus
 		{
             get { return (ZigBeeModemStatusType)_modemStatus; }
 		}
 		
-		// ...
-
 		#endregion
 
 		public ZigBeeModemStatus(short length, ByteReader br)
-			: base(br)
+			: base(length, br)
 		{
             _modemStatus = br.ReadByte();
 		}

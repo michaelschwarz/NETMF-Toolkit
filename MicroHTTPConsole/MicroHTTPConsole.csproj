@@ -64,6 +64,10 @@
       <Project>{7E0CDF9D-1EDC-4F9A-A4F6-01151BB89BB7}</Project>
       <Name>MicroNTP</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MicroUtilities\MicroUtilities.csproj">
+      <Project>{25F61F25-06B4-4539-8AD3-F2317316A548}</Project>
+      <Name>MicroUtilities</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\ms.jpg" />

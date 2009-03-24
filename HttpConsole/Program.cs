@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using MSchwarz.Net.Web;
+using MFToolkit.Net.Web;
 using System.IO;
-using MSchwarz.IO;
-using MSchwarz.Net.Dns;
+using MFToolkit.IO;
+using MFToolkit.Net.Dns;
 using System.Threading;
 using System.Net;
 using System.Net.Sockets;
-using MSchwarz.Net.XBee;
+using MFToolkit.Net.XBee;
+using MFToolkit.MicroUtilities;
 
 namespace HttpConsole
 {
@@ -18,9 +19,9 @@ namespace HttpConsole
 
 		static void Main(string[] args)
 		{
-            //Thread thd = new Thread(new ThreadStart(UpdateTemperature));
-            //thd.IsBackground = true;
-            //thd.Start();
+            Thread thd = new Thread(new ThreadStart(UpdateTemperature));
+            thd.IsBackground = true;
+            thd.Start();
 
             using (HttpServer http = new HttpServer(new MyHttpHandler(Path.Combine(Environment.CurrentDirectory, "..\\..\\root"))))
             {
@@ -36,16 +37,29 @@ namespace HttpConsole
 
         static void UpdateTemperature()
         {
-            using (XBee xbee = new XBee("COM5", ApiType.Enabled))
+            try
             {
-                xbee.OnPacketReceived += new XBee.PacketReceivedHandler(xbee_OnPacketReceived);
-                xbee.Open();
-                
+                using (XBee xbee = new XBee("COM5", 9600, ApiType.Enabled))
+                {
+                    xbee.OnPacketReceived += new XBee.PacketReceivedHandler(xbee_OnPacketReceived);
+                    xbee.Open();
+                    xbee.ExecuteNonQuery(new NodeIdentifier("COORDINATOR"));
+
+                    while (true)
+                    {
+                        xbee.Execute(new NodeDiscover());
+
+                        Thread.Sleep(60 * 1000);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
                 while (true)
                 {
-                    xbee.SendPacket(new NodeDiscover().GetPacket());
+                    temperature = new Random((int)DateTime.Now.Ticks).Next(19, 23);
 
-                    Thread.Sleep(10 * 60 * 1000);
+                    Thread.Sleep(60 * 1000);
                 }
             }
         }
@@ -55,18 +69,32 @@ namespace HttpConsole
             AtCommandResponse res = response as AtCommandResponse;
             if (res != null)
             {
-                if (res.Data is NodeDiscoverData)
+                if (res.ParseValue() is NodeDiscoverData)
                 {
-                    NodeDiscoverData nd = res.Data as NodeDiscoverData;
-                    sender.SendPacket(new AtRemoteCommand(nd.Address16, nd.Address64, 0x00, new ForceSample(), 0x01).GetPacket());
+                    NodeDiscoverData nd = res.ParseValue() as NodeDiscoverData;
+
+                    if (nd.NodeIdentifier != "MICHAEL")
+                    {
+                        sender.Execute(new AtRemoteCommand(nd.SerialNumber, nd.ShortAddress, new ForceSample()));
+                        //sender.SendCommand(new AtRemoteCommand(nd.SerialNumber, nd.ShortAddress, new XBeeSensorSample()));
+                    }
+                    else
+                    {
+                        ZigBeeTransmitRequest x = new ZigBeeTransmitRequest(nd.SerialNumber, nd.ShortAddress, Encoding.ASCII.GetBytes("Hello"));
+                        sender.Execute(x);
+                    }
+
                 }
+                return;
+
             }
+
             AtRemoteCommandResponse res2 = response as AtRemoteCommandResponse;
             if (res2 != null)
             {
-                if (res2.Data is ForceSampleData)
+                if (res2.ParseValue() is ForceSampleData)
                 {
-                    ForceSampleData d = res2.Data as ForceSampleData;
+                    ForceSampleData d = res2.ParseValue() as ForceSampleData;
 
                     double mVanalog = (((float)d.AD2) / 1023.0) * 1200.0;
                     double temp_C = (mVanalog - 500.0) / 10.0 - 4.0;
@@ -126,13 +154,11 @@ namespace HttpConsole
             switch(context.Request.Path)
             {
                 case "/throwerror":
-                    throw new HttpException(MSchwarz.Net.Web.HttpStatusCode.InternalServerError);
-                    break;
+                    throw new HttpException(MFToolkit.Net.Web.HttpStatusCode.InternalServerError);
 
                 case "/filenotfound":
-                    throw new HttpException(MSchwarz.Net.Web.HttpStatusCode.NotFound);
-                    break;
-
+                    throw new HttpException(MFToolkit.Net.Web.HttpStatusCode.NotFound);
+                    
                 case "/imbot":
                     context.Response.ContentType = "text/html; charset=UTF-8";
 

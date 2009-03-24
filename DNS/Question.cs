@@ -29,12 +29,12 @@
 using System;
 using System.Text;
 using System.Net;
-using MSchwarz.IO;
+using MFToolkit.IO;
 #if(MF)
-using MSchwarz.Text;
+using MFToolkit.Text;
 #endif
 
-namespace MSchwarz.Net.Dns
+namespace MFToolkit.Net.Dns
 {
     /// <summary>
     /// A Question (RFC 1035 4.1.2)

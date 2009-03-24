@@ -25,42 +25,74 @@
  */
 using System;
 using System.Text;
-using MSchwarz.IO;
+using MFToolkit.IO;
 
-namespace MSchwarz.Net.XBee
+namespace MFToolkit.Net.XBee
 {
-    public class ZigBeeTransmitRequest : XBeeRequest
+    public class ZigBeeTransmitRequest : XBeeFrameRequest
     {
-        private byte _frameID;
-        private ushort _address16;
-		private ulong _address64;
+        private XBeeAddress64 _address64;
+        private XBeeAddress16 _address16;
         private byte _broadcastRadius = 0x00;
         private byte _options = 0x00;
         private byte[] _value;
 
-		public ZigBeeTransmitRequest(byte frameID, ushort address16, ulong address64, byte[] data)
+        #region Public Properties
+
+        public byte BroadcastRadios
+        {
+            get { return _broadcastRadius; }
+            set
+            {
+                if (value > 10)
+                    throw new ArgumentOutOfRangeException("The maximum hop value is 10.");
+
+                _broadcastRadius = value;
+            }
+        }
+
+        public byte Options
+        {
+            get { return _options; }
+            set { _options = value; }
+        }
+
+        // TODO: verify this implementation
+        public bool MulticastTransmission
+        {
+            get { return BitHelper.GetBit(Options, 8); }
+            set { BitHelper.SetBit(ref _options, 8, true); }
+        }
+
+        public byte[] Value
+        {
+            get { return _value; }
+            set { _value = value; }
+        }
+
+        #endregion
+
+        public ZigBeeTransmitRequest(XBeeAddress64 address64, XBeeAddress16 address16, byte[] data)
         {
             this.ApiID = XBeeApiType.ZigBeeTransmitRequest;
-            _frameID = frameID;
+            _address64 = address64;
             _address16 = address16;
-			_address64 = address64;
 
 			_value = data;
         }
 
-        public override byte[] GetBytes()
+        internal override void WriteApiBytes(ByteWriter bw)
         {
-            ByteWriter bw = new ByteWriter(ByteOrder.BigEndian);
+            if (_value != null && _value.Length > 72)
+                throw new Exception("Value exceeds maximum of 72 bytes per packet.");
 
-            bw.Write((byte)ApiID);
-            bw.Write(_frameID);
-            bw.Write(_address64);
-            bw.Write(_address16);
+            base.WriteApiBytes(bw);
+
+            _address64.WriteBytes(bw);
+            _address16.WriteBytes(bw);
             bw.Write(_broadcastRadius);
             bw.Write(_options);
             bw.Write(_value);
-
-            return bw.GetBytes();
         }
     }
 }

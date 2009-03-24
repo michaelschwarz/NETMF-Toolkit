@@ -25,10 +25,11 @@
  */
 using System;
 using System.Text;
+using MFToolkit.IO;
 
-namespace MSchwarz.Net.XBee
+namespace MFToolkit.Net.XBee
 {
-    public abstract class XBeeRequest
+    public abstract class XBeeRequest : XBeePacket
     {
         private XBeeApiType _apiId;
         
@@ -38,13 +39,16 @@ namespace MSchwarz.Net.XBee
             set { _apiId = value; }
         }
 
-        public XBeePacket GetPacket()
+        internal override void WriteApiBytes(ByteWriter bw)
         {
-            XBeePacket packet = new XBeePacket(GetBytes());
+            base.WriteApiBytes(bw);
 
-            return packet;
+            bw.Write((byte)ApiID);
         }
 
-        public abstract byte[] GetBytes();
+        public override string ToString()
+        {
+            return base.ToString() + "\r\nApiID: " + ApiID;
+        }
     }
 }

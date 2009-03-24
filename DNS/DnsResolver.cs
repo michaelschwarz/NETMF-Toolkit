@@ -34,7 +34,7 @@ using System.Net.Sockets;
 using System.Management;
 #endif
 
-namespace MSchwarz.Net.Dns
+namespace MFToolkit.Net.Dns
 {
     public class DnsResolver
     {

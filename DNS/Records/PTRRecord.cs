@@ -25,7 +25,7 @@
  */
 using System;
 
-namespace MSchwarz.Net.Dns
+namespace MFToolkit.Net.Dns
 {
     /// <summary>
     /// PTR Resource Record (RFC 1035 3.3.12)

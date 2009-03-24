@@ -25,77 +25,95 @@
  */
 using System;
 using System.Text;
-using MSchwarz.IO;
+using MFToolkit.IO;
 
-namespace MSchwarz.Net.XBee
+namespace MFToolkit.Net.XBee
 {
-    public class AtRemoteCommand : XBeeRequest
+    public class AtRemoteCommand : AtCommand
     {
-        private byte _frameID;
-        private ulong _address64;
-        private ushort _address16;
+        private XBeeAddress64 _address64;
+        private XBeeAddress16 _address16;
         private byte _options = 0x00;           // 0x02 to save remote configuration instead of AC command
-        private string _command;
-        private byte[] _value;
 
-        public string Command
+        #region Public Properties
+
+        /// <summary>
+        /// Serial Number
+        /// </summary>
+        public XBeeAddress64 SerialNumber
         {
-            get { return _command; }
-            set
-            {
-				if (value == null || value.Length == 0)		// String.IsNullOrEmpty(value))
-                    throw new NullReferenceException("The command cannot be null or empty.");
-
-                if (value.Length < 2)
-                    throw new ArgumentException("The command must have at least 2 characters.", "value");
-
-                _command = value;
-            }
+            get { return _address64; }
+            set { _address64 = value; }
         }
 
-        public byte[] Value
+        /// <summary>
+        /// Short Address
+        /// </summary>
+        public XBeeAddress16 ShortAddress
         {
-            get { return _value; }
-            set { _value = value; }
+            get { return _address16; }
+            set { _address16 = value; }
         }
 
-		public AtRemoteCommand(ushort address16, ulong address64, byte options, string command, byte[] value, byte frameID)
+        public byte Options
+        {
+            get { return _options; }
+            set { _options = value; }
+        }
+
+        #endregion
+
+        public AtRemoteCommand(XBeeAddress64 address64, XBeeAddress16 address16, bool applyChanges, string command, byte[] value)
+            : base(command, value)
         {
             this.ApiID = XBeeApiType.RemoteCommandRequest;
-            _frameID = frameID;
-			_address16 = address16;
             _address64 = address64;
-            _options = options;
-            this.Command = command;
-            this.Value = value;
+            _address16 = address16;
+
+            if (applyChanges)
+                _options = 0x02;
         }
 
-		public AtRemoteCommand(ushort address16, ulong address64, byte options, AtCommand cmd, byte frameID)
+        public AtRemoteCommand(XBeeAddress64 address64, XBeeAddress16 address16, bool applyChanges, AtCommand cmd)
+            : this(address64, address16, applyChanges, cmd.Command, cmd.Value)
 		{
-			this.ApiID = XBeeApiType.RemoteCommandRequest;
-			_frameID = frameID;
-			_address16 = address16;
-			_address64 = address64;
-			_options = options;
-			this.Command = cmd.Command;
-			this.Value = cmd.Value;
 		}
 
-        public override byte[] GetBytes()
+        public AtRemoteCommand(XBeeAddress64 address64, XBeeAddress16 address16, AtCommand cmd)
+            : this(address64, address16, true, cmd)
         {
-            ByteWriter bw = new ByteWriter(ByteOrder.BigEndian);
+        }
 
-            bw.Write((byte)ApiID);
-            bw.Write(_frameID);
-            bw.Write(_address64);
-            bw.Write(_address16);
+        public AtRemoteCommand(XBeeAddress64 address64, bool applyChanges, AtCommand cmd)
+            : this(address64, XBeeAddress16.ZNET_BROADCAST, applyChanges, cmd.Command, cmd.Value)
+        {
+        }
+
+        public AtRemoteCommand(XBeeAddress64 address64, AtCommand cmd)
+            : this(address64, true, cmd)
+        {
+        }
+
+        public AtRemoteCommand(XBeeAddress64 address64, string command)
+            : this(address64, XBeeAddress16.ZNET_BROADCAST, true, command, new byte[0])
+        {
+        }
+
+        internal override void WriteBytesCommand(ByteWriter bw)
+        {
+            _address64.WriteBytes(bw);
+            _address16.WriteBytes(bw);
             bw.Write(_options);
+
             bw.Write(Command);
 
-            if (_value != null)
-                bw.Write(_value);
+            if (Value != null)
+                bw.Write(Value);
+        }
 
-            return bw.GetBytes();
+        public override string ToString()
+        {
+            return base.ToString() + "\r\nSerialNumber = " + SerialNumber + "\r\nShortAddress = " + ShortAddress;
         }
     }
 }

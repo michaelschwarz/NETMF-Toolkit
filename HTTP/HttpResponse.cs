@@ -39,10 +39,10 @@ using System.Globalization;
 using System.Net.Sockets;
 
 #if(MF)
-using MSchwarz.Text;
+using MFToolkit.Text;
 #endif
 
-namespace MSchwarz.Net.Web
+namespace MFToolkit.Net.Web
 {
     public class HttpResponse
     {

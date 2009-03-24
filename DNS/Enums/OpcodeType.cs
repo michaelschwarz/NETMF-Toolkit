@@ -25,7 +25,7 @@
  */
 using System;
 
-namespace MSchwarz.Net.Dns
+namespace MFToolkit.Net.Dns
 {
     /// <summary>
     /// The Query Types (OPCODE) that specifies kind of query in a message.

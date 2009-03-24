@@ -81,6 +81,15 @@
     <Compile Include="..\Zigbee\Request\AT\CyclicSleepPeriod.cs">
       <Link>Request\AT\CyclicSleepPeriod.cs</Link>
     </Compile>
+    <Compile Include="..\Zigbee\Request\AT\DestinationAddressHigh.cs">
+      <Link>Request\AT\DestinationAddressHigh.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\DestinationAddressLow.cs">
+      <Link>Request\AT\DestinationAddressLow.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\DestinationNode.cs">
+      <Link>Request\AT\DestinationNode.cs</Link>
+    </Compile>
     <Compile Include="..\Zigbee\Request\AT\DeviceTypeIdentifier.cs">
       <Link>Request\AT\DeviceTypeIdentifier.cs</Link>
     </Compile>
@@ -110,6 +119,12 @@
     </Compile>
     <Compile Include="..\Zigbee\Request\AT\RestoreDefaults.cs">
       <Link>Request\AT\RestoreDefaults.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\SerialNumberHigh.cs">
+      <Link>Request\AT\SerialNumberHigh.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\SerialNumberLow.cs">
+      <Link>Request\AT\SerialNumberLow.cs</Link>
     </Compile>
     <Compile Include="..\Zigbee\Request\AT\SleepMode.cs">
       <Link>Request\AT\SleepMode.cs</Link>
@@ -195,8 +210,20 @@
     <Compile Include="..\Zigbee\XBee.cs">
       <Link>XBee.cs</Link>
     </Compile>
+    <Compile Include="..\Zigbee\XBeeAddress16.cs">
+      <Link>XBeeAddress16.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\XBeeAddress64.cs">
+      <Link>XBeeAddress64.cs</Link>
+    </Compile>
     <Compile Include="..\Zigbee\XBeeChecksum.cs">
       <Link>XBeeChecksum.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\XBeeFrameRequest.cs">
+      <Link>XBeeFrameRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\XBeeFrameResponse.cs">
+      <Link>XBeeFrameResponse.cs</Link>
     </Compile>
     <Compile Include="..\Zigbee\XBeeModule.cs">
       <Link>XBeeModule.cs</Link>

@@ -28,7 +28,7 @@
  */
 using System;
 
-namespace MSchwarz.Net.Web
+namespace MFToolkit.Net.Web
 {
     public enum LogEventType
     {

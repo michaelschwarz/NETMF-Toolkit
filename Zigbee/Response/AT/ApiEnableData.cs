@@ -25,10 +25,13 @@
  */
 using System;
 using System.Text;
-using MSchwarz.IO;
+using MFToolkit.IO;
 
-namespace MSchwarz.Net.XBee
+namespace MFToolkit.Net.XBee
 {
+    /// <summary>
+    /// Represents a api enable command response structure
+    /// </summary>
 	public class ApiEnableData : IAtCommandData
 	{
 		private byte _apiType;
@@ -42,10 +45,8 @@ namespace MSchwarz.Net.XBee
 
 		#endregion
 
-		public void Fill(byte[] value)
+        public void ReadBytes(ByteReader br)
 		{
-			ByteReader br = new ByteReader(value, ByteOrder.BigEndian);
-
 			_apiType = br.ReadByte();
 		}
 

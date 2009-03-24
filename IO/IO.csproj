@@ -8,7 +8,7 @@
     <ProjectGuid>{A3B69586-127A-4287-9EA1-E64E2C42131C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MSchwarz.IO</RootNamespace>
+    <RootNamespace>MFToolkit.IO</RootNamespace>
     <AssemblyName>IO</AssemblyName>
     <TargetFrameworkVersion>v3.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

@@ -28,22 +28,20 @@
  */
 using System;
 using System.Text;
-using MSchwarz.IO;
+using MFToolkit.IO;
 
-namespace MSchwarz.Net.XBee
+namespace MFToolkit.Net.XBee
 {
-    public class AtCommandResponse : XBeeResponse
+    /// <summary>
+    /// Represents a AT command response
+    /// </summary>
+    public class AtCommandResponse : XBeeFrameResponse
     {
-        private byte _frameID;
         private string _command;
         private byte _status;
         private byte[] _value;
-        private IAtCommandData _data = null;
-
-        public byte FrameID
-        {
-            get { return _frameID; }
-        }
+        
+        #region Public Properties
 
         public string Command
         {
@@ -60,16 +58,11 @@ namespace MSchwarz.Net.XBee
             get { return _value; }
         }
 
-        public IAtCommandData Data
-        {
-            get { return _data; }
-        }
+        #endregion
 
         public AtCommandResponse(short length, ByteReader br)
-            : base(br)
+            : base(length, br)
         {
-            _frameID = br.ReadByte();
-
 #if(MF)
 			_command = ByteUtil.GetString(br.ReadBytes(2));
 #elif(WindowsCE)
@@ -82,39 +75,56 @@ namespace MSchwarz.Net.XBee
             _status = br.ReadByte();
 
             if (br.AvailableBytes > 0)
-            {
                 _value = br.ReadBytes(length - 5);
+        }
 
-                switch (_command)
-                {
-                    case "DB": _data = new ReceivedSignalStrengthData(); break;
-                    case "IS": _data = new ForceSampleData(); break;
-                    case "ND": _data = new NodeDiscoverData(); break;
-                    case "NI": _data = new NodeIdentifierData(); break;
-                    case "SM": _data = new SleepModeData(); break;
-                    case "SP": _data = new CyclicSleepPeriodData(); break;
-                    case "ST": _data = new TimeBeforeSleepData(); break;
-                    case "%V": _data = new SupplyVoltageData(); break;
-                    case "AP": _data = new ApiEnableData(); break;
-                }
+        public IAtCommandData ParseValue()
+        {
+            return ParseValue(Command, Value);
+        }
 
-                if (_data != null && _value != null && _value.Length > 0)
+#if(!MF && !WindowsCE)
+        public T ParseValue<T>() where T : IAtCommandData
+        {
+            return (T)ParseValue(Command, Value);
+        }
+#endif
+
+        internal static IAtCommandData ParseValue(string command, byte[] value)
+        {
+            if (value == null || value.Length == 0)
+                return null;
+
+            IAtCommandData data = null;
+
+            switch (command)
+            {
+                case "DB": data = new ReceivedSignalStrengthData(); break;
+                case "IS": data = new ForceSampleData(); break;
+                case "ND": data = new NodeDiscoverData(); break;
+                case "NI": data = new NodeIdentifierData(); break;
+                case "SM": data = new SleepModeData(); break;
+                case "SP": data = new CyclicSleepPeriodData(); break;
+                case "ST": data = new TimeBeforeSleepData(); break;
+                case "%V": data = new SupplyVoltageData(); break;
+                case "AP": data = new ApiEnableData(); break;
+            }
+
+            if (data != null)
+            {
+                using (ByteReader br = new ByteReader(value, ByteOrder.BigEndian))
                 {
-                    _data.Fill(_value);
+                    data.ReadBytes(br);
                 }
             }
+
+            return data;
         }
 
         public override string ToString()
         {
-            string s =
-                "command " + _command + "\r\n" +
-                "status  " + this.Status;
-
-            if (_data != null)
-                s += "\r\nvalue\r\n" + _data;
-            else
-                s += "\r\nvalue = " + ByteUtil.PrintBytes(_value);
+            string s = "command " + Command + "\r\n" + "status  " + Status;
+            s += "\r\nvalue = \r\n" + ParseValue();
 
             return s;
         }

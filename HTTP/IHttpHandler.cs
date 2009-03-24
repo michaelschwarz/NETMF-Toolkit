@@ -27,7 +27,7 @@
  */
 using System;
 
-namespace MSchwarz.Net.Web
+namespace MFToolkit.Net.Web
 {
     public interface IHttpHandler
     {

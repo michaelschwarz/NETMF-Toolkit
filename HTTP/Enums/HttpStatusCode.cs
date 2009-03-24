@@ -28,7 +28,7 @@
  */
 using System;
 
-namespace MSchwarz.Net.Web
+namespace MFToolkit.Net.Web
 {
     /// <summary>
     /// The HttpStatusCode enumeration contains the values of the status codes defined in RFC 2616 for HTTP 1.1.

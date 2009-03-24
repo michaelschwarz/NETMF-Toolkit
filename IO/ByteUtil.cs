@@ -29,7 +29,7 @@
 using System;
 using System.Text;
 
-namespace MSchwarz.IO
+namespace MFToolkit.IO
 {
     public class ByteUtil
     {
@@ -104,11 +104,16 @@ namespace MSchwarz.IO
 
         public static string PrintBytes(byte[] bytes)
         {
+            return PrintBytes(bytes, bytes.Length);
+        }
+
+        public static string PrintBytes(byte[] bytes, int length)
+        {
             string s = "";
 
             int c = 0;
 
-            for (int i = 0; i < bytes.Length; i++)
+            for (int i = 0; i < length && i < bytes.Length; i++)
             {
                 s += PrintByte(bytes[i]);
 
@@ -118,7 +123,7 @@ namespace MSchwarz.IO
                     c = 0;
                 }
                 else
-                    if (i < bytes.Length - 1) s += "-";
+                    if (i < length - 1) s += "-";
             }
 
             return s;

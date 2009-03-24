@@ -28,7 +28,7 @@
  */
 using System;
 
-namespace MSchwarz.Collection.Spezialized
+namespace MFToolkit.Collection.Spezialized
 {
     internal class NameValuePair
     {

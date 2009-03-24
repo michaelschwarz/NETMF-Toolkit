@@ -24,24 +24,42 @@
  * 
  * MS   09-02-07    added support for Windows CE
  * 
+ * 
  */
 using System;
 using System.Text;
-using MSchwarz.IO;
+using MFToolkit.IO;
 
-namespace MSchwarz.Net.XBee
+namespace MFToolkit.Net.XBee
 {
-    public class AtRemoteCommandResponse : XBeeResponse
+    /// <summary>
+    /// Represents a AT remote command response
+    /// </summary>
+    public class AtRemoteCommandResponse : XBeeFrameResponse
     {
-        private byte _frameID;
-        private ulong _address64;
-        private ushort _address16;
+        private XBeeAddress64 _address64;
+        private XBeeAddress16 _address16;
         private string _command;
         private byte _status;
         private byte[] _value;
-        private IAtCommandData _data = null;
 
         #region Public Properties
+
+        /// <summary>
+        /// Serial Number
+        /// </summary>
+        public XBeeAddress64 SerialNumber
+        {
+            get { return _address64; }
+        }
+
+        /// <summary>
+        /// Short Address
+        /// </summary>
+        public XBeeAddress16 ShortAddress
+        {
+            get { return _address16; }
+        }
 
         public string Command
         {
@@ -58,61 +76,47 @@ namespace MSchwarz.Net.XBee
             get { return _value; }
         }
 
-        public IAtCommandData Data
-        {
-            get { return _data; }
-        }
-
         #endregion
 
         public AtRemoteCommandResponse(short length, ByteReader br)
-            : base(br)
+            : base(length, br)
         {
-            _frameID = br.ReadByte();
-            _address64 = br.ReadUInt64();
-            _address16 = br.ReadUInt16();
-
+            _address64 = XBeeAddress64.ReadBytes(br);
+            _address16 = XBeeAddress16.ReadBytes(br);
+            
 #if(MF)
 			_command = ByteUtil.GetString(br.ReadBytes(2));
 #elif(WindowsCE)
             byte[] tempArr = br.ReadBytes(2);
-			_command = Encoding.ASCII.GetString(tempArr,0,tempArr.Length);
+            _command = Encoding.ASCII.GetString(tempArr, 0, tempArr.Length);
 #else
             _command = Encoding.ASCII.GetString(br.ReadBytes(2));
 #endif
+
             _status = br.ReadByte();
 
             if (br.AvailableBytes > 0)
-            {
-                _value = br.ReadBytes(length - 15);
-
-                switch (_command)
-                {
-                    case "DB": _data = new ReceivedSignalStrengthData(); break;
-                    case "IS": _data = new ForceSampleData(); break;
-                    case "ND": _data = new NodeDiscoverData(); break;
-                    case "NI": _data = new NodeIdentifierData(); break;
-                    case "SM": _data = new SleepModeData(); break;
-                    case "SP": _data = new CyclicSleepPeriodData(); break;
-                    case "ST": _data = new TimeBeforeSleepData(); break;
-                    case "%V": _data = new SupplyVoltageData(); break;
-                }
-
-                if (_data != null && _value.Length > 0)
-                    _data.Fill(_value);
-            }
+                _value = br.ReadBytes(length - 14);
         }
+
+        public IAtCommandData ParseValue()
+        {
+            return AtCommandResponse.ParseValue(Command, Value);
+        }
+
+#if(!MF && !WindowsCE)
+        public T ParseValue<T>() where T : IAtCommandData
+        {
+            return (T)AtCommandResponse.ParseValue(Command, Value);
+        }
+#endif
 
         public override string ToString()
         {
-            string s =
-                "remote command " + _command + "\r\n" +
-                "status  " + this.Status;
-
-            if (_data != null)
-                s += "\r\nvalue\r\n" + _data;
-            //else
-            s += "\r\nvalue = " + ByteUtil.PrintBytes(_value);
+            string s = "command " + Command + "\r\n" + "status  " + Status;
+            s += "\r\nSerialNumber = " + SerialNumber;
+            s += "\r\nShortAddress = " + ShortAddress;
+            s += "\r\nvalue = \\n" + ParseValue();
 
             return s;
         }

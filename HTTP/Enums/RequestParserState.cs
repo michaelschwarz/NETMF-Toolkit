@@ -28,7 +28,7 @@
  */
 using System;
 
-namespace MSchwarz.Net
+namespace MFToolkit.Net
 {
     internal enum RequestParserState
     {

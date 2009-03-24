@@ -28,6 +28,7 @@
  * BL   09-01-27    fixed MicroZigbee build
  * MS   09-02-06    fixed work item 3636 when first character is not the startbyte
  * PH   09-02-07    added several changes to enable stopping receive thread
+ * MS   09-03-24    changed methods from SendCommand to Execute
  * 
  */
 using System;
@@ -35,10 +36,13 @@ using System.Text;
 using System.Threading;
 using System.IO.Ports;
 using System.IO;
-using MSchwarz.IO;
+using MFToolkit.IO;
 
-namespace MSchwarz.Net.XBee
+namespace MFToolkit.Net.XBee
 {
+    /// <summary>
+    /// Represents a XBee module communication class
+    /// </summary>
     public class XBee : IDisposable
     {
         private string _port;
@@ -54,8 +58,14 @@ namespace MSchwarz.Net.XBee
         private Thread _thd;
         private bool _stopThd;
 
+        #region Events
+
 		public delegate void PacketReceivedHandler(XBee sender, XBeeResponse response);
 		public event PacketReceivedHandler OnPacketReceived;
+
+        #endregion
+
+        #region Constructor
 
         public XBee(string port)
         {
@@ -78,8 +88,18 @@ namespace MSchwarz.Net.XBee
 			: this(port, baudRate)
 		{
 			_apiType = apiType;
-		}
+        }
 
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Opens the connection to the XBee module with the specified port configuration
+        /// </summary>
+        /// <param name="port">The serial port (i.e. COM1)</param>
+        /// <param name="baudRate">The baudrate to use</param>
+        /// <returns></returns>
         public bool Open(string port, int baudRate)
         {
             _port = port;
@@ -88,6 +108,10 @@ namespace MSchwarz.Net.XBee
             return Open();
         }
 
+        /// <summary>
+        /// Opens the connection to the XBee module
+        /// </summary>
+        /// <returns></returns>
 		public bool Open()
 		{
 			try
@@ -114,13 +138,16 @@ namespace MSchwarz.Net.XBee
 
 				try
 				{
-					if (EnterCommandMode())
-						ExitCommandMode();
+                    SendCommand("+++");
+                    Thread.Sleep(500);
 
-					// we need some msecs to wait before calling another EnterCommandMode
-					Thread.Sleep(1000);
+                    if (GetResponse() == "OK")
+                    {
+                        _apiType = ApiType.Disabled;
 
-					_apiType = ApiType.Disabled;
+                        // we need some msecs to wait before calling another EnterCommandMode
+                        Thread.Sleep(1000);
+                    }
 				}
 				catch (Exception)
 				{
@@ -133,9 +160,9 @@ namespace MSchwarz.Net.XBee
 #endif
 					_thd.Start();
 
-					AtCommandResponse at = SendCommand(new ApiEnable()) as AtCommandResponse;
+					AtCommandResponse at = Execute(new ApiEnable()) as AtCommandResponse;
 
-					_apiType = (at.Data as ApiEnableData).ApiType;
+					_apiType = (at.ParseValue() as ApiEnableData).ApiType;
 				}
 
 				#endregion
@@ -154,9 +181,149 @@ namespace MSchwarz.Net.XBee
 				throw new NotSupportedException("The API type could not be read or is configured wrong.");
 
 			return true;
-		}
-	
-		void ReceiveData()
+        }
+
+        /// <summary>
+        /// Close the connection to the XBee module
+        /// </summary>
+        public void Close()
+        {
+            StopReceiveData();
+
+            if (_serialPort != null && _serialPort.IsOpen)
+            {
+                _serialPort.Close();
+            }
+        }
+
+        /// <summary>
+        /// Stops the receive thread
+        /// </summary>
+        public void StopReceiveData()
+        {
+            try
+            {
+                if (_thd != null)
+                {
+                    _stopThd = true;
+
+                    // Block again until the DoWork thread finishes
+                    _thd.Join(2000);
+                    _thd.Abort();
+                    _thd.Join(2000);
+                }
+            }
+            catch (Exception) // e)
+            {
+                //RaiseLogEvent(LogEventType.ServerException, e.ToString());
+            }
+            finally
+            {
+                _thd = null;
+            }
+        }
+
+        /// <summary>
+        /// Sends a XBeeRequest
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public bool ExecuteNonQuery(XBeeRequest request)
+        {
+            if (request is XBeeFrameRequest)
+            {
+                if (_frameID == byte.MaxValue)
+                    _frameID = byte.MinValue;
+
+                ((XBeeFrameRequest)request).FrameID = ++_frameID;
+            }
+
+            byte[] bytes;
+
+            if (_apiType == ApiType.EnabledWithEscaped)
+                bytes = request.GetEscapedApiPacket();
+            else if (_apiType == ApiType.Enabled)
+                bytes = request.GetApiPacket();
+            else if (_apiType == ApiType.Disabled)
+                bytes = request.GetAtPacket();
+            else
+                throw new NotSupportedException("This ApiType is not supported.");
+
+            _serialPort.Write(bytes, 0, bytes.Length);
+
+            return true;
+        }
+
+#if(!MF && !WindowsCE)
+
+        public T Execute<T>(XBeeRequest request) where T : XBeeResponse
+        {
+            return (T)Execute(request);
+        }
+
+        public T Execute<T>(XBeeRequest request, int timeout) where T : XBeeResponse
+        {
+            return (T)Execute(request, timeout);
+        }
+#endif
+
+        /// <summary>
+        /// Sends a XBeeRequest and waits 1 second for the XBeeResponse
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        /// <exception cref="System.TimoutException">Throws an TimoutException when response could not be read.</exception>
+        public XBeeResponse Execute(XBeeRequest request)
+        {
+            return Execute(request, 1000);
+        }
+
+        /// <summary>
+        /// Sends a XBeeRequest and waits for the XBeeResponse for specified milliseconds
+        /// </summary>
+        /// <param name="request">The XBeeRequest.</param>
+        /// <param name="timeout">Milliseconds to wait for the response.</param>
+        /// <returns></returns>
+        public XBeeResponse Execute(XBeeRequest request, int timeout)
+        {
+            ExecuteNonQuery(request);
+
+            if (_apiType == ApiType.Enabled || _apiType == ApiType.EnabledWithEscaped)
+            {
+                int c = 0;
+
+                while (_waitResponse && ++c <= (timeout / 10))
+                {
+                    Thread.Sleep(10);
+                }
+
+                if (c > (timeout / 10))
+                {
+#if(MF)
+				throw new Exception("Could not receive response.");
+#else
+                    throw new TimeoutException("Could not receive response.");
+#endif
+                }
+
+                if (_waitResponse)
+                    return null;
+
+                return _receivedPacket;
+            }
+            else if (_apiType == ApiType.Disabled)
+            {
+                throw new NotImplementedException("This method is not yet implemented.");
+            }
+
+            throw new NotSupportedException("This ApiType is not supported.");
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private void ReceiveData()
 		{
             try
             {
@@ -222,10 +389,6 @@ namespace MSchwarz.Net.XBee
 
                                 ByteReader br = new ByteReader(bytes, ByteOrder.BigEndian);
 
-#if(DEBUG && !MF)
-                                Console.WriteLine("Processed buffer " + ByteUtil.PrintBytes(bytes));
-#endif
-
                                 if (startOK && lengthAndCrcOK)
                                 {
                                     byte startByte = br.ReadByte();     // start byte
@@ -263,11 +426,12 @@ namespace MSchwarz.Net.XBee
 #if(!MF)
             catch (ThreadAbortException ex)
             {
-
+#if(DEBUG)
                 // Display a message to the console.
                 Console.WriteLine("{0} : DisplayMessage thread terminating - {1}",
                     DateTime.Now.ToString("HH:mm:ss.ffff"),
                     (string)ex.ExceptionState);
+#endif
             }
 #else
             catch(Exception)
@@ -276,31 +440,7 @@ namespace MSchwarz.Net.XBee
 #endif
         }
 
-        public void StopReceiveData()
-        {
-            try
-            {
-                if (_thd != null)
-                {
-                    _stopThd = true;
-
-                    // Block again until the DoWork thread finishes
-                    _thd.Join(2000);
-                    _thd.Abort();
-                    _thd.Join(2000);
-                }
-            }
-            catch (Exception) // e)
-            {
-                //RaiseLogEvent(LogEventType.ServerException, e.ToString());
-            }
-            finally
-            {
-                _thd = null;
-            }
-        }
-
-        bool CheckLengthAndCrc()
+        private bool CheckLengthAndCrc()
         {
             // can't be to short
             if (_readBuffer.Length < 4)
@@ -326,7 +466,7 @@ namespace MSchwarz.Net.XBee
             return result;
         }
 
-		void CheckFrame(short length, ByteReader br)
+		private void CheckFrame(short length, ByteReader br)
         {
             XBeeApiType apiId = (XBeeApiType)br.Peek();
             XBeeResponse res = null;
@@ -357,11 +497,7 @@ namespace MSchwarz.Net.XBee
                 case XBeeApiType.ModemStatus:
                     res = new ZigBeeModemStatus(length, br);
                     break;
-
 				default:
-#if(!MF)
-					Console.WriteLine("Could not handle API message " + apiId + ".");
-#endif
 					break;
             }
 
@@ -376,70 +512,6 @@ namespace MSchwarz.Net.XBee
 				if (OnPacketReceived != null)
 					OnPacketReceived(this, res);
 			}
-		}
-
-        public void Close()
-        {
-            if (_serialPort != null && _serialPort.IsOpen)
-                _serialPort.Close();
-        }
-
-        public bool SendPacket(XBeePacket packet)
-        {
-            byte[] bytes;
-
-			if (_apiType == ApiType.EnabledWithEscaped)
-				bytes = packet.GetEscapedBytes();
-			else
-				bytes = packet.GetBytes();
-
-#if(DEBUG && !MF)
-			Console.WriteLine("Sending " + ByteUtil.PrintBytes(bytes) + "...");
-#endif
-
-			_serialPort.Write(bytes, 0, bytes.Length);
-
-            return true;
-		}
-
-		public XBeeResponse SendCommand(AtCommand cmd)
-		{
-			cmd.FrameID = ++_frameID;
-			_waitResponse = true;
-
-			SendPacket(cmd.GetPacket());
-
-			int c = 0;
-
-			while (_waitResponse && ++c < 300)
-			{
-				Thread.Sleep(10);
-			}
-
-			if (c >= 300)
-			{
-#if(MF)
-				throw new Exception("Could not receive response.");
-#else
-				throw new TimeoutException("Could not receive response.");
-#endif
-			}
-
-			if (!_waitResponse)
-			{
-				return _receivedPacket;
-			}
-
-			return null;
-		}
-
-		public void SendCommand(string s)
-		{
-#if(!MF)
-			Console.WriteLine(s);
-#endif
-			byte[] bytes = Encoding.UTF8.GetBytes(s + "\r");
-			_serialPort.Write(bytes, 0, bytes.Length);
 		}
 
 		private string ReadTo(string value)
@@ -505,7 +577,16 @@ namespace MSchwarz.Net.XBee
 			return textArrived;
 		}
 
-		public string GetResponse()
+        private void SendCommand(string s)
+        {
+#if(!MF)
+            Console.WriteLine(s);
+#endif
+            byte[] bytes = Encoding.UTF8.GetBytes(s + "\r");
+            _serialPort.Write(bytes, 0, bytes.Length);
+        }
+
+		private string GetResponse()
 		{
 			string s = ReadTo("\r");
 
@@ -525,119 +606,13 @@ namespace MSchwarz.Net.XBee
 				return false;
 			else
 				return true;
-		}
+        }
 
-		#region XBee ZNet 2.5 Commands
+        #endregion
 
-		public bool EnterCommandMode()
-		{
-			if (_apiType != ApiType.Disabled && _apiType != ApiType.Unknown)
-				throw new NotSupportedException("While using API mode entering command mode is not available.");
+        #region IDisposable Members
 
-			SendCommand("+++");
-
-			Thread.Sleep(2500);
-
-			return GetResponse() == "OK";
-		}
-
-		public bool ExitCommandMode()
-		{
-			if (_apiType != ApiType.Disabled)
-				throw new NotSupportedException("While using API mode entering command mode is not available.");
-
-			SendCommand("ATCN");
-
-			return GetResponse() == "OK";
-		}
-
-		public bool NetworkReset()
-		{
-			if (_apiType == ApiType.Disabled)
-			{
-				SendCommand("ATNR");
-				return GetResponse() == "OK";
-			}
-			else
-			{
-				AtCommandResponse res = SendCommand(new NetworkReset()) as AtCommandResponse;
-
-				if (res == null)
-					return false;
-
-				return (res.Status == AtCommandStatus.Ok);
-			}
-		}
-
-		public void SetApiMode(ApiType apiType)
-		{
-			switch (apiType)
-			{
-				case ApiType.Disabled:
-					if (_apiType == ApiType.Enabled || _apiType == ApiType.EnabledWithEscaped)
-					{
-						AtCommand at = new ApiEnable(apiType);
-						at.FrameID = ++_frameID;
-
-						SendPacket(at.GetPacket());
-
-						while (true)
-						{
-						}
-					}
-					break;
-
-				case ApiType.Enabled:
-					if (_apiType == ApiType.Disabled)
-					{
-						
-
-					}
-					break;
-			}
-		}
-
-		public bool SetNodeIdentifier(string identifier)
-		{
-			switch (_apiType)
-			{
-				case ApiType.Disabled:
-
-					//if (!EnterCommandMode())
-					//    return false;
-
-					SendCommand("ATNI" + identifier);
-					bool res = GetResponse() == "OK";
-
-					if (res)
-					{
-						SendCommand("ATWR");
-						res = GetResponse() == "OK";
-					}
-
-					//ExitCommandMode();
-
-					return res;
-
-				case ApiType.Enabled:
-				case ApiType.EnabledWithEscaped:
-
-					AtCommandResponse atres = SendCommand(new NodeIdentifier(identifier)) as AtCommandResponse;
-
-					if (atres == null)
-						return false;
-
-					return (atres.Status == AtCommandStatus.Ok);
-			}
-
-			return false;
-		}
-
-		#endregion
-
-		#region IDisposable Members
-
-		public void Dispose()
+        public void Dispose()
         {
             Close();
 
@@ -646,6 +621,22 @@ namespace MSchwarz.Net.XBee
                 _serialPort.Dispose();
                 _serialPort = null;
             }
+        }
+
+        #endregion
+
+        #region Obsolete Members
+
+        [Obsolete("Use XBee.ExecuteNonQuery(XBeeRequest) instead.", true)]
+        public bool SendPacket(XBeePacket packet)
+        {
+            throw new NotSupportedException("This method is not supported any more.");
+        }
+
+        [Obsolete("Use XBee.Execute(XBeeRequest) instead.", true)]
+        public XBeeResponse SendCommand(AtCommand cmd)
+        {
+            throw new NotSupportedException("This method is not supported any more.");
         }
 
         #endregion

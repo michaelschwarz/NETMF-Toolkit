@@ -28,9 +28,9 @@
  */
 using System;
 using System.Text;
-using MSchwarz.Collection.Spezialized;
+using MFToolkit.Collection.Spezialized;
 
-namespace MSchwarz.Net.Web
+namespace MFToolkit.Net.Web
 {
     public class MimeContent
     {

@@ -32,10 +32,10 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 #if(MF)
-using MSchwarz.Text;
+using MFToolkit.Text;
 #endif
 
-namespace MSchwarz.Net.Dns
+namespace MFToolkit.Net.Dns
 {
     public class NetBIOS
     {

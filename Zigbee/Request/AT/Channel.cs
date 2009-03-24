@@ -26,7 +26,7 @@
 using System;
 using System.Text;
 
-namespace MSchwarz.Net.XBee
+namespace MFToolkit.Net.XBee
 {
 	/// <summary>
 	/// Networking Addressing: The CH command is

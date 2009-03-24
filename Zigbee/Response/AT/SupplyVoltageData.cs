@@ -25,10 +25,13 @@
  */
 using System;
 using System.Text;
-using MSchwarz.IO;
+using MFToolkit.IO;
 
-namespace MSchwarz.Net.XBee
+namespace MFToolkit.Net.XBee
 {
+    /// <summary>
+    /// Represents a supply voltage command response structure
+    /// </summary>
 	public class SupplyVoltageData : IAtCommandData
 	{
 		private short _supply;
@@ -48,11 +51,9 @@ namespace MSchwarz.Net.XBee
 
 		#endregion
 
-		public void Fill(byte[] value)
+        public void ReadBytes(ByteReader br)
 		{
-			ByteReader br = new ByteReader(value, ByteOrder.BigEndian);
-
-			_supply = br.ReadInt16();
+    		_supply = br.ReadInt16();
 		}
 
 		public override string ToString()

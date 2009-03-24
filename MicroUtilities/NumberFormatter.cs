@@ -22,10 +22,13 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
+ * 
+ * MS   09-03-23    changed using culture fields instead of English hard-coded
+ * 
  */
-
 using System;
 using Microsoft.SPOT;
+using System.Globalization;
 
 namespace MFToolkit.MicroUtilities
 {
@@ -47,9 +50,9 @@ namespace MFToolkit.MicroUtilities
     {
         #region Basic culture settings
 
-        private const int CULTURE_GROUPSIZE = 3;
-        private const char CULTURE_GROUPSEPERATOR = ',';
-        private const char CULTURE_DECIMAL_POINT = '.';
+        private static readonly int CULTURE_GROUPSIZE = CultureInfo.CurrentUICulture.NumberFormat.NumberGroupSizes[0];      // 3
+        private static readonly char CULTURE_GROUPSEPERATOR = CultureInfo.CurrentUICulture.NumberFormat.NumberGroupSeparator[0];    // ',';
+        private static readonly char CULTURE_DECIMAL_POINT = CultureInfo.CurrentUICulture.NumberFormat.NumberDecimalSeparator[0];   // '.';
 
         #endregion
 

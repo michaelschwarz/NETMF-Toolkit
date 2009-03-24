@@ -22,14 +22,16 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
+ * 
  */
 using System;
 using System.Text;
+using MFToolkit.IO;
 
-namespace MSchwarz.Net.XBee
+namespace MFToolkit.Net.XBee
 {
 	public interface IAtCommandData
 	{
-		void Fill(byte[] bytes);
+        void ReadBytes(ByteReader br);
 	}
 }

@@ -30,7 +30,7 @@ using System;
 using System.IO;
 using System.Text;
 
-namespace MSchwarz.Net.Web
+namespace MFToolkit.Net.Web
 {
     public class MimeParser
     {

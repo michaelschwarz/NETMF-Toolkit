@@ -28,43 +28,65 @@
  */
 using System;
 using System.Text;
-using MSchwarz.IO;
+using MFToolkit.IO;
 
-namespace MSchwarz.Net.XBee
+namespace MFToolkit.Net.XBee
 {
-    public class ZNetTxRequest : XBeeRequest
+    public class ZNetTxRequest : XBeeFrameRequest
     {
-        private byte _frameID;
-        private ulong _address64;
-        private ushort _address16;
-        private byte _broadcastRadius = 0;
-        private byte _option;
-        private byte[] _payload;
+        private XBeeAddress64 _address64;
+        private XBeeAddress16 _address16;
+        private byte _broadcastRadius = 0x00;
+        private byte _options = 0x00;
+        private byte[] _value;
 
-        public ZNetTxRequest(ulong address64, ushort address16, byte broadcastRadius, byte option, byte[] payload, byte frameID)
+        #region Public Properties
+
+        public byte BroadcastRadios
+        {
+            get { return _broadcastRadius; }
+            set
+            {
+                if (value > 10)
+                    throw new ArgumentOutOfRangeException("The maximum hop value is 10.");
+
+                _broadcastRadius = value;
+            }
+        }
+
+        public byte Options
+        {
+            get { return _options; }
+            set { _options = value; }
+        }
+
+        public byte[] Value
+        {
+            get { return _value; }
+            set { _value = value; }
+        }
+
+        #endregion
+
+        public ZNetTxRequest(XBeeAddress64 address64, XBeeAddress16 address16, byte broadcastRadius, byte options, byte[] value)
         {
             this.ApiID = XBeeApiType.ZigBeeTransmitRequest;
-            _frameID = frameID;
             _address64 = address64;
             _address16 = address16;
             _broadcastRadius = broadcastRadius;
-            _option = option;
-            _payload = payload;
+            _options = options;
+            _value = value;
         }
 
-        public override byte[] GetBytes()
+        internal override void WriteApiBytes(ByteWriter bw)
         {
-            ByteWriter bw = new ByteWriter(ByteOrder.BigEndian);
+            base.WriteApiBytes(bw);
 
-            bw.Write((byte)ApiID);
-            bw.Write(_frameID);
-            bw.Write(_address64);
-            bw.Write(_address16);
+            _address64.WriteBytes(bw);
+            _address16.WriteBytes(bw);
             bw.Write(_broadcastRadius);
-            bw.Write(_option);
-            bw.Write(_payload);
-
-            return bw.GetBytes();
+            bw.Write(_options);
+            bw.Write(_value);
         }
     }
 }

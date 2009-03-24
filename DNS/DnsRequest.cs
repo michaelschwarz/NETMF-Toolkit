@@ -30,9 +30,9 @@ using System.Text;
 #if(!MF)
 using System.Collections.Generic;
 #endif
-using MSchwarz.IO;
+using MFToolkit.IO;
 
-namespace MSchwarz.Net.Dns
+namespace MFToolkit.Net.Dns
 {
     public class DnsRequest
     {

@@ -25,7 +25,7 @@
  */
 using System;
 
-namespace MSchwarz.IO
+namespace MFToolkit.IO
 {
     public enum ByteOrder
     {

@@ -28,7 +28,7 @@
 using System;
 using System.Net;
 
-namespace MSchwarz.Net.Web
+namespace MFToolkit.Net.Web
 {
     public struct LogAccess
     {

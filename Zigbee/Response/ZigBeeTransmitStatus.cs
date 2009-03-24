@@ -25,21 +25,37 @@
  */
 using System;
 using System.Text;
-using MSchwarz.IO;
+using MFToolkit.IO;
 
-namespace MSchwarz.Net.XBee
+namespace MFToolkit.Net.XBee
 {
+    /// <summary>
+    /// Represents a ZigBee transmit status response
+    /// </summary>
 	public class ZigBeeTransmitStatus : XBeeResponse
 	{
 		private byte _frameID;
-		private ushort _address16;
+        private XBeeAddress16 _address16;
 		private byte _retryCount;
 		private byte _deliveryStatus;
 		private byte _discoveryStatus;
 
 		#region Public Properties
 
-		// ...
+        public byte FrameID
+        {
+            get { return _frameID; }
+        }
+
+        public XBeeAddress16 ShortAddress
+        {
+            get { return _address16; }
+        }
+
+        public byte RetryCount
+        {
+            get { return _retryCount; }
+        }
 
 		public DeliveryStatusType DeliveryStatus
 		{
@@ -51,15 +67,13 @@ namespace MSchwarz.Net.XBee
 			get { return (DiscoveryStatusType)_discoveryStatus; }
 		}
 		
-		// ...
-
 		#endregion
 
 		public ZigBeeTransmitStatus(short length, ByteReader br)
-			: base(br)
+			: base(length, br)
 		{
 			_frameID = br.ReadByte();
-			_address16 = br.ReadUInt16();
+            _address16 = XBeeAddress16.ReadBytes(br);
 			_retryCount = br.ReadByte();
 			_deliveryStatus = br.ReadByte();
 			_discoveryStatus = br.ReadByte();
@@ -69,10 +83,10 @@ namespace MSchwarz.Net.XBee
 		{
 			string s = "";
 
-			s += "\taddress16 = " + _address16 + "\r\n";
-			s += "\tretries   = " + _retryCount + "\r\n";
-			s += "\tdelivery  = " + this.DeliveryStatus + "\r\n";
-			s += "\tdiscovery = " + this.DiscoveryStatus;
+			s += "\taddress16 = " + ShortAddress + "\r\n";
+			s += "\tretries   = " + RetryCount + "\r\n";
+			s += "\tdelivery  = " + DeliveryStatus + "\r\n";
+			s += "\tdiscovery = " + DiscoveryStatus;
 
 			return s;
 		}

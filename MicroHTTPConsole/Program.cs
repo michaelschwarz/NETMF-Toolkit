@@ -1,12 +1,15 @@
 using System;
 using Microsoft.SPOT;
-using MSchwarz.Net.Web;
+using MFToolkit.Net.Web;
 using System.Threading;
 using System.Text;
 using System.Net;
 using Microsoft.SPOT.Net.NetworkInformation;
-using MSchwarz.Net.Ntp;
+using MFToolkit.Net.Ntp;
 using System.IO;
+using System.Reflection;
+using System.Globalization;
+using MFToolkit.MicroUtilities;
 
 namespace MicroHTTPConsole
 {
@@ -34,6 +37,20 @@ namespace MicroHTTPConsole
                 }
             }
         }
+
+        static void ResetResourceManager()
+        {
+            FieldInfo fieldInfo = typeof(Resources).GetField("manager",
+                                                    BindingFlags.NonPublic | BindingFlags.Static);
+            fieldInfo.SetValue(null, null);
+        }
+
+        static void SetCulture(string cultureName)
+        {
+            ResourceUtility.SetCurrentUICulture(new CultureInfo(cultureName));
+            ResetResourceManager();
+            // render screen with new culture
+        } 
     }
 
     public class MyHttpHandler : IHttpHandler

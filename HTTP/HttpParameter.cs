@@ -28,7 +28,7 @@
  */
 using System;
 
-namespace MSchwarz.Net.Web
+namespace MFToolkit.Net.Web
 {
     [Obsolete("Use HttpRequest.Params (NameValueCollection) instead.", true)]
     public class HttpParameter

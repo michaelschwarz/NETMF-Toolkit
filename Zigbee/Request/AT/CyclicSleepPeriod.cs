@@ -25,9 +25,9 @@
  */
 using System;
 using System.Text;
-using MSchwarz.IO;
+using MFToolkit.IO;
 
-namespace MSchwarz.Net.XBee
+namespace MFToolkit.Net.XBee
 {
 	public class CyclicSleepPeriod : AtCommand
 	{

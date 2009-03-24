@@ -8,7 +8,7 @@
     <ProjectGuid>{71330466-A906-4DBB-8C6D-457210D53E47}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MSchwarz.Net.Web</RootNamespace>
+    <RootNamespace>MFToolkit.Net.Web</RootNamespace>
     <AssemblyName>HTTP</AssemblyName>
     <TargetFrameworkVersion>v3.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

@@ -25,18 +25,19 @@
  */
 using System;
 using System.Text;
-using MSchwarz.IO;
+using MFToolkit.IO;
 
-namespace MSchwarz.Net.XBee
+namespace MFToolkit.Net.XBee
 {
+    /// <summary>
+    /// Represents a time before sleep commmand response structure
+    /// </summary>
 	public class TimeBeforeSleepData : IAtCommandData
 	{
 		private ushort _msec;
- 
-		public void Fill(byte[] value)
-		{
-			ByteReader br = new ByteReader(value, ByteOrder.BigEndian);
 
+        public void ReadBytes(ByteReader br)
+		{
 			_msec = br.ReadUInt16();
 		}
 

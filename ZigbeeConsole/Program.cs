@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using MSchwarz.Net.XBee;
 using System.Threading;
 using System.IO;
 using System.Drawing;
 using System.Drawing.Imaging;
-using MSchwarz.IO;
+using MFToolkit.IO;
+using MFToolkit.Net.XBee;
 
 namespace ZigbeeConsole
 {
@@ -19,36 +19,23 @@ namespace ZigbeeConsole
 			Thread thd1 = new Thread(new ThreadStart(RunCoordinator));
 			thd1.Start();
 
-			//Thread thd2 = new Thread(new ThreadStart(RunDevice));
-			//thd2.Start();
+            //Thread thd2 = new Thread(new ThreadStart(RunDevice));
+            //thd2.Start();
 
 			Console.ReadLine();
         }
 
 		static void RunDevice()
 		{
-			using (XBee xbee = new XBee("COM3", 9600))
+			using (XBee xbee = new XBee("COM4", 9600, ApiType.Disabled))
 			{
 				xbee.OnPacketReceived += new XBee.PacketReceivedHandler(xbeedevice_OnPacketReceived);
 				xbee.Open();
 
-				//if (xbee.EnterCommandMode())
-				//{
-				xbee.SetNodeIdentifier("XBEEDEVICE");
-				//    xbee.ExitCommandMode();
-				//}
 				
-				//xbee.SendPacket(new NodeIdentifier().GetPacket());
-				//xbee.SendPacket(new NodeIdentifier("XBEEDEVICE").GetPacket());
-				//xbee.SendPacket(new SupplyVoltage().GetPacket());
-				//xbee.SendPacket(new Channel().GetPacket());
-				//xbee.SendPacket(new ReceivedSignalStrength().GetPacket());
-
-				//Thread.Sleep(10 * 1000);
-
 				while (true)
 				{
-					//xbee.SendPacket(new NodeDiscover().GetPacket());
+					xbee.ExecuteNonQuery(new NodeDiscover());
 					Thread.Sleep(100);
 				}
 			}
@@ -61,24 +48,11 @@ namespace ZigbeeConsole
 				xbee.OnPacketReceived += new XBee.PacketReceivedHandler(xbeecoord_OnPacketReceived);
 				xbee.Open();
 
-                //xbee.EnterCommandMode();
-                //xbee.SetNodeIdentifier("XBEECOORDINATOR");
-                //xbee.ExitCommandMode();
-				
-				//xbee.SendPacket(new InterfaceDataRate(115200).GetPacket());
-				//xbee.SendPacket(new NodeIdentifier().GetPacket());
-				//xbee.SendPacket(new NodeIdentifier("XBEECOORDINATOR").GetPacket());
-				//xbee.SendPacket(new SupplyVoltage().GetPacket());
-				//xbee.SendPacket(new Channel().GetPacket());
-				//xbee.SendPacket(new ReceivedSignalStrength().GetPacket());
-
-                //Thread.Sleep(20 * 1000);
-
-                //while (true)
+                while (true)
 				{
 					// discovering the network
-					//AtCommand at = new AtCommand("ND", new byte[0], 1);
-                    //xbee.SendPacket(new NodeDiscover().GetPacket());
+                    AtCommand at = new NodeDiscover();
+                    xbee.Execute(at);
                     Thread.Sleep(60 * 1000);
 				}
 
@@ -100,24 +74,29 @@ namespace ZigbeeConsole
 
 				if (at != null)
 				{
-					NodeDiscoverData ni = at.Data as NodeDiscoverData;
+					NodeDiscoverData ni = at.ParseValue() as NodeDiscoverData;
 					if (ni != null)
 					{
 						if (ni.NodeIdentifier == "XBEE_SENSOR" || ni.NodeIdentifier == "DEVICE2" || ni.NodeIdentifier == "XBEESENSOR")
 						{
-							//XBeeSensorRead sample = new XBeeSensorRead();
-							ForceSample sample = new ForceSample();
+                            //XBeeSensorSample sample = new XBeeSensorSample();
+                            //ForceSample sample = new ForceSample();
 							//NodeIdentifier sample = new NodeIdentifier();
 							//SupplyVoltage sample = new SupplyVoltage();
-							AtRemoteCommand rcmd = new AtRemoteCommand(ni.Address16, ni.Address64, 0x00, sample, 0x02);
-							sender.SendPacket(rcmd.GetPacket());
+                            
+                            //AtRemoteCommand rcmd = new AtRemoteCommand(ni.SerialNumber, sample);
+                            //sender.Execute(rcmd);
+
+                            ZigBeeTransmitRequest x = new ZigBeeTransmitRequest(ni.SerialNumber, ni.ShortAddress, Encoding.ASCII.GetBytes("Hallo"));
+                            sender.Execute(x);
+
 							Console.WriteLine("Sending ForceSample command...");
 						}
 
 						if (ni.NodeIdentifier == "XBEEDEVICE")
 						{
-							ZigBeeTransmitRequest send = new ZigBeeTransmitRequest(0x01, ni.Address16, ni.Address64, Encoding.UTF8.GetBytes("" + DateTime.Now.Ticks));
-							sender.SendPacket(send.GetPacket());
+							ZigBeeTransmitRequest send = new ZigBeeTransmitRequest(ni.SerialNumber, ni.ShortAddress, Encoding.UTF8.GetBytes("" + DateTime.Now.Ticks));
+                            sender.Execute(send);
 							Console.WriteLine("Sending ZigBeeTransmitRequest...");
 						}
 					}
@@ -127,7 +106,7 @@ namespace ZigbeeConsole
 
 				if (zr != null)
 				{
-					Console.WriteLine("ZigBee: " + Encoding.UTF8.GetString(zr.RFData));
+					Console.WriteLine("ZigBee: " + Encoding.UTF8.GetString(zr.Value));
 				}
 
 				Console.WriteLine("============================================================");
@@ -151,14 +130,10 @@ namespace ZigbeeConsole
 
 				if (at != null)
 				{
-					NodeDiscoverData ni = at.Data as NodeDiscoverData;
+					NodeDiscoverData ni = at.ParseValue() as NodeDiscoverData;
 					if (ni != null)
 					{
-						// Set node identifier to something else
-						//Console.WriteLine("Testing Remote Command...");
-						//AtCommand cmd = new NodeIdentifier("HELLOCLIENT");
-						//AtRemoteCommand atr = new AtRemoteCommand(ni.Address16, ni.Address64, 0x02, cmd, 1);
-						//sender.SendPacket(atr.GetPacket());
+                        // ...
 					}
 				}
 
@@ -166,7 +141,7 @@ namespace ZigbeeConsole
 				if (zigp != null)
 				{
 					DateTime now = DateTime.Now;
-					string txt = Encoding.UTF8.GetString(zigp.RFData);
+					string txt = Encoding.UTF8.GetString(zigp.Value);
 					long ticks = long.Parse(txt);
 					DateTime sent = new DateTime(ticks);
 

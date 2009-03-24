@@ -29,7 +29,7 @@
 using System;
 using System.Collections;
 
-namespace MSchwarz.Net.Web
+namespace MFToolkit.Net.Web
 {
     public class MimeContentCollection : ICollection
     {
