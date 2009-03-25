@@ -29,6 +29,12 @@ using MFToolkit.IO;
 
 namespace MFToolkit.Net.XBee
 {
+    /// <summary>
+    /// This API type allows module parameters to be queried or set. In contrast to the &quot;AT Command&quot;
+    /// API type, new parameter values are queued and not applied until either the &quot;AT Command&quot; (0x08)
+    /// API type or the AC (Apply Changes) command is issued. Register queries (reading parameter
+    /// values) are returned immediately.  
+    /// </summary>
     public class AtQueueCommand : AtCommand
     {
         public AtQueueCommand(string command, byte[] value)

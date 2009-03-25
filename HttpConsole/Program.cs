@@ -19,6 +19,18 @@ namespace HttpConsole
 
 		static void Main(string[] args)
 		{
+            XBeeModule m = new XBeeModule("COM5", 9600, ApiType.Enabled);
+            m.Open();
+            m.EnterCommandMode();
+            m.SetNodeIdentification("COORD");
+            m.WriteStateToMemory();
+            m.ExitCommandMode();
+
+            return;
+
+
+
+
             Thread thd = new Thread(new ThreadStart(UpdateTemperature));
             thd.IsBackground = true;
             thd.Start();
@@ -53,7 +65,7 @@ namespace HttpConsole
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 while (true)
                 {
@@ -66,6 +78,9 @@ namespace HttpConsole
 
         static void xbee_OnPacketReceived(XBee sender, XBeeResponse response)
         {
+            if (response != null)
+                Console.WriteLine(response.ToString() + "\r\n==============================");
+
             AtCommandResponse res = response as AtCommandResponse;
             if (res != null)
             {

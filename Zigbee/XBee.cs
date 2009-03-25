@@ -65,6 +65,16 @@ namespace MFToolkit.Net.XBee
 
         #endregion
 
+        #region Public Properties
+
+        public ApiType ApiType
+        {
+            get { return _apiType; }
+            protected set { _apiType = value; }
+        }
+
+        #endregion
+
         #region Constructor
 
         public XBee(string port)
@@ -138,10 +148,10 @@ namespace MFToolkit.Net.XBee
 
 				try
 				{
-                    SendCommand("+++");
-                    Thread.Sleep(500);
+                    WriteCommand("+++");
+                    Thread.Sleep(1025);     // at least one second to wait for OK response
 
-                    if (GetResponse() == "OK")
+                    if (ReadResponse() == "OK")
                     {
                         _apiType = ApiType.Disabled;
 
@@ -313,7 +323,10 @@ namespace MFToolkit.Net.XBee
             }
             else if (_apiType == ApiType.Disabled)
             {
-                throw new NotImplementedException("This method is not yet implemented.");
+                if (ReadResponse() == "OK")
+                    return null;
+
+                // throw new NotImplementedException("This method is not yet implemented.");
             }
 
             throw new NotSupportedException("This ApiType is not supported.");
@@ -577,16 +590,16 @@ namespace MFToolkit.Net.XBee
 			return textArrived;
 		}
 
-        private void SendCommand(string s)
+        protected void WriteCommand(string s)
         {
 #if(!MF)
             Console.WriteLine(s);
 #endif
-            byte[] bytes = Encoding.UTF8.GetBytes(s + "\r");
+            byte[] bytes = Encoding.UTF8.GetBytes(s);
             _serialPort.Write(bytes, 0, bytes.Length);
         }
 
-		private string GetResponse()
+		protected string ReadResponse()
 		{
 			string s = ReadTo("\r");
 

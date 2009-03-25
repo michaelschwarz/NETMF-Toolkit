@@ -69,6 +69,29 @@ namespace MFToolkit.Net.XBee
             get { return (ZigBeeReceiveOptionType)_options; }
         }
 
+        /// <summary>
+        /// XBee Sensors
+        /// </summary>
+        public byte Sensors
+        {
+            get { return _sensors; }
+        }
+
+        public bool IsAnalogDigitalRead
+        {
+            get { return BitHelper.GetBit(Sensors, 1); }
+        }
+
+        public bool IsTemperaturRead
+        {
+            get { return BitHelper.GetBit(Sensors, 2); }
+        }
+
+        public bool IsWaterPresent
+        {
+            get { return BitHelper.GetBit(Sensors, 128); }
+        }
+
         public ushort SensorA
         {
             get { return _sensorA; }
@@ -116,7 +139,9 @@ namespace MFToolkit.Net.XBee
 
 		public override string ToString()
 		{
-			string s = "Sensor A = " + SensorA + "\r\n";
+            string s = base.ToString() + "\r\n";
+            
+            s += "Sensor A = " + SensorA + "\r\n";
 			s += "Sensor B = " + SensorB + "\r\n";
 			s += "Sensor C = " + SensorC + "\r\n";
             s += "Sensor D = " + SensorD + "\r\n";

@@ -43,7 +43,7 @@ namespace MFToolkit.Net.XBee
         #region Public Properties
 
         /// <summary>
-        /// The FrameID of the API message (must be greater than 0x00)
+        /// The FrameID of the API message
         /// </summary>
         public byte FrameID
         {
@@ -53,10 +53,19 @@ namespace MFToolkit.Net.XBee
 
         #endregion
 
+        #region Constructor
+
         public XBeeFrameRequest()
             : base()
         {
         }
+
+        public XBeeFrameRequest(XBeeApiType apiID)
+            : base(apiID)
+        {
+        }
+
+        #endregion
 
         internal override void WriteApiBytes(ByteWriter bw)
         {

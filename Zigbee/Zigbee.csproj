@@ -40,6 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Enums\SourceActionType.cs" />
     <Compile Include="Request\AT\SerialNumberLow.cs" />
     <Compile Include="Request\AT\SerialNumberHigh.cs" />
     <Compile Include="Request\AT\DestinationNode.cs" />

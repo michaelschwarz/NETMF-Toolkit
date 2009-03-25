@@ -33,7 +33,10 @@ using MFToolkit.IO;
 namespace MFToolkit.Net.XBee
 {
     /// <summary>
-    /// Represents a AT remote command response
+    /// If a module receives a remote command response RF data frame in response to a Remote AT
+    /// Command Request, the module will send a Remote AT Command Response message out the
+    /// UART. Some commands may send back multiple frames--for example, Node Discover (ND)
+    /// command.
     /// </summary>
     public class AtRemoteCommandResponse : XBeeFrameResponse
     {
@@ -113,10 +116,13 @@ namespace MFToolkit.Net.XBee
 
         public override string ToString()
         {
-            string s = "command " + Command + "\r\n" + "status  " + Status;
-            s += "\r\nSerialNumber = " + SerialNumber;
-            s += "\r\nShortAddress = " + ShortAddress;
-            s += "\r\nvalue = \\n" + ParseValue();
+            string s = base.ToString() + "\r\n";
+
+            s += "Command = " + Command + "\r\n";
+            s += "Status  = " + Status + "\r\n";
+            s += "SerialNumber = " + SerialNumber + "\r\n";
+            s += "ShortAddress = " + ShortAddress + "\r\n";
+            s += "Value   = \r\n" + ParseValue();
 
             return s;
         }

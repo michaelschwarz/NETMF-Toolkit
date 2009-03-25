@@ -33,6 +33,9 @@ using MFToolkit.IO;
 
 namespace MFToolkit.Net.XBee
 {
+    /// <summary>
+    /// Allows for module parameter registers to be queried or set.
+    /// </summary>
     public class AtCommand : XBeeFrameRequest
     {
         private string _command;
@@ -96,6 +99,17 @@ namespace MFToolkit.Net.XBee
             base.WriteApiBytes(bw);
 
             WriteBytesCommand(bw);
+        }
+
+        internal override void WriteAtBytes(ByteWriter bw)
+        {
+            bw.Write(new byte[] { 0x41, 0x54 });        // "AT" prefix
+            bw.Write(Command);
+
+            if (Value != null)
+                bw.Write(Value);
+
+            bw.Write("\r");
         }
 
         public override string ToString()

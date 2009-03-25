@@ -30,11 +30,11 @@ using MFToolkit.IO;
 namespace MFToolkit.Net.XBee
 {
     /// <summary>
-    /// Represents a ZigBee transmit status response
+    /// When a TX Request is completed, the module sends a TX Status message. This message will
+    /// indicate if the packet was transmitted successfully or if there was a failure.
     /// </summary>
-	public class ZigBeeTransmitStatus : XBeeResponse
+	public class ZigBeeTransmitStatus : XBeeFrameResponse
 	{
-		private byte _frameID;
         private XBeeAddress16 _address16;
 		private byte _retryCount;
 		private byte _deliveryStatus;
@@ -42,16 +42,18 @@ namespace MFToolkit.Net.XBee
 
 		#region Public Properties
 
-        public byte FrameID
-        {
-            get { return _frameID; }
-        }
-
-        public XBeeAddress16 ShortAddress
+        /// <summary>
+        /// 16-bit Network Address the packet was delivered to (if success). If not success, this
+        /// address matches the Destination Network Address that was provided in the Transmit Request Frame.
+        /// </summary>
+        public XBeeAddress16 RemoteNetwork
         {
             get { return _address16; }
         }
 
+        /// <summary>
+        /// The number of application transmission retries that took place.
+        /// </summary>
         public byte RetryCount
         {
             get { return _retryCount; }
@@ -72,7 +74,6 @@ namespace MFToolkit.Net.XBee
 		public ZigBeeTransmitStatus(short length, ByteReader br)
 			: base(length, br)
 		{
-			_frameID = br.ReadByte();
             _address16 = XBeeAddress16.ReadBytes(br);
 			_retryCount = br.ReadByte();
 			_deliveryStatus = br.ReadByte();
@@ -81,12 +82,12 @@ namespace MFToolkit.Net.XBee
 
 		public override string ToString()
 		{
-			string s = "";
+			string s = base.ToString() + "\r\n";
 
-			s += "\taddress16 = " + ShortAddress + "\r\n";
-			s += "\tretries   = " + RetryCount + "\r\n";
-			s += "\tdelivery  = " + DeliveryStatus + "\r\n";
-			s += "\tdiscovery = " + DiscoveryStatus;
+            s += "RemoteNetwork = " + RemoteNetwork + "\r\n";
+			s += "Retries       = " + RetryCount + "\r\n";
+			s += "Delivery      = " + DeliveryStatus + "\r\n";
+			s += "Discovery     = " + DiscoveryStatus;
 
 			return s;
 		}

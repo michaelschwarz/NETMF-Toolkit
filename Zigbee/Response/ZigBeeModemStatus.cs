@@ -54,7 +54,7 @@ namespace MFToolkit.Net.XBee
 
 		public override string ToString()
 		{
-            return ModemStatus.ToString();
+            return base.ToString() + "\r\n" + ModemStatus.ToString();
 		}
 	}
 }

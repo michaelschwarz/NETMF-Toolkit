@@ -52,7 +52,7 @@ namespace MFToolkit.Net.XBee
 
 		public override string ToString()
 		{
-			return this.SignalStrength + " dBm";
+			return SignalStrength + " dBm";
 		}
 
 		public static implicit operator int(ReceivedSignalStrengthData s)

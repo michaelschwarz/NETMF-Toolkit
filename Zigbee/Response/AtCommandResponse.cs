@@ -33,7 +33,9 @@ using MFToolkit.IO;
 namespace MFToolkit.Net.XBee
 {
     /// <summary>
-    /// Represents a AT command response
+    /// In response to an AT Command message, the module will send an AT Command Response
+    /// message. Some commands will send back multiple frames (for example, the ND (Node Discover)
+    /// command).
     /// </summary>
     public class AtCommandResponse : XBeeFrameResponse
     {
@@ -123,8 +125,11 @@ namespace MFToolkit.Net.XBee
 
         public override string ToString()
         {
-            string s = "command " + Command + "\r\n" + "status  " + Status;
-            s += "\r\nvalue = \r\n" + ParseValue();
+            string s = base.ToString() + "\r\n";
+
+            s += "Command = " + Command + "\r\n";
+            s += "Status  = " + Status + "\r\n";
+            s += "Value = \r\n" + ParseValue();
 
             return s;
         }

@@ -165,7 +165,7 @@ namespace MFToolkit.Net.XBee
 
         public override string ToString()
         {
-            string s = "";
+            string s = base.ToString() + "\r\n";
 
             s += "Receive Options = " + ReceiveOption + "\r\n";
 

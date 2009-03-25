@@ -90,11 +90,11 @@ namespace MFToolkit.Net.XBee
         }
 
         /// <summary>
-        /// Status (reserved)
+        /// Source Action
         /// </summary>
-        public byte Status
+        public SourceActionType SourceAction
         {
-            get { return _status; }
+            get { return (SourceActionType)_status; }
         }
 
         /// <summary>
@@ -133,14 +133,14 @@ namespace MFToolkit.Net.XBee
         {
             string s = "";
 
-            s += "SerialNumber: " + SerialNumber + "\r\n";
-            s += "ShortAddress: " + ShortAddress + "\r\n";
-            s += "NI: " + NodeIdentifier + "\r\n";
-            s += "Parent: " + ParentAddress + "\r\n";
-            s += "DeviceType: " + DeviceType + "\r\n";
-            s += "Status: " + Status + "\r\n";
-            s += "ProfileID: " + ProfileID + "\r\n";
-            s += "ManufactureID: " + ManufacturerID;
+            s += "SerialNumber = " + SerialNumber + "\r\n";
+            s += "ShortAddress = " + ShortAddress + "\r\n";
+            s += "NodeIdentifier = " + NodeIdentifier + "\r\n";
+            s += "Parent       = " + ParentAddress + "\r\n";
+            s += "DeviceType   = " + DeviceType + "\r\n";
+            s += "SourceAction = " + SourceAction + "\r\n";
+            s += "ProfileID    = " + ProfileID + "\r\n";
+            s += "ManufactureID = " + ManufacturerID;
 
             return s;
         }
