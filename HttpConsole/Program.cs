@@ -85,7 +85,7 @@ namespace HttpConsole
                 {
                     NodeDiscoverData nd = res.ParseValue() as NodeDiscoverData;
 
-                    if (nd.NodeIdentifier != "MICHAEL")
+                    if (nd.NodeIdentifier == "SENSOR")
                     {
                         sender.Execute(new AtRemoteCommand(nd.SerialNumber, nd.ShortAddress, new ForceSample()));
                         //sender.SendCommand(new AtRemoteCommand(nd.SerialNumber, nd.ShortAddress, new XBeeSensorSample()));
