@@ -19,17 +19,14 @@ namespace HttpConsole
 
 		static void Main(string[] args)
 		{
-            XBeeModule m = new XBeeModule("COM5", 9600, ApiType.Enabled);
-            m.Open();
-            m.EnterCommandMode();
-            m.SetNodeIdentification("COORD");
-            m.WriteStateToMemory();
-            m.ExitCommandMode();
-
-            return;
-
-
-
+            //using(XBeeModule m = new XBeeModule("COM5", 9600, ApiType.Enabled))
+            //{
+            //  m.Open();
+            //  m.EnterCommandMode();
+            //  m.SetNodeIdentification("COORDINATOR");
+            //  m.WriteStateToMemory();
+            //  m.ExitCommandMode();
+            //}
 
             Thread thd = new Thread(new ThreadStart(UpdateTemperature));
             thd.IsBackground = true;
