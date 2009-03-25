@@ -30,11 +30,12 @@
 using System;
 using System.Text;
 using System.IO.Ports;
+using System.Threading;
 
 namespace MFToolkit.Net.XBee
 {
     /// <summary>
-    /// Represents a XBee module
+    /// Represents a XBee module (Sample Implementation)
     /// </summary>
     public class XBeeModule : XBee
     {
@@ -57,13 +58,42 @@ namespace MFToolkit.Net.XBee
 
         #endregion
 
+        public bool EnterCommandMode()
+        {
+            if (ApiType == ApiType.Disabled)
+            {
+                WriteCommand("+++");
+                Thread.Sleep(1025);
+                if (ReadResponse() == "OK")
+                    return true;
+            }
+
+            return false;
+        }
+
+        public string GetNodeIdentification()
+        {
+            Execute(new NodeIdentifier());
+            return "???";
+        }
+
         public bool SetNodeIdentification(string identifier)
         {
-            AtCommandResponse res = Execute(new NodeIdentifier(identifier)) as AtCommandResponse;
+            Execute(new NodeIdentifier(identifier));
+            return true;
+        }
 
-            if (res == null)
-                return false;
+        public bool ExitCommandMode()
+        {
+            if (ApiType == ApiType.Disabled)
+                WriteCommand("ATCN\r");
 
+            return true;
+        }
+        
+        public bool WriteStateToMemory()
+        {
+            Execute(new Write());
             return true;
         }
     }

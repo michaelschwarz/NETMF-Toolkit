@@ -29,6 +29,9 @@ using MFToolkit.IO;
 
 namespace MFToolkit.Net.XBee
 {
+    /// <summary>
+    /// Allows for module parameter registers on a remote device to be queried or set.
+    /// </summary>
     public class AtRemoteCommand : AtCommand
     {
         private XBeeAddress64 _address64;

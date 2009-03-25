@@ -36,6 +36,18 @@ namespace MFToolkit.Net.XBee
 	{
 		private ushort _msec;
 
+        #region Public Properties
+
+        /// <summary>
+        /// The milliseconds before sleep.
+        /// </summary>
+        public ushort Value
+        {
+            get { return _msec; }
+        }
+
+        #endregion
+
         public void ReadBytes(ByteReader br)
 		{
 			_msec = br.ReadUInt16();

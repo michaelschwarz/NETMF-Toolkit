@@ -32,12 +32,31 @@ namespace MFToolkit.Net.XBee
     public abstract class XBeeRequest : XBeePacket
     {
         private XBeeApiType _apiId;
-        
+
+        #region Public Properties
+
         public XBeeApiType ApiID
         {
             get { return _apiId; }
             set { _apiId = value; }
         }
+
+        #endregion
+
+        #region Constructor
+
+        public XBeeRequest()
+            : base()
+        {
+        }
+
+        public XBeeRequest(XBeeApiType apiID)
+            : this()
+        {
+            ApiID = apiID;
+        }
+
+        #endregion
 
         internal override void WriteApiBytes(ByteWriter bw)
         {

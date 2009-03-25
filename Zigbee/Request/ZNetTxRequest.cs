@@ -32,6 +32,7 @@ using MFToolkit.IO;
 
 namespace MFToolkit.Net.XBee
 {
+    [Obsolete("Use ZigBeeTransmitRequest instead.", true)]
     public class ZNetTxRequest : XBeeFrameRequest
     {
         private XBeeAddress64 _address64;

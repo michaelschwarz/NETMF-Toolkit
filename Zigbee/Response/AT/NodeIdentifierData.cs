@@ -36,6 +36,18 @@ namespace MFToolkit.Net.XBee
 	{
 		private string _ni;
 
+        #region Public Properties
+
+        /// <summary>
+        /// Node Identifier (NI)
+        /// </summary>
+        public string NodeIdentifier
+        {
+            get { return _ni; }
+        }
+
+        #endregion
+
         public void ReadBytes(ByteReader br)
 		{
 			if (br.AvailableBytes > 0)
@@ -44,7 +56,7 @@ namespace MFToolkit.Net.XBee
 
 		public override string ToString()
 		{
-			return (_ni != null ? "NI " + _ni : "-no data-");
+            return NodeIdentifier;
 		}
 	}
 }

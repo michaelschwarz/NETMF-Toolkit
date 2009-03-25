@@ -29,6 +29,9 @@ using MFToolkit.IO;
 
 namespace MFToolkit.Net.XBee
 {
+    /// <summary>
+    /// A TX Request message will cause the module to send RF Data as an RF Packet.TX Packet Frames.
+    /// </summary>
     public class ZigBeeTransmitRequest : XBeeFrameRequest
     {
         private XBeeAddress64 _address64;
@@ -38,6 +41,24 @@ namespace MFToolkit.Net.XBee
         private byte[] _value;
 
         #region Public Properties
+
+        /// <summary>
+        /// Serial Number
+        /// </summary>
+        public XBeeAddress64 SerialNumber
+        {
+            get { return _address64; }
+            set { _address64 = value; }
+        }
+
+        /// <summary>
+        /// Short Address
+        /// </summary>
+        public XBeeAddress16 ShortAddress
+        {
+            get { return _address16; }
+            set { _address16 = value; }
+        }
 
         public byte BroadcastRadios
         {

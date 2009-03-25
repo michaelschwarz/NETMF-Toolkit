@@ -30,7 +30,7 @@ using MFToolkit.IO;
 namespace MFToolkit.Net.XBee
 {
     /// <summary>
-    /// Represents a ZigBee receive packet response
+    /// When the module receives an RF packet, it is sent out the UART using this message type.
     /// </summary>
 	public class ZigBeeReceivePacket : XBeeResponse
 	{
@@ -67,6 +67,9 @@ namespace MFToolkit.Net.XBee
             get { return (ZigBeeReceiveOptionType)_options; }
         }
 
+        /// <summary>
+        /// RF Data
+        /// </summary>
 		public byte[] Value
 		{
 			get { return _value; }
@@ -85,12 +88,12 @@ namespace MFToolkit.Net.XBee
 
 		public override string ToString()
 		{
-			string s = "";
+			string s = base.ToString() + "\r\n";
 
-			s += "\taddress64   = " + SerialNumber + "\r\n";
-            s += "\taddress16   = " + ShortAddress + "\r\n";
-			s += "\toptions   = " + ByteUtil.PrintByte(Options) + "\r\n";
-			s += "\tvalue     = " + ByteUtil.PrintBytes(Value);
+			s += "SerialNumber = " + SerialNumber + "\r\n";
+            s += "ShortAddress = " + ShortAddress + "\r\n";
+			s += "Options      = " + ByteUtil.PrintByte(Options) + "\r\n";
+			s += "Value        = " + ByteUtil.PrintBytes(Value);
 
 			return s;
 		}
