@@ -107,7 +107,17 @@ namespace MFToolkit.IO
             return PrintBytes(bytes, bytes.Length);
         }
 
+        public static string PrintBytes(byte[] bytes, bool wrapLines)
+        {
+            return PrintBytes(bytes, bytes.Length, wrapLines);
+        }
+
         public static string PrintBytes(byte[] bytes, int length)
+        {
+            return PrintBytes(bytes, length, true);
+        }
+
+        public static string PrintBytes(byte[] bytes, int length, bool wrapLines)
         {
             string s = "";
 
@@ -117,13 +127,14 @@ namespace MFToolkit.IO
             {
                 s += PrintByte(bytes[i]);
 
-                if (++c == 24)
+                if (++c == 24 && wrapLines)
                 {
                     s += "\r\n";
                     c = 0;
                 }
                 else
-                    if (i < length - 1) s += "-";
+                    if (i < length - 1)
+                        s += "-";
             }
 
             return s;

@@ -77,6 +77,11 @@ namespace MFToolkit.Net.XBee
 
         #region Constructor
 
+        ~XBee()
+        {
+            Dispose();
+        }
+
         public XBee(string port)
         {
             _port = port;
@@ -259,6 +264,10 @@ namespace MFToolkit.Net.XBee
             else
                 throw new NotSupportedException("This ApiType is not supported.");
 
+#if(DEBUG && !MF)
+            File.AppendAllText("log.txt", DateTime.Now.ToLongTimeString() + "\t>>\t" + ByteUtil.PrintBytes(bytes, false) + "\r\n");
+#endif
+
             _serialPort.Write(bytes, 0, bytes.Length);
 
             return true;
@@ -401,6 +410,10 @@ namespace MFToolkit.Net.XBee
                                 _readBuffer.SetLength(0);
 
                                 ByteReader br = new ByteReader(bytes, ByteOrder.BigEndian);
+
+#if(DEBUG && !MF)
+                                File.AppendAllText("log.txt", DateTime.Now.ToLongTimeString() + "\t<<\t" + ByteUtil.PrintBytes(bytes, false) + "\r\n");
+#endif
 
                                 if (startOK && lengthAndCrcOK)
                                 {
