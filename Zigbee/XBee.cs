@@ -287,7 +287,7 @@ namespace MFToolkit.Net.XBee
 #endif
 
         /// <summary>
-        /// Sends a XBeeRequest and waits 1 second for the XBeeResponse
+        /// Sends a XBeeRequest and waits 1000 msec for the XBeeResponse
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
@@ -305,6 +305,8 @@ namespace MFToolkit.Net.XBee
         /// <returns></returns>
         public XBeeResponse Execute(XBeeRequest request, int timeout)
         {
+            _waitResponse = true;
+
             ExecuteNonQuery(request);
 
             if (_apiType == ApiType.Enabled || _apiType == ApiType.EnabledWithEscaped)
