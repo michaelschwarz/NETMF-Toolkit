@@ -36,6 +36,8 @@ namespace MFToolkit.IO
         protected ByteOrder _byteOrder = ByteOrder.Default;
         private static ByteOrder _defaultByteOrder;
 
+        #region Constructor
+
         /// <summary>
         /// Creates a new instance of ByteWriter using UTF-8 encoding.
         /// </summary>
@@ -113,6 +115,8 @@ namespace MFToolkit.IO
 #endif
         }
 
+        #endregion
+
         #region Public Properties
 
         public Encoding Encoding
@@ -128,18 +132,30 @@ namespace MFToolkit.IO
 
         #endregion
 
+        /// <summary>
+        /// Writes one byte to the stream.
+        /// </summary>
+        /// <param name="b">The byte to write to the stream.</param>
         public virtual void Write(byte b)
         {
             if(_stream != null && _stream.CanWrite)
                 _stream.WriteByte(b);
         }
 
+        /// <summary>
+        /// Writes one or more bytes to the stream.
+        /// </summary>
+        /// <param name="bytes">The bytes to write to the stream.</param>
         public virtual void Write(byte[] bytes)
         {
             if (_stream != null && _stream.CanWrite)
                 _stream.Write(bytes, 0, bytes.Length);
         }
 
+        /// <summary>
+        /// Writes a boolean value to the stream. If true write 0; otherwise 1.
+        /// </summary>
+        /// <param name="b">The boolean to write.</param>
         public virtual void Write(bool b)
         {
             if (b)
@@ -148,6 +164,10 @@ namespace MFToolkit.IO
                 Write(0);
         }
 
+        /// <summary>
+        /// Writes a 2-byte signed integer to the stream.
+        /// </summary>
+        /// <param name="s">The 2-byte signed integer to write.</param>
         public virtual void Write(short s)
         {
             switch (_byteOrder)
@@ -165,6 +185,10 @@ namespace MFToolkit.IO
             }
         }
 
+        /// <summary>
+        /// Writes a 4-byte signed integer to the stream.
+        /// </summary>
+        /// <param name="i">The 4-byte signed integer to write</param>
         public virtual void Write(int i)
         {
             switch (_byteOrder)
@@ -182,6 +206,10 @@ namespace MFToolkit.IO
             }
         }
 
+        /// <summary>
+        /// Writes a 8-byte signed integer to the stream.
+        /// </summary>
+        /// <param name="i">The 8-byte signed integer to write</param>
         public virtual void Write(long l)
         {
             switch(_byteOrder)
@@ -199,6 +227,10 @@ namespace MFToolkit.IO
             }
         }
 
+        /// <summary>
+        /// Writes a 2-byte unsigned integer to the stream.
+        /// </summary>
+        /// <param name="i">The 2-byte unsigned integer to write</param>
         public virtual void Write(ushort s)
         {
             switch (_byteOrder)
@@ -216,6 +248,10 @@ namespace MFToolkit.IO
             }
         }
 
+        /// <summary>
+        /// Writes a 4-byte unsigned integer to the stream.
+        /// </summary>
+        /// <param name="i">The 4-byte unsigned integer to write</param>
         public virtual void Write(uint i)
         {
             switch (_byteOrder)
@@ -235,6 +271,10 @@ namespace MFToolkit.IO
             }
         }
 
+        /// <summary>
+        /// Writes a 8-byte unsigned integer to the stream.
+        /// </summary>
+        /// <param name="i">The 8-byte unsigned integer to write</param>
         public virtual void Write(ulong l)
         {
             switch (_byteOrder)
@@ -252,6 +292,10 @@ namespace MFToolkit.IO
             }
         }
 
+        /// <summary>
+        /// Writes a character to the stream.
+        /// </summary>
+        /// <param name="c">The character to write.</param>
         public virtual void Write(char c)
         {
 #if(MF)
@@ -263,6 +307,10 @@ namespace MFToolkit.IO
             Write(bytes);
         }
 
+        /// <summary>
+        /// Writes a string to the stream.
+        /// </summary>
+        /// <param name="s">The string to write.</param>
         public virtual void Write(string s)
         {
             byte[] bytes = _encoding.GetBytes(s);
@@ -270,10 +318,9 @@ namespace MFToolkit.IO
         }
 
         /// <summary>
-        /// Writes a string to the current stream. The string is prefixed
-        /// with the length, encoded as 32-bit integer.
+        /// Writes a string to the current stream. The string is prefixed with the length, encoded as 32-bit integer.
         /// </summary>
-        /// <param name="s"></param>
+        /// <param name="s">The string to write.</param>
         public virtual void WriteString(string s)
         {
             byte[] bytes = _encoding.GetBytes(s);
@@ -307,6 +354,10 @@ namespace MFToolkit.IO
 
         #endregion
 
+        /// <summary>
+        /// Gets the bytes written to the stream.
+        /// </summary>
+        /// <returns></returns>
         public byte[] GetBytes()
         {
             MemoryStream ms = _stream as MemoryStream;

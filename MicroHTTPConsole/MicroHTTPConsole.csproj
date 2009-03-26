@@ -60,6 +60,10 @@
       <Project>{1CC369CA-5686-445E-805A-B9B02578799F}</Project>
       <Name>MicroHTTP</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MicroIO\MicroIO.csproj">
+      <Project>{A009B2CC-E9A5-4B53-A132-56F25E4D0CB9}</Project>
+      <Name>MicroIO</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MicroNTP\MicroNTP.csproj">
       <Project>{7E0CDF9D-1EDC-4F9A-A4F6-01151BB89BB7}</Project>
       <Name>MicroNTP</Name>

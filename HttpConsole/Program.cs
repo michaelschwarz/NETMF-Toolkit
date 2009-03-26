@@ -10,6 +10,7 @@ using System.Net;
 using System.Net.Sockets;
 using MFToolkit.Net.XBee;
 using MFToolkit.MicroUtilities;
+using System.Diagnostics;
 
 namespace HttpConsole
 {
@@ -27,6 +28,7 @@ namespace HttpConsole
             //  m.WriteStateToMemory();
             //  m.ExitCommandMode();
             //}
+
 
             Thread thd = new Thread(new ThreadStart(UpdateTemperature));
             thd.IsBackground = true;
@@ -56,7 +58,7 @@ namespace HttpConsole
 
                     while (true)
                     {
-                        xbee.Execute(new NodeDiscover());
+                        xbee.ExecuteNonQuery(new NodeDiscover());
 
                         Thread.Sleep(60 * 1000);
                     }

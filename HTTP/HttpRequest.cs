@@ -41,6 +41,9 @@ using System.Collections.Specialized;
 
 namespace MFToolkit.Net.Web
 {
+    /// <summary>
+    /// Class that represents a http request.
+    /// </summary>
     public class HttpRequest
     {
         private string _httpMethod;
@@ -71,6 +74,11 @@ namespace MFToolkit.Net.Web
 
         #region Public Properties
 
+        /// <summary>
+        /// Gets the value of Form, Params or Headers key.
+        /// </summary>
+        /// <param name="name">The key to get.</param>
+        /// <returns>Returns the value of Form, Params or Headers key; if not found it returns null.</returns>
         public string this[string name]
         {
             get
@@ -88,48 +96,45 @@ namespace MFToolkit.Net.Web
             }
         }
 
+        /// <summary>
+        /// Gets the http query key/value pairs.
+        /// </summary>
         public NameValueCollection Params
         {
             get { return _params; }
             internal set { _params = value; }
         }
 
+        /// <summary>
+        /// Gets the http header key/value pairs.
+        /// </summary>
         public NameValueCollection Headers
         {
-            get
-            {
-                return _headers;
-            }
-            internal set
-            {
-                _headers = value;
-            }
+            get { return _headers; }
+            internal set { _headers = value; }
         }
 
+        /// <summary>
+        /// Gets the http form key/value pairs.
+        /// </summary>
         public NameValueCollection Form
         {
-            get
-            {
-                return _form;
-            }
-            internal set
-            {
-                _form = value;
-            }
+            get { return _form; }
+            internal set { _form = value; }
         }
 
+        /// <summary>
+        /// Gets the http mime content if any.
+        /// </summary>
         public MimeContentCollection MimeContent
         {
-            get
-            {
-                return _mime;
-            }
-            internal set
-            {
-                _mime = value;
-            }
+            get { return _mime; }
+            internal set { _mime = value; }
         }
 
+        /// <summary>
+        /// Gets the http cookie key/value pairs.
+        /// </summary>
         public HttpCookieCollection Cookies
         {
             get
@@ -163,6 +168,9 @@ namespace MFToolkit.Net.Web
             }
         }
 
+        /// <summary>
+        /// Gets the http body if using POST.
+        /// </summary>
         public byte[] Body
         {
             get
@@ -171,6 +179,9 @@ namespace MFToolkit.Net.Web
             }
         }
 
+        /// <summary>
+        /// Gets the http header Host value; otherwise returns blank.
+        /// </summary>
         public string Host
         {
             get
@@ -179,6 +190,9 @@ namespace MFToolkit.Net.Web
             }
         }
 
+        /// <summary>
+        /// Gets the http header Connection value; otherwise returns blank.
+        /// </summary>
         public string Connection
         {
             get
@@ -187,6 +201,9 @@ namespace MFToolkit.Net.Web
             }
         }
 
+        /// <summary>
+        /// Gets the http header UserAgent value; otherwise returns blank.
+        /// </summary>
         public string UserAgent
         {
             get
@@ -195,6 +212,9 @@ namespace MFToolkit.Net.Web
             }
         }
 
+        /// <summary>
+        /// Gets the http header Referer value; otherwise returns blank.
+        /// </summary>
         public string Referer
         {
             get
@@ -203,6 +223,9 @@ namespace MFToolkit.Net.Web
             }
         }
 
+        /// <summary>
+        /// Gets the http header Accept value; otherwise returns null.
+        /// </summary>
         public string[] AcceptTypes
         {
             get
@@ -223,6 +246,9 @@ namespace MFToolkit.Net.Web
             }
         }
 
+        /// <summary>
+        /// Gets the content length if using POST; otherwise 0.
+        /// </summary>
         public int ContentLength
         {
             get
@@ -234,6 +260,9 @@ namespace MFToolkit.Net.Web
             }
         }
 
+        /// <summary>
+        /// Gets the http content type value; otherwise returns blank.
+        /// </summary>
         public string ContentType
         {
             get
@@ -251,6 +280,9 @@ namespace MFToolkit.Net.Web
             }
         }
 
+        /// <summary>
+        /// Gets the http method value.
+        /// </summary>
         public string HttpMethod
         {
             get
@@ -263,6 +295,9 @@ namespace MFToolkit.Net.Web
             }
         }
 
+        /// <summary>
+        /// Gets the http raw url.
+        /// </summary>
         public string RawUrl
         {
             get
@@ -275,6 +310,9 @@ namespace MFToolkit.Net.Web
             }
         }
 
+        /// <summary>
+        /// Gets the http version.
+        /// </summary>
         public string HttpVersion
         {
             get
@@ -302,6 +340,9 @@ namespace MFToolkit.Net.Web
             }
         }
 
+        /// <summary>
+        /// Gets the http query string.
+        /// </summary>
         public string QueryString
         {
             get
@@ -314,6 +355,9 @@ namespace MFToolkit.Net.Web
             }
         }
 
+        /// <summary>
+        /// Gets the users client address.
+        /// </summary>
         public string UserHostAddress
         {
             get

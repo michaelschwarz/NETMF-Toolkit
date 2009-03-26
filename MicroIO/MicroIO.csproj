@@ -48,6 +48,8 @@
     <Compile Include="..\IO\Helper\BitHelper.cs">
       <Link>Helper\BitHelper.cs</Link>
     </Compile>
+    <Compile Include="Cryptography\SHA1.cs" />
+    <Compile Include="Cryptography\SHA256.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StringBuilder.cs" />
   </ItemGroup>
