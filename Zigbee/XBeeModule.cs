@@ -71,13 +71,31 @@ namespace MFToolkit.Net.XBee
             return false;
         }
 
-        public string GetNodeIdentification()
+        /// <summary>
+        /// Reads the node identifier from the module.
+        /// </summary>
+        /// <returns>A string containing the node identifier; otherwise null.</returns>
+        public string GetNodeIdentifier()
         {
-            Execute(new NodeIdentifier());
-            return "???";
+            AtCommandResponse res = Execute(new NodeIdentifier()) as AtCommandResponse;
+
+            if (res == null)
+                return null;
+
+            NodeIdentifierData nid = res.ParseValue() as NodeIdentifierData;
+
+            if (nid == null)
+                return null;
+
+            return nid.NodeIdentifier;
         }
 
-        public bool SetNodeIdentification(string identifier)
+        /// <summary>
+        /// Writes the node identifier <paramref name="identifier"/>.
+        /// </summary>
+        /// <param name="identifier">The node identifier string to write.</param>
+        /// <returns>Returns true if sucessful; otherwise false.</returns>
+        public bool SetNodeIdentifier(string identifier)
         {
             Execute(new NodeIdentifier(identifier));
             return true;

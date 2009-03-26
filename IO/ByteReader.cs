@@ -22,6 +22,9 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
+ * MS   09-03-26    fixed set position to int instead of long (.NET MF does only support arrays with int.MaxValue)
+ * 
+ * 
  */
 using System;
 using System.Text;
@@ -29,19 +32,24 @@ using System.IO;
 
 namespace MFToolkit.IO
 {
+    /// <summary>
+    /// Class to read bytes from a byte array.
+    /// </summary>
     public class ByteReader : IDisposable
     {
         protected byte[] _message;
         protected byte[] _buffer;
-        protected long _position;
+        protected int _position;
         protected Encoding _encoding = Encoding.UTF8;
         protected ByteOrder _byteOrder = ByteOrder.Default;
         private static ByteOrder _defaultByteOrder;
 
+        #region Constructor
+
         /// <summary>
         /// Creates a new instance of ByteReader with UTF-8 encoding.
         /// </summary>
-        /// <param name="message"></param>
+        /// <param name="message">The bytes to read from</param>
         public ByteReader(byte[] message)
         {
             _message = message;
@@ -51,6 +59,11 @@ namespace MFToolkit.IO
                 _byteOrder = _defaultByteOrder;
         }
 
+        /// <summary>
+        /// Creates a new instance of ByteReader
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="byteOrder"></param>
         public ByteReader(byte[] message, ByteOrder byteOrder)
         {
             _message = message;
@@ -68,7 +81,7 @@ namespace MFToolkit.IO
                 _byteOrder = _defaultByteOrder;
         }
 
-        public ByteReader(byte[] message, ByteOrder byteOrder, Encoding encoding, long position)
+        public ByteReader(byte[] message, ByteOrder byteOrder, Encoding encoding, int position)
             : this(message, byteOrder, encoding)
         {
             _position = position;
@@ -86,6 +99,8 @@ namespace MFToolkit.IO
 #endif
         }
 
+        #endregion
+
         #region Public Properties
 
         public Encoding Encoding
@@ -94,7 +109,7 @@ namespace MFToolkit.IO
             set { _encoding = value; }
         }
 
-        public long Position
+        public int Position
         {
             get { return _position; }
             set
@@ -112,26 +127,37 @@ namespace MFToolkit.IO
 
         #endregion
 
-        protected virtual void FillBuffer(long numBytes)
+        protected virtual void FillBuffer(int numBytes)
         {
             byte[] bytes = new byte[numBytes];
 
-            for (long i = 0; i < numBytes; i++)
+            for (int i = 0; i < numBytes; i++)
                 bytes[i] = Read();
 
             _buffer = bytes;
         }
 
+        /// <summary>
+        /// Returns the number of bytes available until end of the byte array.
+        /// </summary>
         public long AvailableBytes
         {
             get { return _message.Length - _position; }
         }
 
+        /// <summary>
+        /// Copyies the ByteReader array with current position.
+        /// </summary>
+        /// <returns></returns>
         internal virtual ByteReader Copy()
         {
             return new ByteReader(_message, _byteOrder, _encoding, _position);
         }
 
+        /// <summary>
+        /// Reads the next byte from the current position without changing current position.
+        /// </summary>
+        /// <returns>The next byte to read.</returns>
         public virtual byte Peek()
         {
             if (_position >= _message.Length)
@@ -156,23 +182,40 @@ namespace MFToolkit.IO
             return _message[_position++];
         }
 
+        /// <summary>
+        /// Reads a byte from the current position and advances the position by one byte.
+        /// </summary>
+        /// <returns>The next byte.</returns>
         public virtual byte ReadByte()
         {
             return (byte)Read();
         }
 
-        public virtual byte[] ReadBytes(long length)
+        /// <summary>
+        /// Reads <paramref name="length"/> bytes from the current position and advances the position by <paramref name="length"/>.
+        /// </summary>
+        /// <param name="length"></param>
+        /// <returns></returns>
+        public virtual byte[] ReadBytes(int length)
         {
             FillBuffer(length);
 
             return _buffer;
         }
 
+        /// <summary>
+        /// Reads a bool value from the current position and advances the position by one byte.
+        /// </summary>
+        /// <returns>True if byte is non-zero; otherwise false.</returns>
         public bool ReadBoolean()
         {
             return (Read() != 0);
         }
 
+        /// <summary>
+        /// Reads a 2-byte signed integer from the current position and advances the position by two bytes.
+        /// </summary>
+        /// <returns>A 2-byte signed integer read from the current position.</returns>
         public virtual short ReadInt16()
         {
             FillBuffer(2);
@@ -188,6 +231,10 @@ namespace MFToolkit.IO
             }
         }
 
+        /// <summary>
+        /// Reads a 4-byte signed integer from the current position and advances the position by two bytes.
+        /// </summary>
+        /// <returns>A 4-byte signed integer read from the current position.</returns>
         public virtual int ReadInt32()
         {
             FillBuffer(4);
@@ -203,6 +250,10 @@ namespace MFToolkit.IO
             }
         }
 
+        /// <summary>
+        /// Reads a 8-byte signed integer from the current position and advances the position by two bytes.
+        /// </summary>
+        /// <returns>A 8-byte signed integer read from the current position.</returns>
         public virtual long ReadInt64()
         {
             FillBuffer(8);
@@ -218,6 +269,10 @@ namespace MFToolkit.IO
             }
         }
 
+        /// <summary>
+        /// Reads a 2-byte unsigned integer from the current position and advances the position by two bytes.
+        /// </summary>
+        /// <returns>A 2-byte unsigned integer read from the current position.</returns>
         public virtual ushort ReadUInt16()
         {
             FillBuffer(2);
@@ -233,6 +288,10 @@ namespace MFToolkit.IO
             }
         }
 
+        /// <summary>
+        /// Reads a 4-byte unsigned integer from the current position and advances the position by two bytes.
+        /// </summary>
+        /// <returns>A 4-byte unsigned integer read from the current position.</returns>
         public virtual uint ReadUInt32()
         {
             FillBuffer(4);
@@ -248,6 +307,10 @@ namespace MFToolkit.IO
             }
         }
 
+        /// <summary>
+        /// Reads a 8-byte unsigned integer from the current position and advances the position by two bytes.
+        /// </summary>
+        /// <returns>A 8-byte unsigned integer read from the current position.</returns>
         public virtual ulong ReadUInt64()
         {
             FillBuffer(8);
@@ -269,11 +332,20 @@ namespace MFToolkit.IO
             }
         }
 
+        /// <summary>
+        /// Reads the next character from the current position and advances the position by one byte.
+        /// </summary>
+        /// <returns>A character read from the current position.</returns>
         public virtual char ReadChar()
         {
             return (char)Read();
         }
 
+        /// <summary>
+        /// Reads <paramref name="length"/> characters from the current position and advances the position by <paramref name="length"/> bytes.
+        /// </summary>
+        /// <param name="length">The number of characters to read.</param>
+        /// <returns>A string read from the current position.</returns>
         public virtual string ReadString(int length)
         {
             byte[] bytes = ReadBytes(length);
@@ -292,6 +364,11 @@ namespace MFToolkit.IO
 #endif
         }
 
+        /// <summary>
+        /// Reads a string from the current position until the first occurance of the <paramref name="terminator"/>.
+        /// </summary>
+        /// <param name="terminator">The terminator to read to.</param>
+        /// <returns>A string read until the first occurance of <paramref name="terminator"/>.</returns>
 		public virtual string ReadString(byte terminator)
 		{
             string s = "";
@@ -308,10 +385,9 @@ namespace MFToolkit.IO
         }
 
         /// <summary>
-        /// Reads a string from the current stream. The length of the
-        /// string is encoded from prefixed 32-bit integer.
+        /// Reads a string from the current position. The length of the string is encoded from prefixed 32-bit integer.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A string with lengh of prefixed 32-bit integer.</returns>
         public virtual string ReadString()
         {
             int length = ReadInt32();
@@ -334,18 +410,25 @@ namespace MFToolkit.IO
 #endif
         }
 
-        public static ByteReader operator +(ByteReader br, long offset)
+        public static ByteReader operator +(ByteReader br, int offset)
         {
             return new ByteReader(br._message, br._byteOrder, br._encoding, br._position + offset);
         }
 
         #region IDisposable Members
 
+        /// <summary>
+        /// Handles cleanup
+        /// </summary>
+        /// <param name="disposing">True if called from Dispose(); false if called from GC finalization.</param>
         public void Dispose(bool disposing)
         {
             _buffer = null;
         }
 
+        /// <summary>
+        /// Handles cleanup
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);

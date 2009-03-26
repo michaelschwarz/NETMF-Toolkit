@@ -27,9 +27,19 @@ using System;
 
 namespace MFToolkit.Net.Web
 {
+    /// <summary>
+    /// Class that represents a http header key/value pair.
+    /// </summary>
     public class HttpHeader
     {
+        /// <summary>
+        /// The http header name.
+        /// </summary>
         public string Name;
+
+        /// <summary>
+        /// The http header value.
+        /// </summary>
         public string Value;
 
         public HttpHeader(string name, string value)

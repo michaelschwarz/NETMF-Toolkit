@@ -22,6 +22,8 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
+ * MS   09-03-26    fixed set position to int instead of long (.NET MF does only support arrays with int.MaxValue)
+ * 
  */
 using System;
 using System.Text;
@@ -41,7 +43,7 @@ namespace MFToolkit.Net.Dns
             _byteOrder = ByteOrder.Network;
         }
 
-        public DnsReader(byte[] message, ByteOrder byteOrder, Encoding encoding, long position)
+        public DnsReader(byte[] message, ByteOrder byteOrder, Encoding encoding, int position)
             : base(message, byteOrder, encoding, position)
         {
         }
@@ -106,7 +108,7 @@ namespace MFToolkit.Net.Dns
             return domain.ToString();
         }
 
-        public static DnsReader operator +(DnsReader br, long offset)
+        public static DnsReader operator +(DnsReader br, int offset)
         {
             return new DnsReader(br._message, br._byteOrder, br._encoding, br._position + offset);
         }

@@ -19,13 +19,23 @@ namespace MicroHTTPConsole
 
         public static void Main()
         {
-            foreach (NetworkInterface net in NetworkInterface.GetAllNetworkInterfaces())
+            // Demo for MFToolkit.Cryptography
+            byte[] buf = Encoding.UTF8.GetBytes("Hello World");
+            using (MemoryStream ms = new MemoryStream(buf))
             {
-                Debug.Print(net.IPAddress.ToString());
+                Debug.Print(MFToolkit.Cryptography.SHA1.Compute(ms, 0, buf.Length));
+                ms.Seek(0, SeekOrigin.Begin);
+                Debug.Print(MFToolkit.Cryptography.SHA256.Compute(ms, 0, buf.Length));
             }
 
+            // Demo for NtpClient
             Microsoft.SPOT.ExtendedTimeZone.SetTimeZone(TimeZoneId.Berlin);
             Microsoft.SPOT.Hardware.Utility.SetLocalTime(NtpClient.GetNetworkTime());
+
+
+            // Demo for HttpServer
+            foreach (NetworkInterface net in NetworkInterface.GetAllNetworkInterfaces())
+                Debug.Print(net.IPAddress.ToString());
 
             using (HttpServer http = new HttpServer(new MyHttpHandler()))
             {

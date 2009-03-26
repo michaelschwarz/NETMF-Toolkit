@@ -29,6 +29,9 @@ using System;
 
 namespace MFToolkit.IO
 {
+    /// <summary>
+    /// Static class providing utility methods for manipulating bits in a bit field (8 bit).
+    /// </summary>
     public class BitHelper
     {
         public static ushort SetBit(ref ushort value, int position, bool flag)
