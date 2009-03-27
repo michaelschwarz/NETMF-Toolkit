@@ -1,7 +1,7 @@
 /* 
- * Program.cs		(Demo Application)
+ * FileInfo.cs
  * 
- * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
+ * Copyright (c) 2009, Freesc Huang (http://www.microframework.cn)
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -22,37 +22,45 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
+ * MS   09-03-13    initial version
+ * 
+ * 
+ * 
  */
 using System;
-using Microsoft.SPOT;
-using MFToolkit.Net.XBee;
-using System.Threading;
 
-namespace MicroZigbeeConsole
+namespace MFToolkit.MicroC6820
 {
-	public class Program
-	{
-		public static void Main()
-		{
-			Debug.Print(
-				Resources.GetString(Resources.StringResources.String1));
+    [Serializable]
+    public class FileInfo
+    {
+        private string _fileName;
 
-			using (XBee xbee = new XBee("COM1", 9600))
-			{
-                xbee.FrameReceived += new FrameReceivedEventHandler(xbee_OnPacketReceived);
-				xbee.Open();
+        public string FileName
+        {
+            get { return _fileName; }
+            internal set { _fileName = value; }
+        }
+        private uint _fileSize;
 
-				// read power supply
-				xbee.Execute (new SupplyVoltage());
+        public uint FileSize
+        {
+            get { return _fileSize; }
+            internal set { _fileSize = value; }
+        }
+        private ushort _videoLength;
 
-				Thread.Sleep(10 * 60 * 1000);
-			}
-		}
+        public ushort VideoLength
+        {
+            get { return _videoLength; }
+            internal set { _videoLength = value; }
+        }
 
-		static void xbee_OnPacketReceived(object sender, FrameReceivedEventArgs e)
-		{
-            XBeeResponse response = e.Response;
-			Debug.Print(response.ToString());
-		}
-	}
+        public FileInfo(string fileName, uint fileSize, ushort videoLength)
+        {
+            FileName = fileName;
+            FileSize = fileSize;
+            VideoLength = videoLength;
+        }
+    }
 }

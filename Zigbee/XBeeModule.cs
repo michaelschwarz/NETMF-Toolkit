@@ -28,7 +28,6 @@
  * 
  */
 using System;
-using System.Text;
 using System.IO.Ports;
 using System.Threading;
 
@@ -58,6 +57,10 @@ namespace MFToolkit.Net.XBee
 
         #endregion
 
+        /// <summary>
+        /// Enter the AT command mode.
+        /// </summary>
+        /// <returns>Returns true if entered command mode; otherwise false.</returns>
         public bool EnterCommandMode()
         {
             if (ApiType == ApiType.Disabled)
@@ -80,12 +83,12 @@ namespace MFToolkit.Net.XBee
             AtCommandResponse res = Execute(new NodeIdentifier()) as AtCommandResponse;
 
             if (res == null)
-                return null;
+                throw new Exception("Could not execute NodeIdentifier command.");
 
             NodeIdentifierData nid = res.ParseValue() as NodeIdentifierData;
 
             if (nid == null)
-                return null;
+                throw new Exception("Could not parse response as NodeIdentifier.");
 
             return nid.NodeIdentifier;
         }
@@ -101,6 +104,10 @@ namespace MFToolkit.Net.XBee
             return true;
         }
 
+        /// <summary>
+        /// Exit command mode in AT mode.
+        /// </summary>
+        /// <returns>Returns true if sucessful; otherwise false.</returns>
         public bool ExitCommandMode()
         {
             if (ApiType == ApiType.Disabled)
@@ -109,6 +116,10 @@ namespace MFToolkit.Net.XBee
             return true;
         }
         
+        /// <summary>
+        /// Writes the configuration / changes to nonvolatile memory.
+        /// </summary>
+        /// <returns>Returns true if sucessful; otherwise false.</returns>
         public bool WriteStateToMemory()
         {
             Execute(new Write());

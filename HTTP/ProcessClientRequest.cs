@@ -71,7 +71,7 @@ namespace MFToolkit.Net.Web
             {
                 while (true)
                 {
-#if(!MF)
+#if(DEBUG && !MF && !WindowsCE)
                     Console.WriteLine((_client.RemoteEndPoint as IPEndPoint).ToString());
 #endif
 

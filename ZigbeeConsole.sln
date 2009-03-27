@@ -41,9 +41,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroGM862Demo", "MicroGM86
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroUtilities", "MicroUtilities\MicroUtilities.csproj", "{25F61F25-06B4-4539-8AD3-F2317316A548}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroC6820", "MicroC6820\MicroC6820.csproj", "{2086F783-8A1A-4B7F-BC5D-ADA834DA582D}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 21
+		SccNumberOfProjects = 22
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs05.codeplex.com/
 		SccLocalPath0 = .
@@ -107,6 +109,9 @@ Global
 		SccProjectUniqueName20 = MicroUtilities\\MicroUtilities.csproj
 		SccProjectName20 = MicroUtilities
 		SccLocalPath20 = MicroUtilities
+		SccProjectUniqueName21 = MicroC6820\\MicroC6820.csproj
+		SccProjectName21 = MicroC6820
+		SccLocalPath21 = MicroC6820
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -201,6 +206,10 @@ Global
 		{25F61F25-06B4-4539-8AD3-F2317316A548}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{25F61F25-06B4-4539-8AD3-F2317316A548}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{25F61F25-06B4-4539-8AD3-F2317316A548}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2086F783-8A1A-4B7F-BC5D-ADA834DA582D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2086F783-8A1A-4B7F-BC5D-ADA834DA582D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2086F783-8A1A-4B7F-BC5D-ADA834DA582D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2086F783-8A1A-4B7F-BC5D-ADA834DA582D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

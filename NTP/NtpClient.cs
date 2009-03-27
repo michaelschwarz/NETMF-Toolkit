@@ -33,13 +33,25 @@ using System.Net.Sockets;
 
 namespace MFToolkit.Net.Ntp
 {
+    /// <summary>
+    /// Static class to receive the time from a NTP server.
+    /// </summary>
     public class NtpClient
     {
+        /// <summary>
+        /// Gets the current DateTime from time-a.nist.gov.
+        /// </summary>
+        /// <returns>A DateTime containing the current time.</returns>
         public static DateTime GetNetworkTime()
         {
             return GetNetworkTime("time-a.nist.gov");
         }
 
+        /// <summary>
+        /// Gets the current DateTime from <paramref name="ntpServer"/>.
+        /// </summary>
+        /// <param name="ntpServer">The hostname of the NTP server.</param>
+        /// <returns>A DateTime containing the current time.</returns>
         public static DateTime GetNetworkTime(string ntpServer)
         {
             IPAddress[] address = Dns.GetHostEntry(ntpServer).AddressList;
@@ -52,6 +64,11 @@ namespace MFToolkit.Net.Ntp
             return GetNetworkTime(ep);
         }
 
+        /// <summary>
+        /// Gets the current DateTime form <paramref name="ep"/> IPEndPoint.
+        /// </summary>
+        /// <param name="ep">The IPEndPoint to connect to.</param>
+        /// <returns>A DateTime containing the current time.</returns>
         public static DateTime GetNetworkTime(IPEndPoint ep)
         {
             Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);

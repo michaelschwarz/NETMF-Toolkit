@@ -32,7 +32,7 @@ using MFToolkit.IO;
 namespace MFToolkit.Net.XBee
 {
     /// <summary>
-    /// This class represents a XBee device 16-bit address.
+    /// This class represents a XBee device 16-bit address (short address).
     /// </summary>
     public class XBeeAddress16
     {
