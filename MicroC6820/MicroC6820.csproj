@@ -1,0 +1,65 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
+  <PropertyGroup>
+    <AssemblyName>MicroC6820</AssemblyName>
+    <OutputType>Library</OutputType>
+    <RootNamespace>MicroC6820</RootNamespace>
+    <ProjectTypeGuids>{b69e3092-b931-443c-abe7-7e7b65f2a37f};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{2086F783-8A1A-4B7F-BC5D-ADA834DA582D}</ProjectGuid>
+    <TargetFrameworkVersion>v3.0</TargetFrameworkVersion>
+    <NetMfTargetsBaseDir Condition="'$(NetMfTargetsBaseDir)'==''">$(MSBuildExtensionsPath)\Microsoft\.NET Micro Framework\</NetMfTargetsBaseDir>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <Import Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
+  <ItemGroup>
+    <Compile Include="HardwareRevision.cs" />
+    <Compile Include="C6820.cs" />
+    <Compile Include="Enums\Contrast.cs" />
+    <Compile Include="Enums\ColorEffect.cs" />
+    <Compile Include="Enums\Sharpness.cs" />
+    <Compile Include="Enums\OperationMode.cs" />
+    <Compile Include="Enums\DateFormat.cs" />
+    <Compile Include="Enums\DateStyle.cs" />
+    <Compile Include="DateTimeStamp.cs" />
+    <Compile Include="StringStamp.cs" />
+    <Compile Include="StorageMediaInfo.cs" />
+    <Compile Include="FileInfo.cs" />
+    <Compile Include="SystemCLK.cs" />
+    <Compile Include="Enums\TVStandard.cs" />
+    <Compile Include="Enums\PlayBackOperation.cs" />
+    <Compile Include="Enums\EV.cs" />
+    <Compile Include="Enums\WhiteBalance.cs" />
+    <Compile Include="Enums\DateCorner.cs" />
+    <Compile Include="Enums\C6820BaudRate.cs" />
+    <Compile Include="Enums\JpegResolution.cs" />
+    <Compile Include="Enums\AVIResolution.cs" />
+    <Compile Include="Enums\StorageMedia.cs" />
+    <Compile Include="Enums\ExternMemoConnectStatus.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.SPOT.Hardware.SerialPort" />
+    <Reference Include="Microsoft.SPOT.Native" />
+  </ItemGroup>
+</Project>

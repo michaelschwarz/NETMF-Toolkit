@@ -63,6 +63,12 @@
     <Compile Include="..\Zigbee\Enums\ZigBeeReceiveOptionType.cs">
       <Link>Enums\ZigBeeReceiveOptionType.cs</Link>
     </Compile>
+    <Compile Include="..\Zigbee\FrameReceived.cs">
+      <Link>FrameReceived.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\ModemStatusChanged.cs">
+      <Link>ModemStatusChanged.cs</Link>
+    </Compile>
     <Compile Include="..\Zigbee\Request\AtCommand.cs">
       <Link>Request\AtCommand.cs</Link>
     </Compile>
@@ -250,6 +256,7 @@
     <Reference Include="Microsoft.SPOT.Hardware.SerialPort" />
     <Reference Include="Microsoft.SPOT.IO" />
     <Reference Include="Microsoft.SPOT.Native" />
+    <Reference Include="Microsoft.SPOT.TinyCore" />
     <Reference Include="System" />
     <Reference Include="System.IO" />
   </ItemGroup>

@@ -30,6 +30,9 @@
  * PH   09-02-07    added several changes to enable stopping receive thread
  * MS   09-03-24    changed methods from SendCommand to Execute
  * MS   09-03-27    fixed if there are more than one API frame in received bytes
+ *                  changed OnPacketReceived to FrameReceived
+ *                  
+ * 
  */
 using System;
 using System.Text;
@@ -60,8 +63,13 @@ namespace MFToolkit.Net.XBee
 
         #region Events
 
+        [Obsolete("Use FrameReceivedEventHandler instead.", true)]
 		public delegate void PacketReceivedHandler(XBee sender, XBeeResponse response);
-		public event PacketReceivedHandler OnPacketReceived;
+        [Obsolete("Use FrameReceived instead.", true)]
+        public event PacketReceivedHandler OnPacketReceived;
+
+        public event FrameReceivedEventHandler FrameReceived;
+        public event ModemStatusChangedEventHandler ModemStatusChanged;
 
         #endregion
 
@@ -264,8 +272,8 @@ namespace MFToolkit.Net.XBee
             else
                 throw new NotSupportedException("This ApiType is not supported.");
 
-#if(DEBUG && !MF)
-            //File.AppendAllText("log.txt", DateTime.Now.ToLongTimeString() + "\t>>\t" + ByteUtil.PrintBytes(bytes, false) + "\r\n");
+#if(DEBUG && !MF && !WindowsCE)
+            File.AppendAllText("log.txt", DateTime.Now.ToLongTimeString() + "\t>>\t" + ByteUtil.PrintBytes(bytes, false) + "\r\n");
 #endif
 
             _serialPort.Write(bytes, 0, bytes.Length);
@@ -361,8 +369,9 @@ namespace MFToolkit.Net.XBee
                     }
                     else
                     {
-#if(!MF && DEBUG)
-                        //Console.WriteLine(bytesToRead + " bytes to read");
+
+#if(DEBUG && !MF && !WindowsCE)
+                        Console.WriteLine(bytesToRead + " bytes to read");
 #endif
 
                         byte[] bytes = new byte[1024];	// TODO: what is the maximum size of Zigbee packets?
@@ -421,8 +430,8 @@ namespace MFToolkit.Net.XBee
 
                                 ByteReader br = new ByteReader(bytes, ByteOrder.BigEndian);
 
-#if(DEBUG && !MF)
-                                //File.AppendAllText("log.txt", DateTime.Now.ToLongTimeString() + "\t<<\t" + ByteUtil.PrintBytes(bytes, false) + "\r\n");
+#if(DEBUG && !MF && !WindowsCE)
+                                File.AppendAllText("log.txt", DateTime.Now.ToLongTimeString() + "\t<<\t" + ByteUtil.PrintBytes(bytes, false) + "\r\n");
 #endif
 
                                 if (startOK && lengthAndCrcOK)
@@ -432,23 +441,14 @@ namespace MFToolkit.Net.XBee
 
                                     CheckFrame(length, br);
 
-                                    if (br.AvailableBytes > 1)   // checksum
+                                    if (br.AvailableBytes > 1)
                                     {
-                                        br.ReadByte();  // advances the position for the checksum value
-
-                                        byte[] xxx = br.GetAvailableBytes();
-
-                                        _readBuffer.Write(xxx, 0, xxx.Length);
+                                        br.ReadByte();  // checksum of current API message
+                                        
+                                        // ok, there are more bytes for an additional frame packet
+                                        byte[] available = br.GetAvailableBytes();
+                                        _readBuffer.Write(available, 0, available.Length);
                                     }
-
-                                    //if (bytes.Length - (1 + 2 + length + 1) > 0)
-                                    //{
-                                    //    byte[] xxx = new byte[bytes.Length - (1 + 2 + length + 1)];
-                                    //    Array.Copy(bytes, 1 + 2 + length + 1, xxx, 0, xxx.Length);
-
-                                    //    //_readBuffer.Write(bytes, 1 + 2 + length + 1, bytes.Length - (1 + 2 + length + 1));
-                                    //    _readBuffer.Write(xxx, 0, xxx.Length);
-                                    //}
                                 }
                                 else
                                 {
@@ -475,7 +475,7 @@ namespace MFToolkit.Net.XBee
 #if(!MF)
             catch (ThreadAbortException ex)
             {
-#if(DEBUG)
+#if(DEBUG && !MF && !WindowsCE)
                 // Display a message to the console.
                 Console.WriteLine("{0} : DisplayMessage thread terminating - {1}",
                     DateTime.Now.ToString("HH:mm:ss.ffff"),
@@ -545,6 +545,10 @@ namespace MFToolkit.Net.XBee
 					break;
                 case XBeeApiType.ModemStatus:
                     res = new ZigBeeModemStatus(length, br);
+
+                    if (res != null)
+                        OnModemStatusChanged((res as ZigBeeModemStatus).ModemStatus);
+
                     break;
 				default:
 					break;
@@ -558,20 +562,31 @@ namespace MFToolkit.Net.XBee
 					_waitResponse = false;
 				}
 
-                if (OnPacketReceived != null)
-                {
-                    try
-                    {
-                        OnPacketReceived(this, res);
-                    }
-                    catch (Exception ex)
-                    {
-                    }
-                }
+                OnFrameReceived(res);
 			}
-		}
+        }
 
-		private string ReadTo(string value)
+        #region Event Handling
+
+        private void OnModemStatusChanged(ZigBeeModemStatusType status)
+        {
+            ModemStatusChangedEventHandler handler = ModemStatusChanged;
+        
+            if (handler != null)
+                handler(this, new ModemStatusChangedEventArgs(status));
+        }
+
+        private void OnFrameReceived(XBeeResponse response)
+        {
+            FrameReceivedEventHandler handler = FrameReceived;
+
+            if (handler != null)
+                handler(this, new FrameReceivedEventArgs(response));
+        }
+
+        #endregion
+
+        private string ReadTo(string value)
 		{
 			string textArrived = string.Empty;
 
@@ -602,7 +617,6 @@ namespace MFToolkit.Net.XBee
 					{
 						return null;
 					}
-
 				}
 				while ((bufferIndex < byteValueLen)
 						&& (buffer[bufferIndex - 1] != byteValue[byteValueLen - 1]));
@@ -636,7 +650,7 @@ namespace MFToolkit.Net.XBee
 
         protected void WriteCommand(string s)
         {
-#if(!MF)
+#if(DEBUG && !MF && !WindowsCE)
             Console.WriteLine(s);
 #endif
             byte[] bytes = Encoding.UTF8.GetBytes(s);
@@ -647,8 +661,8 @@ namespace MFToolkit.Net.XBee
 		{
 			string s = ReadTo("\r");
 
-#if(!MF)
-			Console.WriteLine(s);
+#if(DEBUG && !MF && !WindowsCE)
+            Console.WriteLine(s);
 #endif
 
 			return s;

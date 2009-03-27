@@ -20,15 +20,6 @@ namespace HttpConsole
 
 		static void Main(string[] args)
 		{
-            //using(XBeeModule m = new XBeeModule("COM5", 9600, ApiType.Enabled))
-            //{
-            //  m.Open();
-            //  m.EnterCommandMode();
-            //  m.SetNodeIdentification("COORDINATOR");
-            //  m.WriteStateToMemory();
-            //  m.ExitCommandMode();
-            //}
-
             Thread thd = new Thread(new ThreadStart(UpdateTemperature));
             thd.IsBackground = true;
             thd.Start();
@@ -51,7 +42,8 @@ namespace HttpConsole
             {
                 using (XBeeModule xbee = new XBeeModule("COM5", 9600, ApiType.Enabled))
                 {
-                    xbee.OnPacketReceived += new XBee.PacketReceivedHandler(xbee_OnPacketReceived);
+                    xbee.FrameReceived += new FrameReceivedEventHandler(xbee_OnPacketReceived);
+                    
                     xbee.Open();
 
                     string ni = xbee.GetNodeIdentifier();
@@ -77,8 +69,10 @@ namespace HttpConsole
             }
         }
 
-        static void xbee_OnPacketReceived(XBee sender, XBeeResponse response)
+        static void xbee_OnPacketReceived(object sender, FrameReceivedEventArgs e)
         {
+            XBeeResponse response = e.Response;
+
             if (response != null)
                 Console.WriteLine(response.ToString() + "\r\n==============================");
 
@@ -91,13 +85,13 @@ namespace HttpConsole
 
                     if (nd.NodeIdentifier == "SENSOR")
                     {
-                        sender.Execute(new AtRemoteCommand(nd.SerialNumber, nd.ShortAddress, new ForceSample()));
+                        (sender as XBee).Execute(new AtRemoteCommand(nd.SerialNumber, nd.ShortAddress, new ForceSample()));
                         //sender.SendCommand(new AtRemoteCommand(nd.SerialNumber, nd.ShortAddress, new XBeeSensorSample()));
                     }
                     else
                     {
                         ZigBeeTransmitRequest x = new ZigBeeTransmitRequest(nd.SerialNumber, nd.ShortAddress, Encoding.ASCII.GetBytes(DateTime.Now.ToLongTimeString()));
-                        sender.Execute(x);
+                        (sender as XBee).Execute(x);
                     }
 
                 }

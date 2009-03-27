@@ -32,7 +32,7 @@ using MFToolkit.IO;
 namespace MFToolkit.Net.XBee
 {
     /// <summary>
-    /// This class represents a XBee device 64-bit address.
+    /// This class represents a XBee device 64-bit address (serial number).
     /// </summary>
     public class XBeeAddress64
     {

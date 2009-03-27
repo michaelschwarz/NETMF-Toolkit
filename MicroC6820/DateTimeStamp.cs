@@ -1,7 +1,7 @@
 /* 
- * Program.cs		(Demo Application)
+ * DateTimeStamp.cs
  * 
- * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
+ * Copyright (c) 2009, Freesc Huang (http://www.microframework.cn)
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -22,37 +22,49 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
+ * MS   09-03-13    initial version
+ * 
+ * 
+ * 
  */
 using System;
-using Microsoft.SPOT;
-using MFToolkit.Net.XBee;
-using System.Threading;
 
-namespace MicroZigbeeConsole
+namespace MFToolkit.MicroC6820
 {
-	public class Program
-	{
-		public static void Main()
-		{
-			Debug.Print(
-				Resources.GetString(Resources.StringResources.String1));
+    [Serializable]
+    public class DateTimeStamp
+    {
+        private DateFormat _format;
+        private DateCorner _corner;
+        private DateStyle _style;
 
-			using (XBee xbee = new XBee("COM1", 9600))
-			{
-                xbee.FrameReceived += new FrameReceivedEventHandler(xbee_OnPacketReceived);
-				xbee.Open();
+        #region Public Properties
 
-				// read power supply
-				xbee.Execute (new SupplyVoltage());
+        public DateFormat Format
+        {
+            get { return _format; }
+            set { _format = value; }
+        }
+        
+        public DateCorner Corner
+        {
+            get { return _corner; }
+            set { _corner = value; }
+        }
+        
+        public DateStyle Style
+        {
+            get { return _style; }
+            set { _style = value; }
+        }
 
-				Thread.Sleep(10 * 60 * 1000);
-			}
-		}
+        #endregion
 
-		static void xbee_OnPacketReceived(object sender, FrameReceivedEventArgs e)
-		{
-            XBeeResponse response = e.Response;
-			Debug.Print(response.ToString());
-		}
-	}
+        public DateTimeStamp(DateFormat format, DateCorner corner, DateStyle style)
+        {
+            Format = format;
+            Corner = corner;
+            Style = style;
+        }
+    }
 }

@@ -1,7 +1,7 @@
 /* 
- * Program.cs		(Demo Application)
+ * SystemCLK.cs
  * 
- * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
+ * Copyright (c) 2009, Freesc Huang (http://www.microframework.cn)
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -22,37 +22,32 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
+ * MS   09-03-13    initial version
+ * 
+ * 
+ * 
  */
 using System;
-using Microsoft.SPOT;
-using MFToolkit.Net.XBee;
-using System.Threading;
 
-namespace MicroZigbeeConsole
+namespace MFToolkit.MicroC6820
 {
-	public class Program
-	{
-		public static void Main()
-		{
-			Debug.Print(
-				Resources.GetString(Resources.StringResources.String1));
+    public struct SystemCLK
+    {
+        public short Year;
+        public byte Month;
+        public byte Day;
+        public byte Hour;
+        public byte Minute;
+        public byte Second;
 
-			using (XBee xbee = new XBee("COM1", 9600))
-			{
-                xbee.FrameReceived += new FrameReceivedEventHandler(xbee_OnPacketReceived);
-				xbee.Open();
-
-				// read power supply
-				xbee.Execute (new SupplyVoltage());
-
-				Thread.Sleep(10 * 60 * 1000);
-			}
-		}
-
-		static void xbee_OnPacketReceived(object sender, FrameReceivedEventArgs e)
-		{
-            XBeeResponse response = e.Response;
-			Debug.Print(response.ToString());
-		}
-	}
+        public SystemCLK(short year, byte month, byte day, byte hour, byte minute, byte sencond)
+        {
+            Year = year;
+            Month = month;
+            Day = day;
+            Hour = hour;
+            Minute = minute;
+            Second = sencond;
+        }
+    }
 }

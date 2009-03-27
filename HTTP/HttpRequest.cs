@@ -410,6 +410,10 @@ namespace MFToolkit.Net.Web
 
                 totalBytes += bytesRead;
 
+#if(DEBUG && !MF && !WindowsCE)
+                File.AppendAllText("loghttp-" + socket.RemoteEndPoint.ToString().Replace(":", "-") + ".txt", Encoding.UTF8.GetString(buffer, 0, bytesRead) + "\r\n");
+#endif
+
                 int idx = 0;
                 string key = "";
                 string value = "";

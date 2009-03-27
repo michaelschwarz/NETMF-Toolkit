@@ -29,7 +29,7 @@ namespace ZigbeeConsole
 		{
 			using (XBee xbee = new XBee("COM4", 9600, ApiType.Disabled))
 			{
-				xbee.OnPacketReceived += new XBee.PacketReceivedHandler(xbeedevice_OnPacketReceived);
+                xbee.FrameReceived += new FrameReceivedEventHandler(xbeedevice_OnPacketReceived);
 				xbee.Open();
 
 				
@@ -45,7 +45,7 @@ namespace ZigbeeConsole
 		{
 			using (XBee xbee = new XBee("COM4", 9600, ApiType.Enabled))
 			{
-				xbee.OnPacketReceived += new XBee.PacketReceivedHandler(xbeecoord_OnPacketReceived);
+                xbee.FrameReceived += new FrameReceivedEventHandler(xbeecoord_OnPacketReceived);
 				xbee.Open();
 
                 while (true)
@@ -61,8 +61,10 @@ namespace ZigbeeConsole
 			}
 		}
 
-		static void xbeecoord_OnPacketReceived(XBee sender, XBeeResponse response)
+		static void xbeecoord_OnPacketReceived(object sender, FrameReceivedEventArgs e)
 		{
+            XBeeResponse response = e.Response;
+
 			if (!Monitor.TryEnter(ConsoleLock, 1000))
 				return;
 
@@ -88,7 +90,7 @@ namespace ZigbeeConsole
                             //sender.Execute(rcmd);
 
                             ZigBeeTransmitRequest x = new ZigBeeTransmitRequest(ni.SerialNumber, ni.ShortAddress, Encoding.ASCII.GetBytes("Hallo"));
-                            sender.Execute(x);
+                            (sender as XBee).Execute(x);
 
 							Console.WriteLine("Sending ForceSample command...");
 						}
@@ -96,7 +98,7 @@ namespace ZigbeeConsole
 						if (ni.NodeIdentifier == "XBEEDEVICE")
 						{
 							ZigBeeTransmitRequest send = new ZigBeeTransmitRequest(ni.SerialNumber, ni.ShortAddress, Encoding.UTF8.GetBytes("" + DateTime.Now.Ticks));
-                            sender.Execute(send);
+                            (sender as XBee).Execute(send);
 							Console.WriteLine("Sending ZigBeeTransmitRequest...");
 						}
 					}
@@ -117,8 +119,10 @@ namespace ZigbeeConsole
 			}
 		}
 
-		static void xbeedevice_OnPacketReceived(XBee sender, XBeeResponse response)
+		static void xbeedevice_OnPacketReceived(object sender, FrameReceivedEventArgs e)
 		{
+            XBeeResponse response = e.Response;
+
 			if (!Monitor.TryEnter(ConsoleLock, 1000))
 				return;
 

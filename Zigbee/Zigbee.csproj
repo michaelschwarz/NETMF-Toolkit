@@ -40,7 +40,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FrameReceived.cs" />
     <Compile Include="Enums\SourceActionType.cs" />
+    <Compile Include="ModemStatusChanged.cs" />
     <Compile Include="Request\AT\SerialNumberLow.cs" />
     <Compile Include="Request\AT\SerialNumberHigh.cs" />
     <Compile Include="Request\AT\DestinationNode.cs" />
