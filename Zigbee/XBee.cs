@@ -29,7 +29,7 @@
  * MS   09-02-06    fixed work item 3636 when first character is not the startbyte
  * PH   09-02-07    added several changes to enable stopping receive thread
  * MS   09-03-24    changed methods from SendCommand to Execute
- * 
+ * MS   09-03-27    fixed if there are more than one API frame in received bytes
  */
 using System;
 using System.Text;
@@ -265,7 +265,7 @@ namespace MFToolkit.Net.XBee
                 throw new NotSupportedException("This ApiType is not supported.");
 
 #if(DEBUG && !MF)
-            File.AppendAllText("log.txt", DateTime.Now.ToLongTimeString() + "\t>>\t" + ByteUtil.PrintBytes(bytes, false) + "\r\n");
+            //File.AppendAllText("log.txt", DateTime.Now.ToLongTimeString() + "\t>>\t" + ByteUtil.PrintBytes(bytes, false) + "\r\n");
 #endif
 
             _serialPort.Write(bytes, 0, bytes.Length);
@@ -361,6 +361,10 @@ namespace MFToolkit.Net.XBee
                     }
                     else
                     {
+#if(!MF && DEBUG)
+                        //Console.WriteLine(bytesToRead + " bytes to read");
+#endif
+
                         byte[] bytes = new byte[1024];	// TODO: what is the maximum size of Zigbee packets?
 
                         if (_serialPort == null || !_serialPort.IsOpen)
@@ -397,7 +401,7 @@ namespace MFToolkit.Net.XBee
                                 else
                                     _readBuffer.WriteByte(bytes[i]);
                             }
-
+                           
                             bool startOK = false;
                             bool lengthAndCrcOK = false;
 
@@ -405,7 +409,11 @@ namespace MFToolkit.Net.XBee
                             {
                                 _readBuffer.Position = 0;
 
+                                // startOK should be always true if there is at least on byte
+                                // TODO: if not first byte is startbyte we need to search next startbyte
                                 startOK = ((byte)_readBuffer.ReadByte() == XBeePacket.PACKET_STARTBYTE);
+                                
+
                                 lengthAndCrcOK = this.CheckLengthAndCrc();
 
                                 bytes = _readBuffer.ToArray();
@@ -414,7 +422,7 @@ namespace MFToolkit.Net.XBee
                                 ByteReader br = new ByteReader(bytes, ByteOrder.BigEndian);
 
 #if(DEBUG && !MF)
-                                File.AppendAllText("log.txt", DateTime.Now.ToLongTimeString() + "\t<<\t" + ByteUtil.PrintBytes(bytes, false) + "\r\n");
+                                //File.AppendAllText("log.txt", DateTime.Now.ToLongTimeString() + "\t<<\t" + ByteUtil.PrintBytes(bytes, false) + "\r\n");
 #endif
 
                                 if (startOK && lengthAndCrcOK)
@@ -424,10 +432,23 @@ namespace MFToolkit.Net.XBee
 
                                     CheckFrame(length, br);
 
-                                    if (bytes.Length - (1 + 2 + length + 1) > 0)
+                                    if (br.AvailableBytes > 1)   // checksum
                                     {
-                                        _readBuffer.Write(bytes, 1 + 2 + length + 1, bytes.Length - (1 + 2 + length + 1));
+                                        br.ReadByte();  // advances the position for the checksum value
+
+                                        byte[] xxx = br.GetAvailableBytes();
+
+                                        _readBuffer.Write(xxx, 0, xxx.Length);
                                     }
+
+                                    //if (bytes.Length - (1 + 2 + length + 1) > 0)
+                                    //{
+                                    //    byte[] xxx = new byte[bytes.Length - (1 + 2 + length + 1)];
+                                    //    Array.Copy(bytes, 1 + 2 + length + 1, xxx, 0, xxx.Length);
+
+                                    //    //_readBuffer.Write(bytes, 1 + 2 + length + 1, bytes.Length - (1 + 2 + length + 1));
+                                    //    _readBuffer.Write(xxx, 0, xxx.Length);
+                                    //}
                                 }
                                 else
                                 {
@@ -436,7 +457,7 @@ namespace MFToolkit.Net.XBee
                             }
                             while (startOK & lengthAndCrcOK & (_readBuffer.Length > 4));
                         }
-                        catch (Exception)
+                        catch (Exception ex)
                         {
                             _readBuffer.SetLength(0);
 
@@ -537,8 +558,16 @@ namespace MFToolkit.Net.XBee
 					_waitResponse = false;
 				}
 
-				if (OnPacketReceived != null)
-					OnPacketReceived(this, res);
+                if (OnPacketReceived != null)
+                {
+                    try
+                    {
+                        OnPacketReceived(this, res);
+                    }
+                    catch (Exception ex)
+                    {
+                    }
+                }
 			}
 		}
 
