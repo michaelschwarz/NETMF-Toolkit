@@ -138,11 +138,26 @@ namespace MFToolkit.IO
         }
 
         /// <summary>
-        /// Returns the number of bytes available until end of the byte array.
+        /// Gets the number of bytes available until end of the byte array.
         /// </summary>
-        public long AvailableBytes
+        public int AvailableBytes
         {
             get { return _message.Length - _position; }
+        }
+
+        /// <summary>
+        /// Gets the available bytes from current position.
+        /// </summary>
+        /// <returns>A byte array</returns>
+        public byte[] GetAvailableBytes()
+        {
+            if (AvailableBytes == 0)
+                return new byte[0];
+
+            byte[] bytes = new byte[AvailableBytes];
+            Array.Copy(_message, _position, bytes, 0, bytes.Length);
+
+            return bytes;
         }
 
         /// <summary>

@@ -29,7 +29,6 @@ namespace HttpConsole
             //  m.ExitCommandMode();
             //}
 
-
             Thread thd = new Thread(new ThreadStart(UpdateTemperature));
             thd.IsBackground = true;
             thd.Start();
@@ -50,21 +49,24 @@ namespace HttpConsole
         {
             try
             {
-                using (XBee xbee = new XBee("COM5", 9600, ApiType.Enabled))
+                using (XBeeModule xbee = new XBeeModule("COM5", 9600, ApiType.Enabled))
                 {
                     xbee.OnPacketReceived += new XBee.PacketReceivedHandler(xbee_OnPacketReceived);
                     xbee.Open();
-                    xbee.ExecuteNonQuery(new NodeIdentifier("COORDINATOR"));
+
+                    string ni = xbee.GetNodeIdentifier();
+
+                    if (ni != "COORDINATOR")
+                        xbee.SetNodeIdentifier("COORDINATOR");
 
                     while (true)
                     {
                         xbee.ExecuteNonQuery(new NodeDiscover());
-
                         Thread.Sleep(60 * 1000);
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 while (true)
                 {
@@ -94,7 +96,7 @@ namespace HttpConsole
                     }
                     else
                     {
-                        ZigBeeTransmitRequest x = new ZigBeeTransmitRequest(nd.SerialNumber, nd.ShortAddress, Encoding.ASCII.GetBytes("Hello"));
+                        ZigBeeTransmitRequest x = new ZigBeeTransmitRequest(nd.SerialNumber, nd.ShortAddress, Encoding.ASCII.GetBytes(DateTime.Now.ToLongTimeString()));
                         sender.Execute(x);
                     }
 
