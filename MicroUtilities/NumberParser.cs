@@ -34,7 +34,10 @@ namespace MFToolkit.MicroUtilities
 {
     public static class NumberParser
     {
-        private static readonly char CULTURE_DECIMAL_POINT = CultureInfo.CurrentUICulture.NumberFormat.NumberDecimalSeparator[0];
+        /// <summary>
+        /// Decimal Point to use for parsing, defaults to culture default
+        /// </summary>
+        public static char CULTURE_DECIMAL_POINT = CultureInfo.CurrentUICulture.NumberFormat.NumberDecimalSeparator[0];
 
         /// <summary>
         /// Convert a numeric string to an integer
@@ -84,7 +87,7 @@ namespace MFToolkit.MicroUtilities
                     negative = true;
                     continue;
                 }
-                else if (c == CultureInfo.CurrentUICulture.NumberFormat.NumberDecimalSeparator[0])
+                else if (c == NumberParser.CULTURE_DECIMAL_POINT)
                 {
                     afterDot = true;
                     continue;
