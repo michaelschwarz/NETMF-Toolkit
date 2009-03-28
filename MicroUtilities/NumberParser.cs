@@ -24,6 +24,7 @@
  * 
  * 
  * MS   09-03-23    changed using culture fields instead of English hard-coded
+ * EK   09-03-28    made two versions of StringToDouble to make decimal point changable
  * 
  */
 using System;
@@ -34,10 +35,7 @@ namespace MFToolkit.MicroUtilities
 {
     public static class NumberParser
     {
-        /// <summary>
-        /// Decimal Point to use for parsing, defaults to culture default
-        /// </summary>
-        public static char CULTURE_DECIMAL_POINT = CultureInfo.CurrentUICulture.NumberFormat.NumberDecimalSeparator[0];
+        private static readonly char CULTURE_DECIMAL_POINT = CultureInfo.CurrentUICulture.NumberFormat.NumberDecimalSeparator[0];
 
         /// <summary>
         /// Convert a numeric string to an integer
@@ -68,11 +66,22 @@ namespace MFToolkit.MicroUtilities
         }
 
         /// <summary>
-        /// Convert a numeric string to an floating point var
+        /// Convert a numeric string to an floating point var using culture decimal separator
         /// </summary>
         /// <param name="S">String to convert</param>
         /// <returns>Converted value</returns>
         public static double StringToDouble(String S)
+        {
+            return StringToDouble(S, CULTURE_DECIMAL_POINT);
+        }
+
+        /// <summary>
+        /// Convert a numeric string to an floating point var
+        /// </summary>
+        /// <param name="S">String to convert</param>
+        /// <param name="DecimalSeperator">Decimal seperator to use</param>
+        /// <returns>Converted value</returns>
+        public static double StringToDouble(String S, char DecimalSeperator)
         {
             double r = 0F;
             double m = 0.1F;
@@ -87,14 +96,14 @@ namespace MFToolkit.MicroUtilities
                     negative = true;
                     continue;
                 }
-                else if (c == NumberParser.CULTURE_DECIMAL_POINT)
+                else if (c == DecimalSeperator)
                 {
                     afterDot = true;
                     continue;
                 }
 
                 // Stop when character is not a number
-                if ("0123456789".IndexOf(c) == -1) break;
+                if ((c < '0') | (c > '9')) break;
 
                 if (!afterDot)
                 {
