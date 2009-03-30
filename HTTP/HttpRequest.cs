@@ -381,6 +381,8 @@ namespace MFToolkit.Net.Web
         {
             byte[] buffer = new byte[1024];
             RequestParserState state = RequestParserState.ReadMethod;
+            string key = "";
+            string value = "";
             MemoryStream ms = null;
 
             UserHostAddress = (socket.RemoteEndPoint as IPEndPoint).Address.ToString();
@@ -415,9 +417,7 @@ namespace MFToolkit.Net.Web
 #endif
 
                 int idx = 0;
-                string key = "";
-                string value = "";
-
+                
                 do
                 {
                     switch (state)
@@ -510,7 +510,7 @@ namespace MFToolkit.Net.Web
                                 HttpVersion += (char)buffer[idx++];
                             else
                             {
-                                if (HttpVersion != "HTTP/1.1")
+                                if (HttpVersion != "HTTP/1.1" && HttpVersion != "HTTP/1.0")
                                     throw new HttpException(HttpStatusCode.HttpVersionNotSupported);
 
                                 idx++;

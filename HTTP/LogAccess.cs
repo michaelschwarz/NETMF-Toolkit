@@ -93,12 +93,6 @@ namespace MFToolkit.Net.Web
         public int SubStatus;
 
         /// <summary>
-        /// sc-win32-status
-        /// </summary>
-        [Obsolete("Not implemented.", true)]
-        public int Win32Status;
-
-        /// <summary>
         /// sc-bytes
         /// </summary>
         public long BytesSent;

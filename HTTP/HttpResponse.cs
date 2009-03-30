@@ -206,6 +206,8 @@ namespace MFToolkit.Net.Web
         {
             Clear();
 
+            _httpStatus = status;
+
             ContentType = "text/html; charset=UTF-8";
 
             Write(@"<html><head><title>Error</title></head><body>

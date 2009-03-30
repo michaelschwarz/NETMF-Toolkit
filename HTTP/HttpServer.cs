@@ -137,7 +137,7 @@ namespace MFToolkit.Net.Web
 
             while (++count < 30)
             {
-                if (_thdWorker.ThreadState == ThreadState.Stopped)
+                if (_thdWorker != null && _thdWorker.ThreadState == ThreadState.Stopped)
                 {
                     _thdWorker = null;
 
