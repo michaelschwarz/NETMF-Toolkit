@@ -48,12 +48,14 @@ namespace MFToolkit.Net.Web
         private bool _stopThreads = true;
         private const int _maxWorkers = 256;        // for AJAX enabled web sites we need a higher max worker process count
 
-        public delegate void LogEventHandler(LogEventType ev, string text);
-        public delegate void LogAccessHandler(LogAccess data);
+        #region Events
 
-        public event LogEventHandler OnLogEvent;
-        public event LogAccessHandler OnLogAccess;
+        public event LogAccessEventHandler LogAccess;
+        public event ClientConnectedEventHandler ClientConnected;
 
+        #endregion
+
+        #region Constructor
 
         public HttpServer(IHttpHandler Handler)
         {
@@ -79,6 +81,8 @@ namespace MFToolkit.Net.Web
             _address = Address;
         }
 #endif
+
+        #endregion
 
         public bool Start()
         {
@@ -157,10 +161,39 @@ namespace MFToolkit.Net.Web
                 Socket client = _listenSocket.Accept();
                 //client.SetSocketOption(SocketOptionLevel.Tcp, SocketOptionName.NoDelay, true);
 
-                CreateWorkerProcess(ref client);
+                if (!OnClientConnected((client.RemoteEndPoint as IPEndPoint).Address))
+                {
+#if(MF)
+                    client.Close();
+#else
+                    client.Disconnect(false);
+                    client.Close();
+#endif
+                    continue;
+                }
 
-                //Thread.Sleep(10);
+                CreateWorkerProcess(ref client);
             }
+        }
+
+        private bool OnClientConnected(IPAddress address)
+        {
+            ClientConnectedEventHandler handler = ClientConnected;
+            
+            bool res = true;
+            
+            if (handler != null)
+                res = handler(this, new ClientConnectedEventArgs(address));
+
+            return res;
+        }
+
+        internal void OnLogAccess(LogAccess data)
+        {
+            LogAccessEventHandler handler = LogAccess;
+
+            if (handler != null)
+                handler(this, new LogAccessEventArgs(data));
         }
 
         private void CreateWorkerProcess(ref Socket client)
@@ -214,22 +247,6 @@ namespace MFToolkit.Net.Web
                 }
 
                 Thread.Sleep(300);
-            }
-        }
-
-        private void RaiseLogEvent(LogEventType ev, string message)
-        {
-            if (OnLogEvent != null)
-            {
-                OnLogEvent(ev, message);
-            }
-        }
-
-        internal void RaiseLogAccess(LogAccess data)
-        {
-            if (OnLogAccess != null)
-            {
-                OnLogAccess(data);
             }
         }
 

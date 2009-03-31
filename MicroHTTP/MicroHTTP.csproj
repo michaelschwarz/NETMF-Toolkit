@@ -33,6 +33,9 @@
   </PropertyGroup>
   <Import Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <ItemGroup>
+    <Compile Include="..\HTTP\ClientConnectedEvent.cs">
+      <Link>ClientConnectedEvent.cs</Link>
+    </Compile>
     <Compile Include="..\HTTP\Collection\NameValueCollection.cs">
       <Link>Collection\NameValueCollection.cs</Link>
     </Compile>
@@ -95,6 +98,9 @@
     </Compile>
     <Compile Include="..\HTTP\LogAccess.cs">
       <Link>LogAccess.cs</Link>
+    </Compile>
+    <Compile Include="..\HTTP\LogAccessEvent.cs">
+      <Link>LogAccessEvent.cs</Link>
     </Compile>
     <Compile Include="..\HTTP\Mime\MimeContent.cs">
       <Link>Mime\MimeContent.cs</Link>

@@ -126,6 +126,7 @@ namespace MFToolkit.Net.Web
                     if (httpResponse == null)
                     {
                         httpResponse = new HttpResponse();
+                        httpResponse.HttpVersion = httpRequest.HttpVersion;
 
                         HttpContext ctx = new HttpContext();
                         ctx.Request = httpRequest;
@@ -167,7 +168,7 @@ namespace MFToolkit.Net.Web
                     log.Duration = (long)(DateTime.Now - begin).TotalMilliseconds;
 #endif
 
-                    _server.RaiseLogAccess(log);
+                    _server.OnLogAccess(log);
 
                     if (httpResponse.Connection == null || httpResponse.Connection != "Keep-Alive")
                         break;

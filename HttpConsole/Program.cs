@@ -26,7 +26,7 @@ namespace HttpConsole
 
             using (HttpServer http = new HttpServer(new MyHttpHandler(Path.Combine(Environment.CurrentDirectory, "..\\..\\root"))))
             {
-                http.OnLogAccess += new HttpServer.LogAccessHandler(http_OnLogAccess);
+                http.LogAccess += new LogAccessEventHandler(http_OnLogAccess);
                 http.Start();
 
                 Console.ReadLine();
@@ -118,8 +118,10 @@ namespace HttpConsole
             }
         }
 
-        static void http_OnLogAccess(LogAccess data)
+        static void http_OnLogAccess(object sender, LogAccessEventArgs e)
         {
+            LogAccess data = e.Data;
+
             Console.WriteLine(data.Date + "\t" + data.ClientIP + "\t" + data.Method + "\t" + data.RawUrl);
             Console.WriteLine(data.UserAgent);
             if(data.HttpReferer != null) Console.WriteLine(data.HttpReferer);
@@ -133,7 +135,6 @@ namespace HttpConsole
 
         public MyHttpHandler(string rootFolder)
         {
-
             _rootFolder = Path.GetFullPath(rootFolder);
         }
 
