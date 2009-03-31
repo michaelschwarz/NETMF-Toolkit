@@ -1,5 +1,5 @@
 ﻿/* 
- * FrameReceived.cs
+ * LogAccessEvent.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -22,42 +22,36 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
- * MS   09-03-27    initial version
  * 
- *
+ * 
  */
 using System;
+using System.Net;
 #if(MF)
 using Microsoft.SPOT;
 #endif
 
-namespace MFToolkit.Net.XBee
+namespace MFToolkit.Net.Web
 {
-    /// <summary>
-    /// EventArgs class that contains the XBee response frame.
-    /// </summary>
-    public class FrameReceivedEventArgs : EventArgs
+    public class LogAccessEventArgs : EventArgs
     {
-        private XBeeResponse _response;
-
+        private LogAccess _data;
+        
         #region Public Properties
 
-        /// <summary>
-        /// The XBee response.
-        /// </summary>
-        public XBeeResponse Response
-        { 
-            get { return _response; }
-            internal set { _response = value; }
+        public LogAccess Data
+        {
+            get { return _data; }
+            internal set { _data = value; }
         }
 
         #endregion
 
-        public FrameReceivedEventArgs(XBeeResponse response)
+        public LogAccessEventArgs(LogAccess data)
         {
-            Response = response;
+            Data = data;
         }
     }
 
-    public delegate void FrameReceivedEventHandler(object sender, FrameReceivedEventArgs e);
+    public delegate void LogAccessEventHandler(object sender, LogAccessEventArgs e);
 }

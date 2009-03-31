@@ -1,5 +1,5 @@
 ﻿/* 
- * FrameReceived.cs
+ * LogEvent.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -22,7 +22,6 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
- * MS   09-03-27    initial version
  * 
  *
  */
@@ -33,31 +32,40 @@ using Microsoft.SPOT;
 
 namespace MFToolkit.Net.XBee
 {
-    /// <summary>
-    /// EventArgs class that contains the XBee response frame.
-    /// </summary>
-    public class FrameReceivedEventArgs : EventArgs
+    public class LogEventArgs : EventArgs
     {
-        private XBeeResponse _response;
+        private LogEventType _type;
+        private string _message;
 
         #region Public Properties
 
-        /// <summary>
-        /// The XBee response.
-        /// </summary>
-        public XBeeResponse Response
+        public LogEventType EventType
         { 
-            get { return _response; }
-            internal set { _response = value; }
+            get { return _type; }
+            internal set { _type = value; }
+        }
+
+        public string Message
+        {
+            get { return _message; }
+            internal set { _message = value; }
         }
 
         #endregion
 
-        public FrameReceivedEventArgs(XBeeResponse response)
+        public LogEventArgs(LogEventType type, string message)
         {
-            Response = response;
+            EventType = type;
+            Message = message;
         }
     }
 
-    public delegate void FrameReceivedEventHandler(object sender, FrameReceivedEventArgs e);
+    public enum LogEventType
+    {
+        PortCommunicationException,
+        BadXBeeResponse,
+        ServerException
+    }
+
+    public delegate void LogEventHandler(object sender, LogEventArgs e);
 }

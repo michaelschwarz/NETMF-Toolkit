@@ -44,8 +44,10 @@
     <Compile Include="Collection\NameValuePair.cs" />
     <Compile Include="Collection\NameValueCollection.cs" />
     <Compile Include="Cookie\HttpCookieEnumerator.cs" />
+    <Compile Include="LogAccessEvent.cs" />
     <Compile Include="Enums\HttpStatusCode.cs" />
     <Compile Include="Enums\LogEventType.cs" />
+    <Compile Include="ClientConnectedEvent.cs" />
     <Compile Include="HttpContext.cs" />
     <Compile Include="Cookie\HttpCookie.cs" />
     <Compile Include="HttpException.cs" />

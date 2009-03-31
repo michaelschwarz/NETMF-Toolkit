@@ -72,22 +72,42 @@ namespace MFToolkit.Net.Web
 
         #region Public Properties
 
+        /// <summary>
+        /// Sets the HTTP status code
+        /// </summary>
         public HttpStatusCode HttpStatus
         {
             set { _httpStatus = value; }
+        }        
+
+        /// <summary>
+        /// Sets the HTTP response version
+        /// </summary>
+        public string HttpVersion
+        {
+            set { _httpVersion = value; }
         }
 
+        /// <summary>
+        /// Sets the HTTP response content type
+        /// </summary>
         public string ContentType
         {
             set { AddHeader("Content-Type", value); }
         }
 
+        /// <summary>
+        /// Sets the HTTP response Connection header value 
+        /// </summary>
         public string Connection
         {
             set { AddHeader("Connection", value); }
             internal get { return GetHeader("Connection"); }
         }
 
+        /// <summary>
+        /// Sets the HTTP response Date header value
+        /// </summary>
         public DateTime Date
         {
             set { _date = value; }
@@ -289,6 +309,10 @@ namespace MFToolkit.Net.Web
         {
             using(NetworkStream ns = new NetworkStream(socket))
             {
+#if(DEBUG && !MF && !WindowsCE)
+                File.AppendAllText("loghttp-" + socket.RemoteEndPoint.ToString().Replace(":", "-") + " (Response).txt", GetResponseHeader() + "\r\n");
+#endif
+
                 byte[] bytes = Encoding.UTF8.GetBytes(GetResponseHeader());
                 totalBytes += bytes.Length;
 
@@ -297,8 +321,13 @@ namespace MFToolkit.Net.Web
 
                 if (_content != null && _content.Length > 0)
                 {
+
                     bytes = _content.ToArray();
                     totalBytes += bytes.Length;
+
+#if(DEBUG && !MF && !WindowsCE)
+                    File.AppendAllText("loghttp-" + socket.RemoteEndPoint.ToString().Replace(":", "-") + " (Response).txt", Encoding.UTF8.GetString(bytes, 0, bytes.Length) + "\r\n");
+#endif
 
                     ns.Write(bytes, 0, bytes.Length);
                     ns.Flush();

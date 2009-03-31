@@ -70,6 +70,7 @@ namespace MFToolkit.Net.XBee
 
         public event FrameReceivedEventHandler FrameReceived;
         public event ModemStatusChangedEventHandler ModemStatusChanged;
+        public event LogEventHandler LogEvent;
 
         #endregion
 
@@ -150,8 +151,9 @@ namespace MFToolkit.Net.XBee
 					_serialPort.Open();
 				}
 			}
-			catch (Exception)
+			catch (Exception ex)
 			{
+                OnLogEvent(LogEventType.ServerException, ex.ToString());
 				return false;
 			}
 
@@ -236,9 +238,9 @@ namespace MFToolkit.Net.XBee
                     _thd.Join(2000);
                 }
             }
-            catch (Exception) // e)
+            catch (Exception ex)
             {
-                //RaiseLogEvent(LogEventType.ServerException, e.ToString());
+                OnLogEvent(LogEventType.ServerException, ex.ToString());
             }
             finally
             {
@@ -329,7 +331,7 @@ namespace MFToolkit.Net.XBee
                 if (c > (timeout / 10))
                 {
 #if(MF)
-				throw new Exception("Could not receive response.");
+				    throw new Exception("Could not receive response.");
 #else
                     throw new TimeoutException("Could not receive response.");
 #endif
@@ -459,6 +461,8 @@ namespace MFToolkit.Net.XBee
                         }
                         catch (Exception ex)
                         {
+                            OnLogEvent(LogEventType.ServerException, ex.ToString());
+
                             _readBuffer.SetLength(0);
 
                             if (_serialPort != null && _serialPort.IsOpen)
@@ -475,6 +479,8 @@ namespace MFToolkit.Net.XBee
 #if(!MF)
             catch (ThreadAbortException ex)
             {
+                OnLogEvent(LogEventType.ServerException, ex.ToString());
+
 #if(DEBUG && !MF && !WindowsCE)
                 // Display a message to the console.
                 Console.WriteLine("{0} : DisplayMessage thread terminating - {1}",
@@ -483,8 +489,9 @@ namespace MFToolkit.Net.XBee
 #endif
             }
 #else
-            catch(Exception)
+            catch(Exception ex)
             {
+                OnLogEvent(LogEventType.ServerException, ex.ToString());
             }
 #endif
         }
@@ -568,20 +575,28 @@ namespace MFToolkit.Net.XBee
 
         #region Event Handling
 
-        private void OnModemStatusChanged(ZigBeeModemStatusType status)
-        {
-            ModemStatusChangedEventHandler handler = ModemStatusChanged;
-        
-            if (handler != null)
-                handler(this, new ModemStatusChangedEventArgs(status));
-        }
-
         private void OnFrameReceived(XBeeResponse response)
         {
             FrameReceivedEventHandler handler = FrameReceived;
 
             if (handler != null)
                 handler(this, new FrameReceivedEventArgs(response));
+        }
+
+        private void OnModemStatusChanged(ZigBeeModemStatusType status)
+        {
+            ModemStatusChangedEventHandler handler = ModemStatusChanged;
+
+            if (handler != null)
+                handler(this, new ModemStatusChangedEventArgs(status));
+        }
+
+        private void OnLogEvent(LogEventType eventType, string message)
+        {
+            LogEventHandler handler = LogEvent;
+
+            if (handler != null)
+                handler(this, new LogEventArgs(eventType, message));
         }
 
         #endregion

@@ -45,7 +45,7 @@ namespace MFToolkit.Net.XBee
         public ZigBeeModemStatusType Status
         { 
             get { return _status; }
-            set { _status = value; }
+            internal set { _status = value; }
         }
 
         #endregion

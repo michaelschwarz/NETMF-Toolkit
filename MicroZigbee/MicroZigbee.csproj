@@ -66,6 +66,9 @@
     <Compile Include="..\Zigbee\FrameReceived.cs">
       <Link>FrameReceived.cs</Link>
     </Compile>
+    <Compile Include="..\Zigbee\LogEvent.cs">
+      <Link>LogEvent.cs</Link>
+    </Compile>
     <Compile Include="..\Zigbee\ModemStatusChanged.cs">
       <Link>ModemStatusChanged.cs</Link>
     </Compile>
