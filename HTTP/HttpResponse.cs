@@ -309,8 +309,10 @@ namespace MFToolkit.Net.Web
 
         public void WriteSocket(Socket socket)
         {
-            if (socket.Connected)
+#if(!MF && !WindowsCE)
+            if(socket != null && !socket.Connected)
                 return;
+#endif
 
             using(NetworkStream ns = new NetworkStream(socket))
             {
