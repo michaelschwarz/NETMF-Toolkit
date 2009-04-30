@@ -28,6 +28,8 @@
  * MS   09-02-26    fixed wrong date output
  *                  added remove http header
  * MS   09-03-09    changed that http response is written by HttpResponse
+ * MS   09-04-30    fixed if socket is already closed
+ * 
  * 
  */
 using System;
@@ -307,6 +309,9 @@ namespace MFToolkit.Net.Web
 
         public void WriteSocket(Socket socket)
         {
+            if (socket.Connected)
+                return;
+
             using(NetworkStream ns = new NetworkStream(socket))
             {
 #if(DEBUG && !MF && !WindowsCE)
@@ -316,21 +321,27 @@ namespace MFToolkit.Net.Web
                 byte[] bytes = Encoding.UTF8.GetBytes(GetResponseHeader());
                 totalBytes += bytes.Length;
 
-                ns.Write(bytes, 0, bytes.Length);
-                ns.Flush();
-
-                if (_content != null && _content.Length > 0)
+                try
                 {
-
-                    bytes = _content.ToArray();
-                    totalBytes += bytes.Length;
-
-#if(DEBUG && !MF && !WindowsCE)
-                    File.AppendAllText("loghttp-" + socket.RemoteEndPoint.ToString().Replace(":", "-") + " (Response).txt", Encoding.UTF8.GetString(bytes, 0, bytes.Length) + "\r\n");
-#endif
-
                     ns.Write(bytes, 0, bytes.Length);
                     ns.Flush();
+
+                    if (_content != null && _content.Length > 0)
+                    {
+
+                        bytes = _content.ToArray();
+                        totalBytes += bytes.Length;
+
+#if(DEBUG && !MF && !WindowsCE)
+                        File.AppendAllText("loghttp-" + socket.RemoteEndPoint.ToString().Replace(":", "-") + " (Response).txt", Encoding.UTF8.GetString(bytes, 0, bytes.Length) + "\r\n");
+#endif
+
+                        ns.Write(bytes, 0, bytes.Length);
+                        ns.Flush();
+                    }
+                }
+                catch (Exception)
+                {
                 }
             }
         }
