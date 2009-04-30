@@ -24,7 +24,7 @@
  * 
  * MS   09-02-10    added MT support
  * MS   09-03-09    changed stop http server when there is any exception while starting (i.e. when port is not available)
- * 
+ * MS   09-04-30    fixed closing threads
  * 
  */
 using System;
@@ -158,8 +158,19 @@ namespace MFToolkit.Net.Web
         {
             while (!_stopThreads)
             {
-                Socket client = _listenSocket.Accept();
-                //client.SetSocketOption(SocketOptionLevel.Tcp, SocketOptionName.NoDelay, true);
+                Socket client = null;
+
+                try
+                {
+                    client = _listenSocket.Accept();
+                }
+                catch (Exception)
+                {
+                    break;
+                }
+
+                if (client == null)
+                    continue;
 
                 if (!OnClientConnected((client.RemoteEndPoint as IPEndPoint).Address))
                 {
