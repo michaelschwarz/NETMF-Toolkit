@@ -317,7 +317,7 @@ namespace MFToolkit.Net.Web
             using(NetworkStream ns = new NetworkStream(socket))
             {
 #if(DEBUG && !MF && !WindowsCE)
-                File.AppendAllText("loghttp-" + socket.RemoteEndPoint.ToString().Replace(":", "-") + " (Response).txt", GetResponseHeader() + "\r\n");
+                //File.AppendAllText("loghttp-" + socket.RemoteEndPoint.ToString().Replace(":", "-") + " (Response).txt", GetResponseHeader() + "\r\n");
 #endif
 
                 byte[] bytes = Encoding.UTF8.GetBytes(GetResponseHeader());
@@ -335,7 +335,7 @@ namespace MFToolkit.Net.Web
                         totalBytes += bytes.Length;
 
 #if(DEBUG && !MF && !WindowsCE)
-                        File.AppendAllText("loghttp-" + socket.RemoteEndPoint.ToString().Replace(":", "-") + " (Response).txt", Encoding.UTF8.GetString(bytes, 0, bytes.Length) + "\r\n");
+                        //File.AppendAllText("loghttp-" + socket.RemoteEndPoint.ToString().Replace(":", "-") + " (Response).txt", Encoding.UTF8.GetString(bytes, 0, bytes.Length) + "\r\n");
 #endif
 
                         ns.Write(bytes, 0, bytes.Length);
