@@ -24,8 +24,9 @@
  * 
  * 
  * MS   09-03-23    changed using culture fields instead of English hard-coded
- * 
+ * EK   09-06-12    resolved issue: Didn't display leading zero's in fractional part
  */
+
 using System;
 using Microsoft.SPOT;
 using System.Globalization;
@@ -189,7 +190,13 @@ namespace MFToolkit.MicroUtilities
             // By converting the number to a string we can easily find the MSD (Most Significant Digit)
             String NumberAsString = Number.ToString();
 
-            // Strip it from zero's
+            // Check for signifacant zero's 
+            if (NumberAsString.Length < 6)
+            {
+                NumberAsString = "0000000000".Substring(0, 6 - NumberAsString.Length) + NumberAsString;
+            }
+
+            // Strip it from not significant zero's
             for (int x = NumberAsString.Length-1; x >= 0; x--)
             {
                 if (NumberAsString[x] != '0')
