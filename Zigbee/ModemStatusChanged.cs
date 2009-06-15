@@ -38,11 +38,11 @@ namespace MFToolkit.Net.XBee
     /// </summary>
     public class ModemStatusChangedEventArgs : EventArgs
     {
-        private ZigBeeModemStatusType _status;
+        private ModemStatusType _status;
 
         #region Public Properties
 
-        public ZigBeeModemStatusType Status
+        public ModemStatusType Status
         { 
             get { return _status; }
             internal set { _status = value; }
@@ -50,7 +50,7 @@ namespace MFToolkit.Net.XBee
 
         #endregion
 
-        public ModemStatusChangedEventArgs(ZigBeeModemStatusType status)
+        public ModemStatusChangedEventArgs(ModemStatusType status)
         {
             Status = status;
         }

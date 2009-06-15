@@ -1,5 +1,5 @@
 ﻿/* 
- * AtRemoteCommandResponse.cs
+ * ZNetRemoteAtResponse.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -38,7 +38,7 @@ namespace MFToolkit.Net.XBee
     /// UART. Some commands may send back multiple frames--for example, Node Discover (ND)
     /// command.
     /// </summary>
-    public class AtRemoteCommandResponse : XBeeFrameResponse
+    public class RemoteAtResponse : XBeeFrameResponse, IAtCommandResponse
     {
         private XBeeAddress64 _address64;
         private XBeeAddress16 _address16;
@@ -81,7 +81,7 @@ namespace MFToolkit.Net.XBee
 
         #endregion
 
-        public AtRemoteCommandResponse(short length, ByteReader br)
+        public RemoteAtResponse(short length, ByteReader br)
             : base(length, br)
         {
             _address64 = XBeeAddress64.ReadBytes(br);
@@ -102,18 +102,6 @@ namespace MFToolkit.Net.XBee
                 _value = br.ReadBytes(length - 14);
         }
 
-        public IAtCommandData ParseValue()
-        {
-            return AtCommandResponse.ParseValue(Command, Value);
-        }
-
-#if(!MF && !WindowsCE)
-        public T ParseValue<T>() where T : IAtCommandData
-        {
-            return (T)AtCommandResponse.ParseValue(Command, Value);
-        }
-#endif
-
         public override string ToString()
         {
             string s = base.ToString() + "\r\n";
@@ -121,8 +109,13 @@ namespace MFToolkit.Net.XBee
             s += "Command = " + Command + "\r\n";
             s += "Status  = " + Status + "\r\n";
             s += "SerialNumber = " + SerialNumber + "\r\n";
-            s += "ShortAddress = " + ShortAddress + "\r\n";
-            s += "Value   = \r\n" + ParseValue();
+            s += "ShortAddress = " + ShortAddress;
+
+            if (_value != null)
+            {
+                s += "\r\n";
+                s += "Value   = \r\n" + ByteUtil.PrintBytes(_value);
+            }
 
             return s;
         }

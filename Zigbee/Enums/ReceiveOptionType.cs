@@ -1,5 +1,5 @@
 ﻿/* 
- * NodeIdentifierData.cs
+ * ZigBeeReceiveOptionType.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -25,38 +25,12 @@
  */
 using System;
 using System.Text;
-using MFToolkit.IO;
 
 namespace MFToolkit.Net.XBee
 {
-    /// <summary>
-    /// Represents a node identifier command response structure
-    /// </summary>
-	public class NodeIdentifierData : IAtCommandData
+	public enum ReceiveOptionType : byte
 	{
-		private string _ni;
-
-        #region Public Properties
-
-        /// <summary>
-        /// Node Identifier (NI)
-        /// </summary>
-        public string NodeIdentifier
-        {
-            get { return _ni; }
-        }
-
-        #endregion
-
-        public void ReadBytes(ByteReader br)
-		{
-			if (br.AvailableBytes > 0)
-				_ni = br.ReadString((int)br.AvailableBytes);
-		}
-
-		public override string ToString()
-		{
-            return NodeIdentifier;
-		}
+		PacketAcknowledged = 0x01,
+		BroadcastPacket = 0x02
 	}
 }

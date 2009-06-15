@@ -1,5 +1,5 @@
 ﻿/* 
- * IAtCommandData.cs
+ * SleepMode.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -22,7 +22,6 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
- * 
  */
 using System;
 using System.Text;
@@ -30,8 +29,43 @@ using MFToolkit.IO;
 
 namespace MFToolkit.Net.XBee
 {
-	public interface IAtCommandData
+    /// <summary>
+    /// Represents a sleep mode command response structure
+    /// </summary>
+    public class SleepMode : IAtCommandResponseData
 	{
-        void ReadBytes(ByteReader br);
+		private byte _sleepMode;
+
+		#region Public Properties
+
+		public SleepModeType Mode
+		{
+			get { return (SleepModeType)_sleepMode; }
+		}
+
+		#endregion
+
+        public static SleepMode Parse(IAtCommandResponse cmd)
+        {
+            if (cmd.Command != SleepModeCommand.command)
+                throw new ArgumentException("This method is only applicable for the '" + SleepModeCommand.command + "' command!", "cmd");
+
+            ByteReader br = new ByteReader(cmd.Value, ByteOrder.BigEndian);
+
+            SleepMode sm = new SleepMode();
+            sm.ReadBytes(br);
+
+            return sm;
+        }
+
+        public void ReadBytes(ByteReader br)
+		{
+			_sleepMode = br.ReadByte();
+		}
+
+		public override string ToString()
+		{
+			return this.Mode + "";
+		}
 	}
 }

@@ -1,5 +1,5 @@
 ﻿/* 
- * ZigBeeReceivePacket.cs
+ * RxResponse16.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -32,29 +32,26 @@ namespace MFToolkit.Net.XBee
     /// <summary>
     /// When the module receives an RF packet, it is sent out the UART using this message type.
     /// </summary>
-	public class ZigBeeReceivePacket : XBeeResponse
+	public class RxResponse16 : XBeeResponse
 	{
-        private XBeeAddress64 _address64;
         private XBeeAddress16 _address16;
+        private byte _rssi;
 		private byte _options;
 		private byte[] _value;
 
 		#region Public Properties
 
         /// <summary>
-        /// Serial Number
+        /// Source Address
         /// </summary>
-        public XBeeAddress64 SerialNumber
-        {
-            get { return _address64; }
-        }
-
-        /// <summary>
-        /// Short Address
-        /// </summary>
-        public XBeeAddress16 ShortAddress
+        public XBeeAddress16 Source
         {
             get { return _address16; }
+        }
+
+        public short RSSI
+        {
+            get { return (short)(_rssi * -1); }
         }
 
         public byte Options
@@ -62,9 +59,10 @@ namespace MFToolkit.Net.XBee
             get { return _options; }
         }
 
-        public ZigBeeReceiveOptionType ReceiveOption
+        // TODO: change this to several properties instead of an enum
+        public ReceiveOptionType ReceiveOption
         {
-            get { return (ZigBeeReceiveOptionType)_options; }
+            get { return (ReceiveOptionType)_options; }
         }
 
         /// <summary>
@@ -77,23 +75,23 @@ namespace MFToolkit.Net.XBee
 
 		#endregion
 
-		public ZigBeeReceivePacket(short length, ByteReader br)
+        public RxResponse16(short length, ByteReader br)
 			: base(length, br)
 		{
-            _address64 = XBeeAddress64.ReadBytes(br);
             _address16 = XBeeAddress16.ReadBytes(br);
+            _rssi = br.ReadByte();
 			_options = br.ReadByte();
-			_value = br.ReadBytes(length - 12);
+			_value = br.ReadBytes(length - 5);
 		}
 
 		public override string ToString()
 		{
 			string s = base.ToString() + "\r\n";
 
-			s += "SerialNumber = " + SerialNumber + "\r\n";
-            s += "ShortAddress = " + ShortAddress + "\r\n";
-			s += "Options      = " + ByteUtil.PrintByte(Options) + "\r\n";
-			s += "Value        = " + ByteUtil.PrintBytes(Value);
+            s += "Source   = " + Source + "\r\n";
+            s += "RSSI     = " + RSSI + " dbm\r\n";
+			s += "Options  = " + ByteUtil.PrintByte(Options) + "\r\n";
+			s += "Value    = " + ByteUtil.PrintBytes(Value);
 
 			return s;
 		}

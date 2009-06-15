@@ -1,5 +1,5 @@
 ﻿/* 
- * ReceivedSignalStrengthData.cs
+ * NodeIdentifierData.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -30,37 +30,46 @@ using MFToolkit.IO;
 namespace MFToolkit.Net.XBee
 {
     /// <summary>
-    /// Represents a received signal strength command response structure
+    /// Represents a node identifier command response structure
     /// </summary>
-	public class ReceivedSignalStrengthData : IAtCommandData
+    public class NodeIdentifier : IAtCommandResponseData
 	{
-		private byte _signalStrength;
- 
-		#region Public Properties
+		private string _ni;
 
-		public int SignalStrength
+        #region Public Properties
+
+        /// <summary>
+        /// Node Identifier (NI)
+        /// </summary>
+        public string Identifier
+        {
+            get { return _ni; }
+        }
+
+        #endregion
+
+        public static NodeIdentifier Parse(IAtCommandResponse cmd)
 		{
-			get { return -1 * _signalStrength; }
-		}
+            if (cmd.Command != NodeIdentifierCommand.command)
+                throw new ArgumentException("This method is only applicable for the '" + NodeIdentifierCommand.command + "' command!", "cmd");
 
-		#endregion
+            ByteReader br = new ByteReader(cmd.Value, ByteOrder.BigEndian);
+
+            NodeIdentifier ni = new NodeIdentifier();
+            ni.ReadBytes(br);
+			
+            return ni;
+		}
 
         public void ReadBytes(ByteReader br)
-		{
-			_signalStrength = br.ReadByte();
-		}
+        {
+            if (br.AvailableBytes > 0)
+                _ni = br.ReadString((int)br.AvailableBytes);
+        }
 
 		public override string ToString()
 		{
-			return SignalStrength + " dBm";
-		}
-
-		public static implicit operator int(ReceivedSignalStrengthData s)
-		{
-			if (s == null)
-				throw new ArgumentException("ReceivedSignalStrengthData can not be null.", "s");
-
-			return s.SignalStrength;
+            return Identifier;
 		}
 	}
 }

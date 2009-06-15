@@ -1,5 +1,5 @@
 ﻿/* 
- * XBeeSensorRead.cs
+ * ZNetDeviceType.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -24,11 +24,10 @@
  * 
  */
 using System;
-using System.Text;
 
 namespace MFToolkit.Net.XBee
 {
-	public enum ZigBeeDeviceType : byte
+	public enum ZNetDeviceType : byte
 	{
 		Coordinator = 0x00,
 		Router = 0x01,

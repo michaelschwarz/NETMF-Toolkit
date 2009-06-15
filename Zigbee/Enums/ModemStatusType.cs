@@ -1,5 +1,5 @@
 ﻿/* 
- * ApiEnableData.cs
+ * ModemStatusType.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -21,38 +21,21 @@
  * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * 
+ * PH   09-01-28    initial version
  * 
  */
-using System;
-using System.Text;
-using MFToolkit.IO;
-
 namespace MFToolkit.Net.XBee
 {
-    /// <summary>
-    /// Represents a api enable command response structure
-    /// </summary>
-	public class ApiEnableData : IAtCommandData
+	public enum ModemStatusType : byte
 	{
-		private byte _apiType;
-
-		#region Public Properties
-
-		public ApiType ApiType
-		{
-			get { return (ApiType)_apiType; }
-		}
-
-		#endregion
-
-        public void ReadBytes(ByteReader br)
-		{
-			_apiType = br.ReadByte();
-		}
-
-		public override string ToString()
-		{
-			return this.ApiType + "";
-		}
+        HardwareReset = 0x00,
+        WatchdogTimerReset = 0x01,
+        Associated = 0x02,
+        Disassociated = 0x03,
+        SynchronizationLost = 0x04,
+        CoordinatorRealignment = 0x05,
+        CoordinatorStarted = 0x06
 	}
 }

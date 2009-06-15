@@ -1,5 +1,5 @@
 ﻿/* 
- * ZigBeeTransmitStatus.cs
+ * ZNetRxResponse.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -30,64 +30,70 @@ using MFToolkit.IO;
 namespace MFToolkit.Net.XBee
 {
     /// <summary>
-    /// When a TX Request is completed, the module sends a TX Status message. This message will
-    /// indicate if the packet was transmitted successfully or if there was a failure.
+    /// When the module receives an RF packet, it is sent out the UART using this message type.
     /// </summary>
-	public class ZigBeeTransmitStatus : XBeeFrameResponse
+	public class ZNetRxResponse : XBeeResponse
 	{
+        private XBeeAddress64 _address64;
         private XBeeAddress16 _address16;
-		private byte _retryCount;
-		private byte _deliveryStatus;
-		private byte _discoveryStatus;
+		private byte _options;
+		private byte[] _value;
 
 		#region Public Properties
 
         /// <summary>
-        /// 16-bit Network Address the packet was delivered to (if success). If not success, this
-        /// address matches the Destination Network Address that was provided in the Transmit Request Frame.
+        /// Serial Number
         /// </summary>
-        public XBeeAddress16 RemoteNetwork
+        public XBeeAddress64 SerialNumber
+        {
+            get { return _address64; }
+        }
+
+        /// <summary>
+        /// Short Address
+        /// </summary>
+        public XBeeAddress16 ShortAddress
         {
             get { return _address16; }
         }
 
-        /// <summary>
-        /// The number of application transmission retries that took place.
-        /// </summary>
-        public byte RetryCount
+        public byte Options
         {
-            get { return _retryCount; }
+            get { return _options; }
         }
 
-		public DeliveryStatusType DeliveryStatus
+        public ReceiveOptionType ReceiveOption
+        {
+            get { return (ReceiveOptionType)_options; }
+        }
+
+        /// <summary>
+        /// RF Data
+        /// </summary>
+		public byte[] Value
 		{
-			get { return (DeliveryStatusType)_deliveryStatus; }
+			get { return _value; }
 		}
 
-		public DiscoveryStatusType DiscoveryStatus
-		{
-			get { return (DiscoveryStatusType)_discoveryStatus; }
-		}
-		
 		#endregion
 
-		public ZigBeeTransmitStatus(short length, ByteReader br)
+        public ZNetRxResponse(short length, ByteReader br)
 			: base(length, br)
 		{
+            _address64 = XBeeAddress64.ReadBytes(br);
             _address16 = XBeeAddress16.ReadBytes(br);
-			_retryCount = br.ReadByte();
-			_deliveryStatus = br.ReadByte();
-			_discoveryStatus = br.ReadByte();
+			_options = br.ReadByte();
+			_value = br.ReadBytes(length - 12);
 		}
 
 		public override string ToString()
 		{
 			string s = base.ToString() + "\r\n";
 
-            s += "RemoteNetwork = " + RemoteNetwork + "\r\n";
-			s += "Retries       = " + RetryCount + "\r\n";
-			s += "Delivery      = " + DeliveryStatus + "\r\n";
-			s += "Discovery     = " + DiscoveryStatus;
+			s += "SerialNumber = " + SerialNumber + "\r\n";
+            s += "ShortAddress = " + ShortAddress + "\r\n";
+			s += "Options      = " + ByteUtil.PrintByte(Options) + "\r\n";
+			s += "Value        = " + ByteUtil.PrintBytes(Value);
 
 			return s;
 		}

@@ -185,9 +185,9 @@ namespace MFToolkit.Net.XBee
 #endif
 					_thd.Start();
 
-					AtCommandResponse at = Execute(new ApiEnable()) as AtCommandResponse;
+					AtCommandResponse at = Execute(new ApiEnableCommand()) as AtCommandResponse;
 
-					_apiType = (at.ParseValue() as ApiEnableData).ApiType;
+                    _apiType = ApiEnable.Parse(at).ApiType;
 				}
 
 				#endregion
@@ -529,34 +529,45 @@ namespace MFToolkit.Net.XBee
 
             switch (apiId)
             {
-                case XBeeApiType.ATCommandResponse:
+                case XBeeApiType.AtCommandResponse:
                     res = new AtCommandResponse(length, br);
                     break;
-                case XBeeApiType.NodeIdentificationIndicator:
-					res = new NodeIdentification(length, br);
+                case XBeeApiType.RemoteAtCommandResponse:
+                    res = new RemoteAtResponse(length, br);
                     break;
-                case XBeeApiType.ZigBeeReceivePacket:
-					res = new ZigBeeReceivePacket(length, br);
+                case XBeeApiType.ModemStatus:
+                    res = new ModemStatusResponse(length, br);
+                    if (res != null)
+                        OnModemStatusChanged((res as ModemStatusResponse).ModemStatus);
+                    break;
+
+                case XBeeApiType.RxPacket16:
+                    res = new RxResponse16(length, br);
+                    break;
+                case XBeeApiType.RxPacket64:
+                    res = new RxResponse64(length, br);
+                    break;
+                case XBeeApiType.TxStatus:
+                    res = new TxStatusResponse(length, br);
+                    break;
+
+                case XBeeApiType.NodeIdentificationIndicator:
+					res = new ZNetNodeIdentificationResponse(length, br);
+                    break;
+                case XBeeApiType.ZNetRxPacket:
+					res = new ZNetRxResponse(length, br);
                     break;
                 case XBeeApiType.XBeeSensorReadIndicator:
 					res = new XBeeSensorRead(length, br);
                     break;
-                case XBeeApiType.RemoteCommandResponse:
-					res = new AtRemoteCommandResponse(length, br);
-                    break;
-				case XBeeApiType.ZigBeeIODataSampleRxIndicator:
-					res = new ZigBeeIODataSample(length, br);
+				case XBeeApiType.ZNetIODataSampleRxIndicator:
+					res = new ZNetRxIoSampleResponse(length, br);
 					break;
-				case XBeeApiType.ZigBeeTransmitStatus:
-					res = new ZigBeeTransmitStatus(length, br);
+				case XBeeApiType.ZNetTxStatus:
+					res = new ZNetTxStatusResponse(length, br);
 					break;
-                case XBeeApiType.ModemStatus:
-                    res = new ZigBeeModemStatus(length, br);
 
-                    if (res != null)
-                        OnModemStatusChanged((res as ZigBeeModemStatus).ModemStatus);
-
-                    break;
+                
 				default:
 					break;
             }
@@ -583,7 +594,7 @@ namespace MFToolkit.Net.XBee
                 handler(this, new FrameReceivedEventArgs(response));
         }
 
-        private void OnModemStatusChanged(ZigBeeModemStatusType status)
+        private void OnModemStatusChanged(ModemStatusType status)
         {
             ModemStatusChangedEventHandler handler = ModemStatusChanged;
 

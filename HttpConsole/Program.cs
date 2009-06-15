@@ -53,12 +53,12 @@ namespace HttpConsole
 
                     while (true)
                     {
-                        xbee.ExecuteNonQuery(new NodeDiscover());
+                        xbee.ExecuteNonQuery(new NodeDiscoverCommand());
                         Thread.Sleep(60 * 1000);
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 while (true)
                 {
@@ -79,42 +79,42 @@ namespace HttpConsole
             AtCommandResponse res = response as AtCommandResponse;
             if (res != null)
             {
-                if (res.ParseValue() is NodeDiscoverData)
-                {
-                    NodeDiscoverData nd = res.ParseValue() as NodeDiscoverData;
+                //if (res.ParseValue() is ZNetNodeDiscover)
+                //{
+                //    ZNetNodeDiscover nd = res.ParseValue() as ZNetNodeDiscover;
 
-                    if (nd.NodeIdentifier == "SENSOR")
-                    {
-                        (sender as XBee).Execute(new AtRemoteCommand(nd.SerialNumber, nd.ShortAddress, new ForceSample()));
-                        //sender.SendCommand(new AtRemoteCommand(nd.SerialNumber, nd.ShortAddress, new XBeeSensorSample()));
-                    }
-                    else
-                    {
-                        ZigBeeTransmitRequest x = new ZigBeeTransmitRequest(nd.SerialNumber, nd.ShortAddress, Encoding.ASCII.GetBytes(DateTime.Now.ToLongTimeString()));
-                        (sender as XBee).Execute(x);
-                    }
+                //    if (nd.NodeIdentifier == "SENSOR")
+                //    {
+                //        (sender as XBee).Execute(new RemoteAtRequest(nd.SerialNumber, nd.ShortAddress, new ForceSample()));
+                //        //sender.SendCommand(new AtRemoteCommand(nd.SerialNumber, nd.ShortAddress, new XBeeSensorSample()));
+                //    }
+                //    else
+                //    {
+                //        ZNetTxRequest x = new ZNetTxRequest(nd.SerialNumber, nd.ShortAddress, Encoding.ASCII.GetBytes(DateTime.Now.ToLongTimeString()));
+                //        (sender as XBee).Execute(x);
+                //    }
 
-                }
+                //}
                 return;
 
             }
 
-            AtRemoteCommandResponse res2 = response as AtRemoteCommandResponse;
+            RemoteAtResponse res2 = response as RemoteAtResponse;
             if (res2 != null)
             {
-                if (res2.ParseValue() is ForceSampleData)
-                {
-                    ForceSampleData d = res2.ParseValue() as ForceSampleData;
+                //if (res2.ParseValue() is ForceSampleData)
+                //{
+                //    ForceSampleData d = res2.ParseValue() as ForceSampleData;
 
-                    double mVanalog = (((float)d.AD2) / 1023.0) * 1200.0;
-                    double temp_C = (mVanalog - 500.0) / 10.0 - 4.0;
-                    double lux = (((float)d.AD1) / 1023.0) * 1200.0;
+                //    double mVanalog = (((float)d.AD2) / 1023.0) * 1200.0;
+                //    double temp_C = (mVanalog - 500.0) / 10.0 - 4.0;
+                //    double lux = (((float)d.AD1) / 1023.0) * 1200.0;
 
-                    mVanalog = (((float)d.AD3) / 1023.0) * 1200.0;
-                    double hum = ((mVanalog * (108.2 / 33.2)) - 0.16) / (5 * 0.0062 * 1000.0);
+                //    mVanalog = (((float)d.AD3) / 1023.0) * 1200.0;
+                //    double hum = ((mVanalog * (108.2 / 33.2)) - 0.16) / (5 * 0.0062 * 1000.0);
 
-                    temperature = temp_C;
-                }
+                //    temperature = temp_C;
+                //}
             }
         }
 

@@ -40,28 +40,36 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Enums\TxStatusType.cs" />
     <Compile Include="LogEvent.cs" />
     <Compile Include="FrameReceived.cs" />
     <Compile Include="Enums\SourceActionType.cs" />
     <Compile Include="ModemStatusChanged.cs" />
+    <Compile Include="Request\TxRequest64.cs" />
+    <Compile Include="Request\TxRequest16.cs" />
     <Compile Include="Request\AT\SerialNumberLow.cs" />
     <Compile Include="Request\AT\SerialNumberHigh.cs" />
     <Compile Include="Request\AT\DestinationNode.cs" />
     <Compile Include="Request\AT\DestinationAddressHigh.cs" />
     <Compile Include="Request\AT\DestinationAddressLow.cs" />
+    <Compile Include="Response\IAtCommandResponse.cs" />
+    <Compile Include="Response\RxResponse64.cs" />
+    <Compile Include="Response\ZNet\AT\ZNetNodeDiscover.cs" />
+    <Compile Include="Response\ZNet\ZNetRxResponse.cs" />
+    <Compile Include="Response\TxStatusResponse.cs" />
     <Compile Include="XBeeFrameResponse.cs" />
     <Compile Include="XBeeFrameRequest.cs" />
     <Compile Include="XBeeAddress16.cs" />
     <Compile Include="Enums\ApiType.cs" />
-    <Compile Include="Enums\ZigBeeModemStatusType.cs" />
-    <Compile Include="Enums\ZigBeeReceiveOptionType.cs" />
+    <Compile Include="Enums\ModemStatusType.cs" />
+    <Compile Include="Enums\ReceiveOptionType.cs" />
     <Compile Include="Enums\SleepModeType.cs" />
-    <Compile Include="Enums\DiscoveryStatusType.cs" />
-    <Compile Include="Enums\DeliveryStatusType.cs" />
+    <Compile Include="Enums\ZNet\DiscoveryStatusType.cs" />
+    <Compile Include="Enums\ZNet\DeliveryStatusType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Request\AtCommand.cs" />
     <Compile Include="Request\AtQueueCommand.cs" />
-    <Compile Include="Request\AtRemoteCommand.cs" />
+    <Compile Include="Request\RemoteAtRequest.cs" />
     <Compile Include="Request\AT\ApplyChanges.cs" />
     <Compile Include="Request\AT\ApiEnable.cs" />
     <Compile Include="Request\AT\Channel.cs" />
@@ -83,28 +91,27 @@
     <Compile Include="Request\AT\SoftwareReset.cs" />
     <Compile Include="Request\AT\NodeIdentifier.cs" />
     <Compile Include="Request\AT\NodeDiscover.cs" />
-    <Compile Include="Request\ZigBeeTransmitRequest.cs" />
-    <Compile Include="Request\ZNetTxRequest.cs" />
+    <Compile Include="Request\ZNetTransmitRequest.cs" />
     <Compile Include="Response\AtCommandResponse.cs" />
     <Compile Include="Enums\AtCommandStatus.cs" />
-    <Compile Include="Response\AtRemoteCommandResponse.cs" />
-    <Compile Include="Response\AT\ApiEnableData.cs" />
-    <Compile Include="Response\AT\ForceSampleData.cs" />
-    <Compile Include="Response\AT\SleepModeData.cs" />
-    <Compile Include="Response\AT\TimeBeforeSleepData.cs" />
-    <Compile Include="Response\AT\CyclicSleepPeriodData.cs" />
-    <Compile Include="Response\AT\ReceivedSignalStrengthData.cs" />
-    <Compile Include="Response\AT\SupplyVoltageData.cs" />
-    <Compile Include="Response\AT\NodeIdentifierData.cs" />
-    <Compile Include="Response\AT\IAtCommandData.cs" />
-    <Compile Include="Response\AT\NodeDiscoverData.cs" />
-    <Compile Include="Response\ZigBeeModemStatus.cs" />
-    <Compile Include="Response\ZigBeeTransmitStatus.cs" />
-    <Compile Include="Response\NodeIdentification.cs" />
+    <Compile Include="Response\RemoteAtResponse.cs" />
+    <Compile Include="Response\AT\ApiEnable.cs" />
+    <Compile Include="Response\AT\ForceSample.cs" />
+    <Compile Include="Response\AT\SleepMode.cs" />
+    <Compile Include="Response\AT\TimeBeforeSleep.cs" />
+    <Compile Include="Response\AT\CyclicSleepPeriod.cs" />
+    <Compile Include="Response\AT\ReceivedSignalStrength.cs" />
+    <Compile Include="Response\AT\SupplyVoltage.cs" />
+    <Compile Include="Response\AT\NodeIdentifier.cs" />
+    <Compile Include="Response\IAtCommandResponseData.cs" />
+    <Compile Include="Response\AT\NodeDiscover.cs" />
+    <Compile Include="Response\ModemStatus.cs" />
+    <Compile Include="Response\ZNet\ZNetTxStatusResponse.cs" />
+    <Compile Include="Response\ZNet\ZNetNodeIdentificationResponse.cs" />
     <Compile Include="Response\XBeeSensorRead.cs" />
-    <Compile Include="Enums\ZigBeeDeviceType.cs" />
-    <Compile Include="Response\ZigBeeIODataSample.cs" />
-    <Compile Include="Response\ZigBeeReceivePacket.cs" />
+    <Compile Include="Enums\ZNet\ZNetDeviceType.cs" />
+    <Compile Include="Response\ZNet\ZNetRxIoSampleResponse.cs" />
+    <Compile Include="Response\RxResponse16.cs" />
     <Compile Include="XBee.cs" />
     <Compile Include="Enums\XBeeApiType.cs" />
     <Compile Include="XBeeAddress64.cs" />
@@ -120,6 +127,9 @@
       <Project>{A3B69586-127A-4287-9EA1-E64E2C42131C}</Project>
       <Name>IO</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Request\ZNet\AT\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

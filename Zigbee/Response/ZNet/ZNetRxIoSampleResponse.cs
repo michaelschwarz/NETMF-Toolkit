@@ -1,5 +1,5 @@
 ﻿/* 
- * ZigBeeIODataSample.cs
+ * ZNetRxIoSampleResponse.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -36,7 +36,7 @@ namespace MFToolkit.Net.XBee
     /// <summary>
     /// Represents a ZigBee IO data sample response
     /// </summary>
-    public class ZigBeeIODataSample : XBeeResponse
+    public class ZNetRxIoSampleResponse : XBeeResponse
     {
         private XBeeAddress64 _address64;
         private XBeeAddress16 _address16;
@@ -71,9 +71,9 @@ namespace MFToolkit.Net.XBee
             get { return _address16; }
         }
         
-        public ZigBeeReceiveOptionType ReceiveOption
+        public ReceiveOptionType ReceiveOption
         {
-            get { return (ZigBeeReceiveOptionType)_options; } 
+            get { return (ReceiveOptionType)_options; } 
         }
 
         public byte NumSamples 
@@ -134,7 +134,7 @@ namespace MFToolkit.Net.XBee
 
         #endregion
 
-        public ZigBeeIODataSample(short length, ByteReader br)
+        public ZNetRxIoSampleResponse(short length, ByteReader br)
             : base(length, br)
         {
             _address64 = XBeeAddress64.ReadBytes(br);

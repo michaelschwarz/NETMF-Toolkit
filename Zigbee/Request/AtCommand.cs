@@ -80,7 +80,7 @@ namespace MFToolkit.Net.XBee
 
         public AtCommand(string command, byte[] value)
         {
-            this.ApiID = XBeeApiType.ATCommand;
+            this.ApiID = XBeeApiType.AtCommand;
             this.Command = command;
         }
 

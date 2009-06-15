@@ -1,5 +1,5 @@
 ﻿/* 
- * ForceSampleData.cs
+ * ForceSample.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -35,7 +35,7 @@ namespace MFToolkit.Net.XBee
     /// <summary>
     /// Represents a force sample command response structure
     /// </summary>
-	public class ForceSampleData : IAtCommandData
+    public class ForceSample : IAtCommandResponseData
 	{
 		private byte _numSamples;
 		private byte _digitalChannelMask1;
@@ -81,6 +81,19 @@ namespace MFToolkit.Net.XBee
         // ...
 
         #endregion
+
+        public static ForceSample Parse(IAtCommandResponse cmd)
+        {
+            if (cmd.Command != ForceSampleCommand.command)
+                throw new ArgumentException("This method is only applicable for the '" + ForceSampleCommand.command + "' command!", "cmd");
+
+            ByteReader br = new ByteReader(cmd.Value, ByteOrder.BigEndian);
+
+            ForceSample fs = new ForceSample();
+            fs.ReadBytes(br);
+
+            return fs;
+        }
 
         public void ReadBytes(ByteReader br)
 		{

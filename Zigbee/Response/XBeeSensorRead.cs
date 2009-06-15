@@ -64,9 +64,9 @@ namespace MFToolkit.Net.XBee
             get { return _address16; }
         }
 
-        public ZigBeeReceiveOptionType ReceiveOption
+        public ReceiveOptionType ReceiveOption
         {
-            get { return (ZigBeeReceiveOptionType)_options; }
+            get { return (ReceiveOptionType)_options; }
         }
 
         /// <summary>

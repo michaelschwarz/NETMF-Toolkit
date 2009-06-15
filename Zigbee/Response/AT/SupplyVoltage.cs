@@ -1,5 +1,5 @@
 ﻿/* 
- * TimeBeforeSleepData.cs
+ * SupplyVoltage.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -30,32 +30,56 @@ using MFToolkit.IO;
 namespace MFToolkit.Net.XBee
 {
     /// <summary>
-    /// Represents a time before sleep commmand response structure
+    /// Represents a supply voltage command response structure
     /// </summary>
-	public class TimeBeforeSleepData : IAtCommandData
+    public class SupplyVoltage : IAtCommandResponseData
 	{
-		private ushort _msec;
+		private short _supply;
+ 
+		#region Public Properties
 
-        #region Public Properties
+		/// <summary>
+		/// Gets the voltage in mV on the Vcc pin.
+		/// </summary>
+		public int Voltage
+		{
+			get
+			{
+				return ((int)_supply) * (1200 / 1024);
+			}
+		}
 
-        /// <summary>
-        /// The milliseconds before sleep.
-        /// </summary>
-        public ushort Value
+		#endregion
+
+        public static SupplyVoltage Parse(IAtCommandResponse cmd)
         {
-            get { return _msec; }
-        }
+            if (cmd.Command != SupplyVoltageCommand.command)
+                throw new ArgumentException("This method is only applicable for the '" + SupplyVoltageCommand.command + "' command!", "cmd");
 
-        #endregion
+            ByteReader br = new ByteReader(cmd.Value, ByteOrder.BigEndian);
+
+            SupplyVoltage sv = new SupplyVoltage();
+            sv.ReadBytes(br);
+
+            return sv;
+        }
 
         public void ReadBytes(ByteReader br)
 		{
-			_msec = br.ReadUInt16();
+    		_supply = br.ReadInt16();
 		}
 
 		public override string ToString()
 		{
-			return _msec + " msec";
+			return this.Voltage + " mV";
+		}
+
+		public static implicit operator int(SupplyVoltage d)
+		{
+			if (d == null)
+				throw new ArgumentException("SupplyVoltageData can not be null.", "d");
+
+			return d.Voltage;
 		}
 	}
 }

@@ -1,5 +1,5 @@
 ﻿/* 
- * NodeDiscover.cs
+ * NodeDiscoverCommand.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -37,14 +37,16 @@ namespace MFToolkit.Net.XBee
 	/// case, only a module matching the supplied identifier
 	/// will respond.
 	/// </summary>
-	public class NodeDiscover : AtCommand
+	public class NodeDiscoverCommand : AtCommand
 	{
-		public NodeDiscover()
-			: base("ND")
+        internal static string command = "ND";
+
+		public NodeDiscoverCommand()
+			: base(NodeDiscoverCommand.command)
 		{
 		}
 
-		public NodeDiscover(string NI)
+		public NodeDiscoverCommand(string NI)
 			: this()
 		{
 			if (NI != null && NI.Length > 0)			// !String.IsNullOrEmpty(NI))

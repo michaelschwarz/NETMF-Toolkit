@@ -31,18 +31,33 @@ namespace MFToolkit.Net.XBee
     public enum XBeeApiType : byte
     {
         ModemStatus = 0x8A,
-        ATCommand = 0x08,
-        ATCommandQueueParameterValue = 0x09,
-        ATCommandResponse = 0x88,
-        RemoteCommandRequest = 0x17,
-        RemoteCommandResponse = 0x97,
-        ZigBeeTransmitRequest = 0x10,
-        ExplicitAddressingZigBeeCommandFrame = 0x11,
-        ZigBeeTransmitStatus = 0x8B,
-        ZigBeeReceivePacket = 0x90,
-        ZigBeeExplicitRxIndicator = 0x91,
-        ZigBeeIODataSampleRxIndicator = 0x92,
+        AtCommand = 0x08,
+        AtCommandQueueParameterValue = 0x09,
+        AtCommandResponse = 0x88,
+        RemoteAtCommandRequest = 0x17,
+        RemoteAtCommandResponse = 0x97,
+
+        #region Series 1
+
+        TxRequest64 = 0x00,
+        TxRequest16 = 0x01,
+        TxStatus = 0x89,
+        RxPacket64 = 0x80,
+        RxPacket16 = 0x81,
+
+        #endregion
+
+        #region Series 2 (ZigBee)
+
+        ZNetTxRequest = 0x10,
+        ExplicitAddressingZigBeeCommandFrame = 0x11,        // better name?
+        ZNetTxStatus = 0x8B,
+        ZNetRxPacket = 0x90,
+        ZNetExplicitRxIndicator = 0x91,
+        ZNetIODataSampleRxIndicator = 0x92,
         XBeeSensorReadIndicator = 0x94,
-        NodeIdentificationIndicator = 0x95    
+        NodeIdentificationIndicator = 0x95
+
+        #endregion
     }
 }
