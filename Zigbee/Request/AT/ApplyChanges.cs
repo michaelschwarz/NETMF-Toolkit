@@ -1,5 +1,5 @@
 ﻿/* 
- * ApplyChanges.cs
+ * ApplyChangesCommand.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -28,10 +28,12 @@ using System.Text;
 
 namespace MFToolkit.Net.XBee
 {
-	public class ApplyChanges : AtCommand
+	public class ApplyChangesCommand : AtCommand
 	{
-		public ApplyChanges()
-			: base("AC")
+        internal static string command = "AC";
+
+        public ApplyChangesCommand()
+			: base(ApplyChangesCommand.command)
 		{
 		}
 	}

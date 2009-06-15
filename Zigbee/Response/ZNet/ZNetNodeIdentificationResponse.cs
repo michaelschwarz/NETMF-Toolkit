@@ -1,5 +1,5 @@
 ﻿/* 
- * NodeDiscoverData.cs
+ * ZNetNodeIdentificationResponse.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -21,25 +21,24 @@
  * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
- * BL	09-01-28	update for .NET 3.0
- * MS   09-02-07    changed back to non .NET 3.0 compiler options to support old VS
- * 
  * 
  */
+using System;
+using System.Text;
 using MFToolkit.IO;
 
 namespace MFToolkit.Net.XBee
 {
     /// <summary>
-    /// Represents a node discover command response structure
+    /// Represents a node identification response
     /// </summary>
-    public class NodeDiscoverData : IAtCommandData
+    public class ZNetNodeIdentificationResponse : XBeeResponse
     {
-        private const byte terminationCharacter = 0x00;
-
         private XBeeAddress64 _address64;
         private XBeeAddress16 _address16;
+        private byte _options;
+        private XBeeAddress64 _addressNode64;
+        private XBeeAddress16 _addressNode16;
         private string _ni;
         private XBeeAddress16 _parent16;
         private byte _deviceType;
@@ -47,10 +46,10 @@ namespace MFToolkit.Net.XBee
         private ushort _profileID;
         private ushort _manufactureID;
 
-        #region Public Properties
+		#region Public Properties
 
         /// <summary>
-        /// Serial Number (SH SL)
+        /// Serial Number
         /// </summary>
         public XBeeAddress64 SerialNumber
         {
@@ -58,11 +57,16 @@ namespace MFToolkit.Net.XBee
         }
 
         /// <summary>
-        /// Short Address (MY)
+        /// Short Address
         /// </summary>
         public XBeeAddress16 ShortAddress
         {
             get { return _address16; }
+        }
+
+        public byte Options
+        {
+            get { return _options; }
         }
 
         /// <summary>
@@ -74,20 +78,17 @@ namespace MFToolkit.Net.XBee
         }
 
         /// <summary>
-        /// Parent Network Address (MP)
+        /// Parent Network Address
         /// </summary>
         public XBeeAddress16 ParentAddress
         {
             get { return _parent16; }
         }
 
-        /// <summary>
-        /// Device Type
-        /// </summary>
-        public ZigBeeDeviceType DeviceType
-        {
-            get { return (ZigBeeDeviceType)_deviceType; }
-        }
+		public ZNetDeviceType DeviceType
+		{
+			get { return (ZNetDeviceType)_deviceType; }
+		}
 
         /// <summary>
         /// Source Action
@@ -113,14 +114,20 @@ namespace MFToolkit.Net.XBee
             get { return _manufactureID; }
         }
 
-        #endregion
+		#endregion
 
-        public void ReadBytes(ByteReader br)
+		public ZNetNodeIdentificationResponse(short length, ByteReader br)
+            : base(length, br)
         {
-            _address16 = XBeeAddress16.ReadBytes(br);
             _address64 = XBeeAddress64.ReadBytes(br);
+            _address16 = XBeeAddress16.ReadBytes(br);
 
-            _ni = br.ReadString(terminationCharacter);
+            _options = br.ReadByte();
+
+            _addressNode16 = XBeeAddress16.ReadBytes(br);
+            _addressNode64 = XBeeAddress64.ReadBytes(br);
+
+            _ni = br.ReadString((byte)0x00);		// TODO: verfiy if this is correct?!
 
             _parent16 = XBeeAddress16.ReadBytes(br);
             _deviceType = br.ReadByte();
@@ -131,15 +138,15 @@ namespace MFToolkit.Net.XBee
 
         public override string ToString()
         {
-            string s = "";
+            string s = base.ToString() + "\r\n";
 
-            s += "SerialNumber = " + SerialNumber + "\r\n";
-            s += "ShortAddress = " + ShortAddress + "\r\n";
+            s += "SerialNumber  = " + SerialNumber + "\r\n";
+            s += "ShortAddress  = " + ShortAddress + "\r\n";
             s += "NodeIdentifier = " + NodeIdentifier + "\r\n";
-            s += "Parent       = " + ParentAddress + "\r\n";
-            s += "DeviceType   = " + DeviceType + "\r\n";
-            s += "SourceAction = " + SourceAction + "\r\n";
-            s += "ProfileID    = " + ProfileID + "\r\n";
+            s += "Parent        = " + ParentAddress + "\r\n";
+            s += "DeviceType    = " + DeviceType + "\r\n";
+            s += "SourceAction  = " + SourceAction + "\r\n";
+            s += "ProfileID     = " + ProfileID + "\r\n";
             s += "ManufactureID = " + ManufacturerID;
 
             return s;

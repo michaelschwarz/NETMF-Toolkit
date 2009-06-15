@@ -1,5 +1,5 @@
 ﻿/* 
- * Channel.cs
+ * ChannelCommand.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -36,14 +36,16 @@ namespace MFToolkit.Net.XBee
 	/// available to the module.
 	/// <remarks>Center Frequency = 2.405 + (CH - 11d) * 5 MHz (d = decimal)</remarks>
 	/// </summary>
-	public class Channel : AtCommand
+	public class ChannelCommand : AtCommand
 	{
-		public Channel()
-			: base("CH")
+        internal static string command = "CH";
+
+		public ChannelCommand()
+			: base(ChannelCommand.command)
 		{
 		}
 
-		public Channel(byte channel)
+        public ChannelCommand(byte channel)
 			: this()
 		{
 			if (

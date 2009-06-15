@@ -1,5 +1,5 @@
 ﻿/* 
- * SupplyVoltageData.cs
+ * ReceivedSignalStrength.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -30,43 +30,50 @@ using MFToolkit.IO;
 namespace MFToolkit.Net.XBee
 {
     /// <summary>
-    /// Represents a supply voltage command response structure
+    /// Represents a received signal strength command response structure
     /// </summary>
-	public class SupplyVoltageData : IAtCommandData
+    public class ReceivedSignalStrength : IAtCommandResponseData
 	{
-		private short _supply;
+		private byte _signalStrength;
  
 		#region Public Properties
 
-		/// <summary>
-		/// Gets the voltage in mV on the Vcc pin.
-		/// </summary>
-		public int Voltage
+        public short SignalStrength
 		{
-			get
-			{
-				return ((int)_supply) * (1200 / 1024);
-			}
+			get { return (short)(-1 * _signalStrength); }
 		}
 
 		#endregion
 
+        public static ReceivedSignalStrength Parse(IAtCommandResponse cmd)
+        {
+            if (cmd.Command != ReceivedSignalStrengthCommand.command)
+                throw new ArgumentException("This method is only applicable for the '" + ReceivedSignalStrengthCommand.command + "' command!", "cmd");
+
+            ByteReader br = new ByteReader(cmd.Value, ByteOrder.BigEndian);
+
+            ReceivedSignalStrength rssi = new ReceivedSignalStrength();
+            rssi.ReadBytes(br);
+
+            return rssi;
+        }
+
         public void ReadBytes(ByteReader br)
 		{
-    		_supply = br.ReadInt16();
+			_signalStrength = br.ReadByte();
 		}
 
 		public override string ToString()
 		{
-			return this.Voltage + " mV";
+			return SignalStrength + " dBm";
 		}
 
-		public static implicit operator int(SupplyVoltageData d)
+        public static implicit operator short(ReceivedSignalStrength s)
 		{
-			if (d == null)
-				throw new ArgumentException("SupplyVoltageData can not be null.", "d");
+			if (s == null)
+				throw new ArgumentException("ReceivedSignalStrength can not be null.", "s");
 
-			return d.Voltage;
+			return s.SignalStrength;
 		}
 	}
 }

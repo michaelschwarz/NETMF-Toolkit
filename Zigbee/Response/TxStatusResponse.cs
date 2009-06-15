@@ -1,5 +1,5 @@
 ﻿/* 
- * ZigBeeReceiveOptionType.cs
+ * TxStatusResponse.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -25,12 +25,40 @@
  */
 using System;
 using System.Text;
+using MFToolkit.IO;
 
 namespace MFToolkit.Net.XBee
 {
-	public enum ZigBeeReceiveOptionType : byte
+    /// <summary>
+    /// When a TX Request is completed, the module sends a TX Status message. This message will
+    /// indicate if the packet was transmitted successfully or if there was a failure.
+    /// </summary>
+	public class TxStatusResponse : XBeeFrameResponse
 	{
-		PacketAcknowledged = 0x01,
-		BroadcastPacket = 0x02
+		private byte _status;
+
+		#region Public Properties
+
+        public TxStatusType Status
+		{
+            get { return (TxStatusType)_status; }
+		}
+
+		#endregion
+
+        public TxStatusResponse(short length, ByteReader br)
+			: base(length, br)
+		{
+			_status = br.ReadByte();
+		}
+
+		public override string ToString()
+		{
+			string s = base.ToString() + "\r\n";
+
+			s += "Status = " + Status;
+
+			return s;
+		}
 	}
 }

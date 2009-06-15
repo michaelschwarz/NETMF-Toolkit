@@ -45,10 +45,10 @@ namespace MFToolkit.Net.XBee
         /// </summary>
         public static readonly XBeeAddress16 BROADCAST = new XBeeAddress16(0xffff);
 
-        /// <summary>
-        /// The ZNet broadcast address.
-        /// </summary>
-        public static readonly XBeeAddress16 ZNET_BROADCAST = new XBeeAddress16(0xfffe);
+        ///// <summary>
+        ///// The ZNet broadcast address.
+        ///// </summary>
+        //public static readonly XBeeAddress16 ZNET_BROADCAST = new XBeeAddress16(0xfffe);
 
         #endregion
 

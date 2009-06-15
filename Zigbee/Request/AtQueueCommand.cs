@@ -40,7 +40,7 @@ namespace MFToolkit.Net.XBee
         public AtQueueCommand(string command, byte[] value)
             : base(command, value)
         {
-            this.ApiID = XBeeApiType.ATCommandQueueParameterValue;
+            this.ApiID = XBeeApiType.AtCommandQueueParameterValue;
         }
     }
 }

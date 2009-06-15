@@ -1,5 +1,5 @@
 ﻿/* 
- * AtRemoteCommand.cs
+ * ZNetRemoteAtRequest.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -32,10 +32,11 @@ namespace MFToolkit.Net.XBee
     /// <summary>
     /// Allows for module parameter registers on a remote device to be queried or set.
     /// </summary>
-    public class AtRemoteCommand : AtCommand
+    public class RemoteAtRequest : AtCommand
     {
-        private XBeeAddress64 _address64;
-        private XBeeAddress16 _address16;
+        private XBeeAddress64 _address64 = XBeeAddress64.BROADCAST;
+        private XBeeAddress16 _address16 = XBeeAddress16.BROADCAST;
+
         private byte _options = 0x00;           // 0x02 to save remote configuration instead of AC command
 
         #region Public Properties
@@ -66,10 +67,10 @@ namespace MFToolkit.Net.XBee
 
         #endregion
 
-        public AtRemoteCommand(XBeeAddress64 address64, XBeeAddress16 address16, bool applyChanges, string command, byte[] value)
+        public RemoteAtRequest(XBeeAddress64 address64, XBeeAddress16 address16, bool applyChanges, string command, byte[] value)
             : base(command, value)
         {
-            this.ApiID = XBeeApiType.RemoteCommandRequest;
+            this.ApiID = XBeeApiType.RemoteAtCommandRequest;
             _address64 = address64;
             _address16 = address16;
 
@@ -77,30 +78,49 @@ namespace MFToolkit.Net.XBee
                 _options = 0x02;
         }
 
-        public AtRemoteCommand(XBeeAddress64 address64, XBeeAddress16 address16, bool applyChanges, AtCommand cmd)
+        #region Other Constructors
+
+        public RemoteAtRequest(XBeeAddress64 address64, XBeeAddress16 address16, bool applyChanges, AtCommand cmd)
             : this(address64, address16, applyChanges, cmd.Command, cmd.Value)
 		{
 		}
 
-        public AtRemoteCommand(XBeeAddress64 address64, XBeeAddress16 address16, AtCommand cmd)
+        public RemoteAtRequest(XBeeAddress64 address64, XBeeAddress16 address16, AtCommand cmd)
             : this(address64, address16, true, cmd)
         {
         }
 
-        public AtRemoteCommand(XBeeAddress64 address64, bool applyChanges, AtCommand cmd)
-            : this(address64, XBeeAddress16.ZNET_BROADCAST, applyChanges, cmd.Command, cmd.Value)
+        public RemoteAtRequest(XBeeAddress64 address64, bool applyChanges, AtCommand cmd)
+            : this(address64, XBeeAddress16.BROADCAST, applyChanges, cmd.Command, cmd.Value)
         {
         }
 
-        public AtRemoteCommand(XBeeAddress64 address64, AtCommand cmd)
+        public RemoteAtRequest(XBeeAddress64 address64, AtCommand cmd)
             : this(address64, true, cmd)
         {
         }
 
-        public AtRemoteCommand(XBeeAddress64 address64, string command)
-            : this(address64, XBeeAddress16.ZNET_BROADCAST, true, command, new byte[0])
+        public RemoteAtRequest(XBeeAddress64 address64, string command)
+            : this(address64, XBeeAddress16.BROADCAST, true, command, new byte[0])
         {
         }
+
+        public RemoteAtRequest(XBeeAddress16 address16, bool applyChanges, AtCommand cmd)
+            : this(XBeeAddress64.BROADCAST, address16, applyChanges, cmd.Command, cmd.Value)
+        {
+        }
+
+        public RemoteAtRequest(XBeeAddress16 address16, AtCommand cmd)
+            : this(address16, true, cmd)
+        {
+        }
+
+        public RemoteAtRequest(XBeeAddress16 address16, string command)
+            : this(XBeeAddress64.BROADCAST, address16, true, command, new byte[0])
+        {
+        }
+
+        #endregion
 
         internal override void WriteBytesCommand(ByteWriter bw)
         {

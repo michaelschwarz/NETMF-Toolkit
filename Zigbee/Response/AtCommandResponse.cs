@@ -37,7 +37,7 @@ namespace MFToolkit.Net.XBee
     /// message. Some commands will send back multiple frames (for example, the ND (Node Discover)
     /// command).
     /// </summary>
-    public class AtCommandResponse : XBeeFrameResponse
+    public class AtCommandResponse : XBeeFrameResponse, IAtCommandResponse
     {
         private string _command;
         private byte _status;
@@ -65,6 +65,24 @@ namespace MFToolkit.Net.XBee
         public AtCommandResponse(short length, ByteReader br)
             : base(length, br)
         {
+            ReadBytes(length, br);
+        }
+
+        /// <summary>
+        /// Constructor to read 
+        /// </summary>
+        /// <param name="length"></param>
+        /// <param name="br"></param>
+        /// <param name="readBytes"></param>
+        internal AtCommandResponse(short length, ByteReader br, bool readBytes)
+            : base(length, br)
+        {
+            if (readBytes)
+                ReadBytes(length, br);
+        }
+
+        internal void ReadBytes(short length, ByteReader br)
+        {
 #if(MF)
 			_command = ByteUtil.GetString(br.ReadBytes(2));
 #elif(WindowsCE)
@@ -80,56 +98,18 @@ namespace MFToolkit.Net.XBee
                 _value = br.ReadBytes(length - 5);
         }
 
-        public IAtCommandData ParseValue()
-        {
-            return ParseValue(Command, Value);
-        }
-
-#if(!MF && !WindowsCE)
-        public T ParseValue<T>() where T : IAtCommandData
-        {
-            return (T)ParseValue(Command, Value);
-        }
-#endif
-
-        internal static IAtCommandData ParseValue(string command, byte[] value)
-        {
-            if (value == null || value.Length == 0)
-                return null;
-
-            IAtCommandData data = null;
-
-            switch (command)
-            {
-                case "DB": data = new ReceivedSignalStrengthData(); break;
-                case "IS": data = new ForceSampleData(); break;
-                case "ND": data = new NodeDiscoverData(); break;
-                case "NI": data = new NodeIdentifierData(); break;
-                case "SM": data = new SleepModeData(); break;
-                case "SP": data = new CyclicSleepPeriodData(); break;
-                case "ST": data = new TimeBeforeSleepData(); break;
-                case "%V": data = new SupplyVoltageData(); break;
-                case "AP": data = new ApiEnableData(); break;
-            }
-
-            if (data != null)
-            {
-                using (ByteReader br = new ByteReader(value, ByteOrder.BigEndian))
-                {
-                    data.ReadBytes(br);
-                }
-            }
-
-            return data;
-        }
-
         public override string ToString()
         {
             string s = base.ToString() + "\r\n";
 
             s += "Command = " + Command + "\r\n";
             s += "Status  = " + Status + "\r\n";
-            s += "Value = \r\n" + ParseValue();
+
+            if (_value != null)
+            {
+                s += "\r\n";
+                s += "Value   = \r\n" + ByteUtil.PrintBytes(_value);
+            }
 
             return s;
         }

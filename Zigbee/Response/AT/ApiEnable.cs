@@ -1,5 +1,5 @@
 ﻿/* 
- * ApiType.cs
+ * ApiEnableData.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -21,21 +21,51 @@
  * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
- * 
- * PH   09-01-28    initial version
  * 
  */
+using System;
+using System.Text;
+using MFToolkit.IO;
+
 namespace MFToolkit.Net.XBee
 {
-	public enum ZigBeeModemStatusType : byte
+    /// <summary>
+    /// Represents a api enable command response structure
+    /// </summary>
+    public class ApiEnable : IAtCommandResponseData
 	{
-        HardwareReset = 0x00,
-        WatchdogTimerReset = 0x01,
-        Associated = 0x02,
-        Disassociated = 0x03,
-        SynchronizationLost = 0x04,
-        CoordinatorRealignment = 0x05,
-        CoordinatorStarted = 0x06
+		private byte _apiType;
+
+		#region Public Properties
+
+		public ApiType ApiType
+		{
+			get { return (ApiType)_apiType; }
+		}
+
+		#endregion
+
+        public static ApiEnable Parse(IAtCommandResponse cmd)
+		{
+            if (cmd.Command != ApiEnableCommand.command)
+                throw new ArgumentException("This method is only applicable for the '" + ApiEnableCommand.command + "' command!", "cmd");
+
+            ByteReader br = new ByteReader(cmd.Value, ByteOrder.BigEndian);
+
+            ApiEnable ae = new ApiEnable();
+            ae.ReadBytes(br);
+			
+            return ae;
+		}
+
+        public void ReadBytes(ByteReader br)
+        {
+            _apiType = br.ReadByte();
+        }
+
+		public override string ToString()
+		{
+			return this.ApiType + "";
+		}
 	}
 }

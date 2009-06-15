@@ -1,5 +1,5 @@
 ﻿/* 
- * ZigBeeModemStatus.cs
+ * ModemStatus.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -31,22 +31,22 @@ using MFToolkit.IO;
 namespace MFToolkit.Net.XBee
 {
     /// <summary>
-    /// Represents a ZigBee modem status response
+    /// Represents a XBee modem status response
     /// </summary>
-	public class ZigBeeModemStatus : XBeeResponse
+	public class ModemStatusResponse : XBeeResponse
 	{
 		private byte _modemStatus;
 
 		#region Public Properties
 
-        public ZigBeeModemStatusType ModemStatus
+        public ModemStatusType ModemStatus
 		{
-            get { return (ZigBeeModemStatusType)_modemStatus; }
+            get { return (ModemStatusType)_modemStatus; }
 		}
 		
 		#endregion
 
-		public ZigBeeModemStatus(short length, ByteReader br)
+        public ModemStatusResponse(short length, ByteReader br)
 			: base(length, br)
 		{
             _modemStatus = br.ReadByte();

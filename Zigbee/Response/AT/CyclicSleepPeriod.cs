@@ -1,5 +1,5 @@
 ﻿/* 
- * CyclicSleepPeriodData.cs
+ * CyclicSleepPeriod.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -32,9 +32,22 @@ namespace MFToolkit.Net.XBee
     /// <summary>
     /// Represents a cyclic sleep period command response structure
     /// </summary>
-	public class CyclicSleepPeriodData : IAtCommandData
+    public class CyclicSleepPeriod : IAtCommandResponseData
 	{
 		private int _msec;
+
+        public static CyclicSleepPeriod Parse(IAtCommandResponse cmd)
+        {
+            if (cmd.Command != CyclicSleepPeriodCommand.command)
+                throw new ArgumentException("This method is only applicable for the '" + CyclicSleepPeriodCommand.command + "' command!", "cmd");
+
+            ByteReader br = new ByteReader(cmd.Value, ByteOrder.BigEndian);
+
+            CyclicSleepPeriod csp = new CyclicSleepPeriod();
+            csp.ReadBytes(br);
+
+            return csp;
+        }
 
         public void ReadBytes(ByteReader br)
 		{

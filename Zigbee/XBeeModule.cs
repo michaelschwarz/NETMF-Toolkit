@@ -80,17 +80,17 @@ namespace MFToolkit.Net.XBee
         /// <returns>A string containing the node identifier; otherwise null.</returns>
         public string GetNodeIdentifier()
         {
-            AtCommandResponse res = Execute(new NodeIdentifier()) as AtCommandResponse;
+            AtCommandResponse res = Execute(new NodeIdentifierCommand()) as AtCommandResponse;
 
             if (res == null)
                 throw new Exception("Could not execute NodeIdentifier command.");
 
-            NodeIdentifierData nid = res.ParseValue() as NodeIdentifierData;
+            NodeIdentifier ni = NodeIdentifier.Parse(res);
 
-            if (nid == null)
+            if (ni == null)
                 throw new Exception("Could not parse response as NodeIdentifier.");
 
-            return nid.NodeIdentifier;
+            return ni.Identifier;
         }
 
         /// <summary>
@@ -100,7 +100,7 @@ namespace MFToolkit.Net.XBee
         /// <returns>Returns true if sucessful; otherwise false.</returns>
         public bool SetNodeIdentifier(string identifier)
         {
-            Execute(new NodeIdentifier(identifier));
+            Execute(new NodeIdentifierCommand(identifier));
             return true;
         }
 
@@ -122,7 +122,7 @@ namespace MFToolkit.Net.XBee
         /// <returns>Returns true if sucessful; otherwise false.</returns>
         public bool WriteStateToMemory()
         {
-            Execute(new Write());
+            Execute(new WriteCommand());
             return true;
         }
     }

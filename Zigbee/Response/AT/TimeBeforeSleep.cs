@@ -1,5 +1,5 @@
 ﻿/* 
- * ApiEnable.cs
+ * TimeBeforeSleep.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -25,28 +25,50 @@
  */
 using System;
 using System.Text;
+using MFToolkit.IO;
 
 namespace MFToolkit.Net.XBee
 {
-	/// <summary>
-	/// Serial Interfacing: The AP command is used to
-	/// enable the RF module to operate using a framebased
-	/// API instead of using the default Transparent
-	/// (UART) mode.
-	/// </summary>
-	public class ApiEnableCommand : AtCommand
+    /// <summary>
+    /// Represents a time before sleep commmand response structure
+    /// </summary>
+    public class TimeBeforeSleep : IAtCommandResponseData
 	{
-        internal static string command = "AP";
+		private ushort _msec;
 
-		public ApiEnableCommand()
-			: base(ApiEnableCommand.command)
+        #region Public Properties
+
+        /// <summary>
+        /// The milliseconds before sleep.
+        /// </summary>
+        public ushort Value
+        {
+            get { return _msec; }
+        }
+
+        #endregion
+
+        public static TimeBeforeSleep Parse(IAtCommandResponse cmd)
+        {
+            if (cmd.Command != TimeBeforeSleepCommand.command)
+                throw new ArgumentException("This method is only applicable for the '" + TimeBeforeSleepCommand.command + "' command!", "cmd");
+
+            ByteReader br = new ByteReader(cmd.Value, ByteOrder.BigEndian);
+
+            TimeBeforeSleep tbs = new TimeBeforeSleep();
+            tbs.ReadBytes(br);
+
+            return tbs;
+        }
+
+        public void ReadBytes(ByteReader br)
 		{
+			_msec = br.ReadUInt16();
 		}
 
-		public ApiEnableCommand(ApiType apiType)
-			: this()
+		public override string ToString()
 		{
-			this.Value = new byte[] { (byte)apiType };
+			return _msec + " msec";
 		}
 	}
 }

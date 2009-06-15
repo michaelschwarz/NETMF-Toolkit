@@ -1,5 +1,5 @@
 ﻿/* 
- * ZigBeeTransmitRequest.cs
+ * ZNetTxRequest.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -22,7 +22,11 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
+ * 
+ * 
+ * 
  */
+// TODO: rename the file to ZNetTxRequest.cs
 using System;
 using System.Text;
 using MFToolkit.IO;
@@ -32,7 +36,7 @@ namespace MFToolkit.Net.XBee
     /// <summary>
     /// A TX Request message will cause the module to send RF Data as an RF Packet.TX Packet Frames.
     /// </summary>
-    public class ZigBeeTransmitRequest : XBeeFrameRequest
+    public class ZNetTxRequest : XBeeFrameRequest
     {
         private XBeeAddress64 _address64;
         private XBeeAddress16 _address16;
@@ -93,9 +97,9 @@ namespace MFToolkit.Net.XBee
 
         #endregion
 
-        public ZigBeeTransmitRequest(XBeeAddress64 address64, XBeeAddress16 address16, byte[] data)
+        public ZNetTxRequest(XBeeAddress64 address64, XBeeAddress16 address16, byte[] data)
         {
-            this.ApiID = XBeeApiType.ZigBeeTransmitRequest;
+            this.ApiID = XBeeApiType.ZNetTxRequest;
             _address64 = address64;
             _address16 = address16;
 

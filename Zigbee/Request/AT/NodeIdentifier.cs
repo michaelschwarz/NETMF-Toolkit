@@ -1,5 +1,5 @@
 ﻿/* 
- * NodeIdentifier.cs
+ * NodeIdentifierCommand.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -33,14 +33,16 @@ namespace MFToolkit.Net.XBee
 	/// is used to set and read a string for identifying a
 	/// particular node.
 	/// </summary>
-	public class NodeIdentifier : AtCommand
+	public class NodeIdentifierCommand : AtCommand
 	{
-		public NodeIdentifier()
-			: base("NI")
+        internal static string command = "NI";
+
+		public NodeIdentifierCommand()
+			: base(NodeIdentifierCommand.command)
 		{
 		}
 
-		public NodeIdentifier(string NI)
+		public NodeIdentifierCommand(string NI)
 			: this()
 		{
 			if (NI != null && NI.Length > 0)			// !String.IsNullOrEmpty(NI))
