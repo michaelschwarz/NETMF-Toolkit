@@ -1,5 +1,5 @@
 ﻿/* 
- * SleepMode.cs
+ * SleepModeCommand.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -28,14 +28,16 @@ using System.Text;
 
 namespace MFToolkit.Net.XBee
 {
-	public class SleepMode : AtCommand
+    public class SleepModeCommand : AtCommand
 	{
-		public SleepMode()
-			: base("SM")
+        internal static string command = "SM";
+
+		public SleepModeCommand()
+			: base(SleepModeCommand.command)
 		{
 		}
 
-		public SleepMode(SleepModeType sleepMode)
+		public SleepModeCommand(SleepModeType sleepMode)
 			: this()
 		{
 			this.Value = new byte[] { (byte)sleepMode };

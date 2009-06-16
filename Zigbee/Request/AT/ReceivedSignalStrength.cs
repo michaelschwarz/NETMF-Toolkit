@@ -1,5 +1,5 @@
 ﻿/* 
- * ReceivedSignalStrength.cs
+ * ReceivedSignalStrengthCommand.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -37,10 +37,12 @@ namespace MFToolkit.Net.XBee
 	/// Absolute values are reported. For example: 0x58 = -88 dBm (decimal). If no packets have been
 	/// received (since last reset, power cycle or sleep event), "0" will be reported.
 	/// </summary>
-	public class ReceivedSignalStrength : AtCommand
+	public class ReceivedSignalStrengthCommand : AtCommand
 	{
-		public ReceivedSignalStrength()
-			: base("DB")
+        internal static string command = "DB";
+
+        public ReceivedSignalStrengthCommand()
+			: base(ReceivedSignalStrengthCommand.command)
 		{
 		}
 	}

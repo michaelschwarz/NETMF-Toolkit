@@ -1,5 +1,5 @@
 ﻿/* 
- * SupplyVoltage.cs
+ * SupplyVoltageCommand.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -28,10 +28,12 @@ using System.Text;
 
 namespace MFToolkit.Net.XBee
 {
-	public class SupplyVoltage : AtCommand
+    public class SupplyVoltageCommand : AtCommand
 	{
-		public SupplyVoltage()
-			: base("%V")
+        internal static string command = "%V";
+
+		public SupplyVoltageCommand()
+			: base(SupplyVoltageCommand.command)
 		{
 		}
 	}

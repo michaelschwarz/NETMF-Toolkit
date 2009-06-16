@@ -1,5 +1,5 @@
 ﻿/* 
- * InterfaceDataRate.cs
+ * InterfaceDataRateCommand.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -28,14 +28,16 @@ using System.Text;
 
 namespace MFToolkit.Net.XBee
 {
-	public class InterfaceDataRate : AtCommand
+	public class InterfaceDataRateCommand : AtCommand
 	{
-		public InterfaceDataRate()
-			: base("BD")
+        internal static string command = "BD";
+
+		public InterfaceDataRateCommand()
+			: base(InterfaceDataRateCommand.command)
 		{
 		}
 
-		public InterfaceDataRate(int baudRate)
+        public InterfaceDataRateCommand(int baudRate)
 			: this()
 		{
 			byte baudRateValue = 0x80;

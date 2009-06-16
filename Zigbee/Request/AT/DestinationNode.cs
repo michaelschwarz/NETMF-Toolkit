@@ -1,5 +1,5 @@
 ﻿/* 
- * DestinationNode.cs
+ * DestinationNodeCommand.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -28,14 +28,16 @@ using System.Text;
 
 namespace MFToolkit.Net.XBee
 {
-	public class DestinationNode : AtCommand
+	public class DestinationNodeCommand : AtCommand
 	{
-		public DestinationNode()
-			: base("DN")
+        internal static string command = "DN";
+
+        public DestinationNodeCommand()
+			: base(DestinationNodeCommand.command)
 		{
 		}
 
-        public DestinationNode(string NI)
+        public DestinationNodeCommand(string NI)
 			: this()
 		{
 			if (NI != null && NI.Length > 0)			// !String.IsNullOrEmpty(NI))

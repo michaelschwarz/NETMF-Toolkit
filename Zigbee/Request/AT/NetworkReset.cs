@@ -1,5 +1,5 @@
 ﻿/* 
- * NetworkReset.cs
+ * NetworkResetCommand.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -28,10 +28,12 @@ using System.Text;
 
 namespace MFToolkit.Net.XBee
 {
-	public class NetworkReset : AtCommand
+	public class NetworkResetCommand : AtCommand
 	{
-		public NetworkReset()
-			: base("NR")
+        internal static string command = "NR";
+
+        public NetworkResetCommand()
+			: base(NetworkResetCommand.command)
 		{
 		}
 	}

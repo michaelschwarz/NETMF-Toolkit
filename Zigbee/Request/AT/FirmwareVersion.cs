@@ -1,5 +1,5 @@
 ﻿/* 
- * FirmwareVersion.cs
+ * FirmwareVersionCommand.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -28,14 +28,16 @@ using System.Text;
 
 namespace MFToolkit.Net.XBee
 {
-	public class FirmwareVersion : AtCommand
+	public class FirmwareVersionCommand : AtCommand
 	{
-		public FirmwareVersion()
-			: base("VR")
+        internal static string command = "VR";
+
+		public FirmwareVersionCommand()
+			: base(FirmwareVersionCommand.command)
 		{
 		}
 
-        public FirmwareVersion(bool beaconEnabled)
+        public FirmwareVersionCommand(bool beaconEnabled)
             : this()
         {
             if (beaconEnabled)

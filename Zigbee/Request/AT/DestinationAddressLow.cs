@@ -1,5 +1,5 @@
 ﻿/* 
- * DestinationAddressLow.cs
+ * DestinationAddressLowCommand.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -34,14 +34,16 @@ namespace MFToolkit.Net.XBee
     /// used to set and read the lower 32 bits of the RF
     /// module's 64-bit destination address.
 	/// </summary>
-	public class DestinationAddressLow : AtCommand
+	public class DestinationAddressLowCommand : AtCommand
 	{
-		public DestinationAddressLow()
-			: base("DL")
+        internal static string command = "DL";
+
+		public DestinationAddressLowCommand()
+			: base(DestinationAddressLowCommand.command)
 		{
 		}
 
-        public DestinationAddressLow(uint SL)
+        public DestinationAddressLowCommand(uint SL)
 			: this()
 		{
             using (ByteWriter bw = new ByteWriter(ByteOrder.BigEndian))
@@ -51,9 +53,9 @@ namespace MFToolkit.Net.XBee
             }
 		}
 
-        public static DestinationAddressLow FromSerialNumber(XBeeAddress64 address)
+        public static DestinationAddressLowCommand FromSerialNumber(XBeeAddress64 address)
         {
-            return new DestinationAddressLow(address.SL);
+            return new DestinationAddressLowCommand(address.SL);
         }
 	}
 }

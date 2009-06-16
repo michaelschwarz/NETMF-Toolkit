@@ -1,5 +1,5 @@
 ﻿/* 
- * Write.cs
+ * WriteCommand.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -28,10 +28,12 @@ using System.Text;
 
 namespace MFToolkit.Net.XBee
 {
-	public class Write : AtCommand
+	public class WriteCommand : AtCommand
 	{
-		public Write()
-			: base("WR")
+        internal static string command = "WR";
+
+        public WriteCommand()
+			: base(WriteCommand.command)
 		{
 		}
 	}

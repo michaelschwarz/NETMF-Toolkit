@@ -1,5 +1,5 @@
 ﻿/* 
- * DeviceTypeIdentifier.cs
+ * DeviceTypeIdentifierCommand.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -35,14 +35,16 @@ namespace MFToolkit.Net.XBee
 	/// API instead of using the default Transparent
 	/// (UART) mode.
 	/// </summary>
-	public class DeviceTypeIdentifier : AtCommand
+	public class DeviceTypeIdentifierCommand : AtCommand
 	{
-		public DeviceTypeIdentifier()
-			: base("DD")
+        internal static string command = "DD";
+
+        public DeviceTypeIdentifierCommand()
+			: base(DeviceTypeIdentifierCommand.command)
 		{
 		}
 
-		public DeviceTypeIdentifier(uint identifier)
+		public DeviceTypeIdentifierCommand(uint identifier)
 			: this()
 		{
 			ByteWriter br = new ByteWriter(ByteOrder.BigEndian);
