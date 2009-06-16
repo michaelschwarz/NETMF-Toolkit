@@ -340,6 +340,8 @@ namespace MFToolkit.Net.XBee
                 if (_waitResponse)
                     return null;
 
+                OnFrameReceived(_receivedPacket);
+
                 return _receivedPacket;
             }
             else if (_apiType == ApiType.Disabled)
@@ -574,13 +576,18 @@ namespace MFToolkit.Net.XBee
 
 			if (res != null)
 			{
-				if (_waitResponse && res is AtCommandResponse && (res as AtCommandResponse).FrameID == _frameID)
-				{
-					_receivedPacket = res;
-					_waitResponse = false;
-				}
+                if (_waitResponse && res is XBeeResponse)
+                {
+                    if (res is AtCommandResponse && (res as AtCommandResponse).FrameID != _frameID)
+                        return;
 
-                OnFrameReceived(res);
+                    _receivedPacket = res;
+                    _waitResponse = false;
+                }
+                else
+                {
+                    OnFrameReceived(res);
+                }
 			}
         }
 
