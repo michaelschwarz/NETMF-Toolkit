@@ -275,7 +275,7 @@ namespace MFToolkit.Net.XBee
                 throw new NotSupportedException("This ApiType is not supported.");
 
 #if(DEBUG && !MF && !WindowsCE)
-            File.AppendAllText("log.txt", DateTime.Now.ToLongTimeString() + "\t>>\t" + ByteUtil.PrintBytes(bytes, false) + "\r\n");
+            Console.WriteLine(">>\t" + ByteUtil.PrintBytes(bytes, false));
 #endif
 
             _serialPort.Write(bytes, 0, bytes.Length);
@@ -304,7 +304,7 @@ namespace MFToolkit.Net.XBee
         /// <exception cref="System.TimoutException">Throws an TimoutException when response could not be read.</exception>
         public XBeeResponse Execute(XBeeRequest request)
         {
-            return Execute(request, 1000);
+            return Execute(request, 3000);
         }
 
         /// <summary>
@@ -373,11 +373,6 @@ namespace MFToolkit.Net.XBee
                     }
                     else
                     {
-
-#if(DEBUG && !MF && !WindowsCE)
-                        Console.WriteLine(bytesToRead + " bytes to read");
-#endif
-
                         byte[] bytes = new byte[1024];	// TODO: what is the maximum size of Zigbee packets?
 
                         if (_serialPort == null || !_serialPort.IsOpen)
@@ -423,9 +418,24 @@ namespace MFToolkit.Net.XBee
                                 _readBuffer.Position = 0;
 
                                 // startOK should be always true if there is at least on byte
-                                // TODO: if not first byte is startbyte we need to search next startbyte
                                 startOK = ((byte)_readBuffer.ReadByte() == XBeePacket.PACKET_STARTBYTE);
-                                
+
+                                if (!startOK)
+                                {
+                                    bytes = _readBuffer.ToArray();
+                                    _readBuffer = new MemoryStream();
+
+                                    startOK = false;
+                                    for (int i = 0; i < bytes.Length; i++)
+                                    {
+                                        if (!startOK && bytes[i] != XBeePacket.PACKET_STARTBYTE)
+                                            continue;
+
+                                        startOK = true;
+                                        _readBuffer.Write(bytes, i, bytes.Length - i);
+                                        _readBuffer.Position = 0;
+                                    }
+                                }
 
                                 lengthAndCrcOK = this.CheckLengthAndCrc();
 
@@ -435,7 +445,7 @@ namespace MFToolkit.Net.XBee
                                 ByteReader br = new ByteReader(bytes, ByteOrder.BigEndian);
 
 #if(DEBUG && !MF && !WindowsCE)
-                                File.AppendAllText("log.txt", DateTime.Now.ToLongTimeString() + "\t<<\t" + ByteUtil.PrintBytes(bytes, false) + "\r\n");
+                                Console.WriteLine("<<\t" + ByteUtil.PrintBytes(bytes, false));
 #endif
 
                                 if (startOK && lengthAndCrcOK)
