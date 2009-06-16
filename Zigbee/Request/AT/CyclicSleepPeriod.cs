@@ -1,5 +1,5 @@
 ﻿/* 
- * CyclicSleepPeriod.cs
+ * CyclicSleepPeriodCommand.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -29,14 +29,16 @@ using MFToolkit.IO;
 
 namespace MFToolkit.Net.XBee
 {
-	public class CyclicSleepPeriod : AtCommand
+	public class CyclicSleepPeriodCommand : AtCommand
 	{
-		public CyclicSleepPeriod()
-			: base("SP")
+        internal static string command = "SP";
+
+		public CyclicSleepPeriodCommand()
+			: base(CyclicSleepPeriodCommand.command)
 		{
 		}
 
-		public CyclicSleepPeriod(int msec)
+        public CyclicSleepPeriodCommand(int msec)
 			: this()
 		{
 			int sp = msec / 10;

@@ -1,5 +1,5 @@
 ﻿/* 
- * RestoreDefaults.cs
+ * RestoreDefaultsCommand.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -28,10 +28,12 @@ using System.Text;
 
 namespace MFToolkit.Net.XBee
 {
-	public class RestoreDefaults : AtCommand
+	public class RestoreDefaultsCommand : AtCommand
 	{
-		public RestoreDefaults()
-			: base("RE")
+        internal static string command = "RE";
+
+        public RestoreDefaultsCommand()
+			: base(RestoreDefaultsCommand.command)
 		{
 		}
 	}

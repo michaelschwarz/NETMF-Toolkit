@@ -1,5 +1,5 @@
 ﻿/* 
- * SoftwareReset.cs
+ * SoftwareResetCommand.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -28,10 +28,12 @@ using System.Text;
 
 namespace MFToolkit.Net.XBee
 {
-	public class SoftwareReset : AtCommand
+	public class SoftwareResetCommand : AtCommand
 	{
-		public SoftwareReset()
-			: base("FR")
+        internal static string command = "FR";
+
+        public SoftwareResetCommand()
+			: base(SoftwareResetCommand.command)
 		{
 		}
 	}

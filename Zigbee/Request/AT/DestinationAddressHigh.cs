@@ -1,5 +1,5 @@
 ﻿/* 
- * DestinationAddressHigh.cs
+ * DestinationAddressHighCommand.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -34,14 +34,16 @@ namespace MFToolkit.Net.XBee
     /// used to set and read the higher 32 bits of the RF
     /// module's 64-bit destination address.
 	/// </summary>
-	public class DestinationAddressHigh : AtCommand
+	public class DestinationAddressHighCommand : AtCommand
 	{
-		public DestinationAddressHigh()
-			: base("DH")
+        internal static string command = "DH";
+
+		public DestinationAddressHighCommand()
+			: base(DestinationAddressHighCommand.command)
 		{
 		}
 
-        public DestinationAddressHigh(uint SH)
+        public DestinationAddressHighCommand(uint SH)
 			: this()
 		{
             using (ByteWriter bw = new ByteWriter(ByteOrder.BigEndian))
@@ -51,9 +53,9 @@ namespace MFToolkit.Net.XBee
             }
 		}
 
-        public static DestinationAddressHigh FromSerialNumber(XBeeAddress64 address)
+        public static DestinationAddressHighCommand FromSerialNumber(XBeeAddress64 address)
         {
-            return new DestinationAddressHigh(address.SH);
+            return new DestinationAddressHighCommand(address.SH);
         }
 	}
 }

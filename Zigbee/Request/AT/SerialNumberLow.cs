@@ -1,5 +1,5 @@
 ﻿/* 
- * SerialNumberLow.cs
+ * SerialNumberLowCommand.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -29,10 +29,12 @@ using MFToolkit.IO;
 
 namespace MFToolkit.Net.XBee
 {
-	public class SerialNumberLow : AtCommand
+	public class SerialNumberLowCommand : AtCommand
 	{
-        public SerialNumberLow()
-			: base("SL")
+        internal static string command = "SL";
+
+        public SerialNumberLowCommand()
+			: base(SerialNumberLowCommand.command)
 		{
 		}
 	}

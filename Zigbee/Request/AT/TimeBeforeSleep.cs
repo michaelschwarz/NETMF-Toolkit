@@ -1,5 +1,5 @@
 ﻿/* 
- * TimeBeforeSleep.cs
+ * TimeBeforeSleepCommand.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -29,14 +29,16 @@ using MFToolkit.IO;
 
 namespace MFToolkit.Net.XBee
 {
-	public class TimeBeforeSleep : AtCommand
+	public class TimeBeforeSleepCommand : AtCommand
 	{
-		public TimeBeforeSleep()
-			: base("ST")
+        internal static string command = "ST";
+
+		public TimeBeforeSleepCommand()
+			: base(TimeBeforeSleepCommand.command)
 		{
 		}
 
-		public TimeBeforeSleep(ushort msec)
+        public TimeBeforeSleepCommand(ushort msec)
 			: this()
 		{
 			ByteWriter bw = new ByteWriter(ByteOrder.BigEndian);

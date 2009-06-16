@@ -1,5 +1,5 @@
 ﻿/* 
- * HardwareVersion.cs
+ * HardwareVersionCommand.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -28,10 +28,12 @@ using System.Text;
 
 namespace MFToolkit.Net.XBee
 {
-	public class HardwareVersion : AtCommand
+	public class HardwareVersionCommand : AtCommand
 	{
-		public HardwareVersion()
-			: base("HV")
+        internal static string command = "HV";
+
+        public HardwareVersionCommand()
+			: base(HardwareVersionCommand.command)
 		{
 		}
 	}

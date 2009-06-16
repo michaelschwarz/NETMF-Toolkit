@@ -1,5 +1,5 @@
 ﻿/* 
- * WriteBindingTable.cs
+ * WriteBindingTableCommand.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -28,10 +28,12 @@ using System.Text;
 
 namespace MFToolkit.Net.XBee
 {
-	public class WriteBindingTable : AtCommand
+	public class WriteBindingTableCommand : AtCommand
 	{
-		public WriteBindingTable()
-			: base("WB")
+        internal static string command = "WB";
+
+        public WriteBindingTableCommand()
+			: base(WriteBindingTableCommand.command)
 		{
 		}
 	}

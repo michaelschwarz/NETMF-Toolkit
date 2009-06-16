@@ -1,5 +1,5 @@
 ﻿/* 
- * SerialNumberHigh.cs
+ * SerialNumberHighCommand.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -29,10 +29,12 @@ using MFToolkit.IO;
 
 namespace MFToolkit.Net.XBee
 {
-	public class SerialNumberHigh : AtCommand
+	public class SerialNumberHighCommand : AtCommand
 	{
-        public SerialNumberHigh()
-			: base("SH")
+        internal static string command = "SH";
+
+        public SerialNumberHighCommand()
+			: base(SerialNumberHighCommand.command)
 		{
 		}
 	}

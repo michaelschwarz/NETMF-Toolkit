@@ -1,5 +1,5 @@
 ﻿/* 
- * ForceSample.cs
+ * ForceSampleCommand.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -32,10 +32,12 @@ namespace MFToolkit.Net.XBee
 	/// IO Settings: The IS command is used to force
 	/// a read of all enabled DIO/ADC lines.
 	/// </summary>
-	public class ForceSample : AtCommand
+	public class ForceSampleCommand : AtCommand
 	{
-		public ForceSample()
-			: base("IS")
+        internal static string command = "IS";
+
+        public ForceSampleCommand()
+			: base(ForceSampleCommand.command)
 		{
 		}
 

@@ -1,5 +1,5 @@
 ﻿/* 
- * XBeeSensorSample.cs
+ * XBeeSensorSampleCommand.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -28,10 +28,12 @@ using System.Text;
 
 namespace MFToolkit.Net.XBee
 {
-	public class XBeeSensorSample : AtCommand
+	public class XBeeSensorSampleCommand : AtCommand
 	{
-		public XBeeSensorSample()
-			: base("1S")
+        internal static string command = "1S";
+
+        public XBeeSensorSampleCommand()
+			: base(XBeeSensorSampleCommand.command)
 		{
 		}
 	}
