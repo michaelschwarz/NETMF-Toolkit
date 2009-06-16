@@ -12,152 +12,83 @@ namespace ZigbeeConsole
 {
     class Program
     {
-		public static object ConsoleLock = new object();
+        public static object ConsoleLock = new object();
+
+        static void xbee_FrameReceived(object sender, FrameReceivedEventArgs e)
+        {
+            Console.WriteLine("received a packet: " + e.Response);
+
+            NodeDiscover nd = NodeDiscover.Parse((e.Response as AtCommandResponse));
+
+            if (nd != null && nd.ShortAddress != null)
+            {
+                Console.WriteLine(nd);
+
+                if (nd.NodeIdentifier == "SLAVE")
+                {
+                    Console.WriteLine("Sending \"Hallo\" to the SLAVE...");
+                    (sender as XBee).ExecuteNonQuery(new TxRequest64(nd.SerialNumber, Encoding.ASCII.GetBytes("Hallo")));
+                }
+            }
+
+            if (e.Response is RxResponse64)
+            {
+                Console.WriteLine("Recevied Rx64");
+                Console.WriteLine(ByteUtil.PrintBytes((e.Response as RxResponse64).Value));
+            }
+
+        }
 
         static void Main(string[] args)
         {
-			Thread thd1 = new Thread(new ThreadStart(RunCoordinator));
-			thd1.Start();
+            Thread thd1 = new Thread(new ThreadStart(RunModule1));
+            thd1.IsBackground = true;
+            thd1.Start();
 
-            //Thread thd2 = new Thread(new ThreadStart(RunDevice));
-            //thd2.Start();
+            Thread thd2 = new Thread(new ThreadStart(RunModule2));
+            thd2.IsBackground = true;
+            thd2.Start();
 
-			Console.ReadLine();
+            //thd1.Join();
+            //thd2.Join();
+
+            Console.ReadLine();
         }
 
-		static void RunDevice()
-		{
-			using (XBee xbee = new XBee("COM4", 9600, ApiType.Disabled))
-			{
-                xbee.FrameReceived += new FrameReceivedEventHandler(xbeedevice_OnPacketReceived);
-				xbee.Open();
+        static void RunModule1()
+        {
+            using (XBee xbee = new XBee("COM3", 9600, ApiType.Enabled))
+            {
+                xbee.FrameReceived += new FrameReceivedEventHandler(xbee_FrameReceived);
+                xbee.Open();
 
-				
-				while (true)
-				{
-					xbee.ExecuteNonQuery(new NodeDiscoverCommand());
-					Thread.Sleep(100);
-				}
-			}
-		}
+                // discovering the network
+                AtCommand at = new NodeDiscoverCommand();
 
-		static void RunCoordinator()
-		{
-			using (XBee xbee = new XBee("COM4", 9600, ApiType.Enabled))
-			{
-                xbee.FrameReceived += new FrameReceivedEventHandler(xbeecoord_OnPacketReceived);
-				xbee.Open();
+                xbee.Execute(at);
+                Thread.Sleep(10 * 1000);
 
-                while (true)
-				{
-					// discovering the network
-                    AtCommand at = new NodeDiscoverCommand();
-                    xbee.Execute(at);
-                    Thread.Sleep(60 * 1000);
-				}
+                xbee.Execute(at);
+                Thread.Sleep(10 * 1000);
+
 
                 xbee.StopReceiveData();
-                Console.WriteLine("stopped receiving thread");
-			}
-		}
+                Console.WriteLine("stopped master");
+            }
+        }
 
-		static void xbeecoord_OnPacketReceived(object sender, FrameReceivedEventArgs e)
-		{
-            XBeeResponse response = e.Response;
+        static void RunModule2()
+        {
+            using (XBee xbee = new XBee("COM4", 9600, ApiType.Enabled))
+            {
+                xbee.FrameReceived += new FrameReceivedEventHandler(xbee_FrameReceived);
+                xbee.Open();
 
-			if (!Monitor.TryEnter(ConsoleLock, 1000))
-				return;
+                Thread.Sleep(30 * 1000);
 
-			try
-			{
-				Console.WriteLine("COORDINATOR OnPacketReceived [" + response.GetType().FullName + "]\r\n" + response);
-
-				AtCommandResponse at = response as AtCommandResponse;
-
-				if (at != null)
-				{
-                    NodeDiscover ni = NodeDiscover.Parse(at);
-                    if (ni != null)
-                    {
-                        if (ni.NodeIdentifier == "XBEE_SENSOR" || ni.NodeIdentifier == "DEVICE2" || ni.NodeIdentifier == "XBEESENSOR")
-                        {
-                            //XBeeSensorSample sample = new XBeeSensorSample();
-                            //ForceSample sample = new ForceSample();
-                            //NodeIdentifier sample = new NodeIdentifier();
-                            //SupplyVoltage sample = new SupplyVoltage();
-
-                            //AtRemoteCommand rcmd = new AtRemoteCommand(ni.SerialNumber, sample);
-                            //sender.Execute(rcmd);
-
-                            ZNetTxRequest x = new ZNetTxRequest(ni.SerialNumber, ni.ShortAddress, Encoding.ASCII.GetBytes("Hallo"));
-                            (sender as XBee).Execute(x);
-
-                            Console.WriteLine("Sending ForceSample command...");
-                        }
-
-                        if (ni.NodeIdentifier == "XBEEDEVICE")
-                        {
-                            ZNetTxRequest send = new ZNetTxRequest(ni.SerialNumber, ni.ShortAddress, Encoding.UTF8.GetBytes("" + DateTime.Now.Ticks));
-                            (sender as XBee).Execute(send);
-                            Console.WriteLine("Sending ZigBeeTransmitRequest...");
-                        }
-                    }
-				}
-
-                ZNetRxResponse zr = response as ZNetRxResponse;
-
-				if (zr != null)
-				{
-					Console.WriteLine("ZigBee: " + Encoding.UTF8.GetString(zr.Value));
-				}
-
-				Console.WriteLine("============================================================");
-			}
-			finally
-			{
-				Monitor.Exit(ConsoleLock);
-			}
-		}
-
-		static void xbeedevice_OnPacketReceived(object sender, FrameReceivedEventArgs e)
-		{
-            XBeeResponse response = e.Response;
-
-			if (!Monitor.TryEnter(ConsoleLock, 1000))
-				return;
-
-			try
-			{
-				Console.WriteLine("DEVICE OnPacketReceived [" + response.GetType().FullName + "]\r\n" + response);
-
-				AtCommandResponse at = response as AtCommandResponse;
-
-				if (at != null)
-				{
-                    ZNetNodeDiscover ni = ZNetNodeDiscover.Parse(at);
-                    if (ni != null)
-                    {
-                        // ...
-                    }
-				}
-
-                ZNetRxResponse zigp = response as ZNetRxResponse;
-				if (zigp != null)
-				{
-					DateTime now = DateTime.Now;
-					string txt = Encoding.UTF8.GetString(zigp.Value);
-					long ticks = long.Parse(txt);
-					DateTime sent = new DateTime(ticks);
-
-					Console.WriteLine((now - sent).TotalMilliseconds + " msec");
-				}
-
-				Console.WriteLine("============================================================");
-			}
-			finally
-			{
-				Monitor.Exit(ConsoleLock);
-			}
-		}
+                xbee.StopReceiveData();
+                Console.WriteLine("stopped slave");
+            }
+        }
     }
 }
