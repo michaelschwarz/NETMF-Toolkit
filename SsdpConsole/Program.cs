@@ -1,4 +1,4 @@
-/* 
+﻿/* 
  * Program.cs		(Demo Application)
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
@@ -24,35 +24,43 @@
  * 
  */
 using System;
-using Microsoft.SPOT;
-using MFToolkit.Net.XBee;
+using System.Collections.Generic;
+using System.Text;
+using MFToolkit.Net.SSDP;
+using MFToolkit.Net.Web;
 using System.Threading;
 
-namespace MicroZigbeeConsole
+namespace SsdpConsole
 {
-	public class Program
-	{
-		public static void Main()
-		{
-			Debug.Print(
-				Resources.GetString(Resources.StringResources.String1));
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            SsdpServer ssdp = new SsdpServer();
+            ssdp.Start();
 
-			using (XBee xbee = new XBee("COM1", 9600))
-			{
-                xbee.FrameReceived += new FrameReceivedEventHandler(xbee_OnPacketReceived);
-				xbee.Open();
+            //foreach (string deviceUrl in ssdp.Discover())
+            //    Console.WriteLine(deviceUrl);
 
-				// read power supply
-				xbee.Execute (new SupplyVoltageCommand());
 
-				Thread.Sleep(10 * 60 * 1000);
-			}
-		}
+            string udn = "uuid:" + Guid.NewGuid();
+            ssdp.RegisterDevice(new SsdpDevice { Type = DeviceType.InternetGatewayDevice, Name = "MyControl" + DateTime.Now.Second, UDN = udn });
 
-		static void xbee_OnPacketReceived(object sender, FrameReceivedEventArgs e)
-		{
-            XBeeResponse response = e.Response;
-			Debug.Print(response.ToString());
-		}
-	}
+            Thread.Sleep(5000);
+
+            Console.WriteLine("Searching for all devices...");
+           
+            foreach (string deviceUrl in ssdp.Discover())
+                Console.WriteLine(deviceUrl);
+
+            Console.WriteLine("Waiting for requests (M-SEARCH)...");
+            Thread.Sleep(20 * 1000);
+
+            ssdp.UnregisterDevice(udn);
+
+            Console.WriteLine("Unregister done.");
+
+            Console.ReadLine();
+        }
+    }
 }

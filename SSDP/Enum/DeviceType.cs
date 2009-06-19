@@ -1,5 +1,5 @@
-/* 
- * Program.cs		(Demo Application)
+﻿/* 
+ * DeviceType.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -22,37 +22,28 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
+ * 
+ * 
  */
 using System;
-using Microsoft.SPOT;
-using MFToolkit.Net.XBee;
-using System.Threading;
 
-namespace MicroZigbeeConsole
+namespace MFToolkit.Net.SSDP
 {
-	public class Program
-	{
-		public static void Main()
-		{
-			Debug.Print(
-				Resources.GetString(Resources.StringResources.String1));
+    public enum DeviceType
+    {
+        InternetGatewayDevice
+    }
 
-			using (XBee xbee = new XBee("COM1", 9600))
-			{
-                xbee.FrameReceived += new FrameReceivedEventHandler(xbee_OnPacketReceived);
-				xbee.Open();
+    internal class DeviceTypeHelper
+    {
+        internal static string GetDeviceType(DeviceType type)
+        {
+            switch (type)
+            {
+                case DeviceType.InternetGatewayDevice: return "urn:schemas-upnp-org:device:InternetGatewayDevice:1";
+            }
 
-				// read power supply
-				xbee.Execute (new SupplyVoltageCommand());
-
-				Thread.Sleep(10 * 60 * 1000);
-			}
-		}
-
-		static void xbee_OnPacketReceived(object sender, FrameReceivedEventArgs e)
-		{
-            XBeeResponse response = e.Response;
-			Debug.Print(response.ToString());
-		}
-	}
+            throw new NotSupportedException("This device type is not yet supported.");
+        }
+    }
 }

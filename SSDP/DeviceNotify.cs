@@ -1,5 +1,5 @@
-/* 
- * Program.cs		(Demo Application)
+﻿/* 
+ * DeviceNotifiy.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -22,37 +22,28 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
+ * 
+ *
  */
 using System;
+#if(MF)
 using Microsoft.SPOT;
-using MFToolkit.Net.XBee;
-using System.Threading;
+#endif
 
-namespace MicroZigbeeConsole
+namespace MFToolkit.Net.SSDP
 {
-	public class Program
-	{
-		public static void Main()
-		{
-			Debug.Print(
-				Resources.GetString(Resources.StringResources.String1));
+    public class DeviceNotifyEventArgs : EventArgs
+    {
+        #region Public Properties
 
-			using (XBee xbee = new XBee("COM1", 9600))
-			{
-                xbee.FrameReceived += new FrameReceivedEventHandler(xbee_OnPacketReceived);
-				xbee.Open();
 
-				// read power supply
-				xbee.Execute (new SupplyVoltageCommand());
+        #endregion
 
-				Thread.Sleep(10 * 60 * 1000);
-			}
-		}
+        public DeviceNotifyEventArgs(/*ModemStatusType status */)
+        {
+            //Status = status;
+        }
+    }
 
-		static void xbee_OnPacketReceived(object sender, FrameReceivedEventArgs e)
-		{
-            XBeeResponse response = e.Response;
-			Debug.Print(response.ToString());
-		}
-	}
+    public delegate void DeviceNotifyEventHandler(object sender, DeviceNotifyEventArgs e);
 }

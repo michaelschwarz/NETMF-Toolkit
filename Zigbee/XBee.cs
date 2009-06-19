@@ -63,11 +63,6 @@ namespace MFToolkit.Net.XBee
 
         #region Events
 
-        [Obsolete("Use FrameReceivedEventHandler instead.", true)]
-		public delegate void PacketReceivedHandler(XBee sender, XBeeResponse response);
-        [Obsolete("Use FrameReceived instead.", true)]
-        public event PacketReceivedHandler OnPacketReceived;
-
         public event FrameReceivedEventHandler FrameReceived;
         public event ModemStatusChangedEventHandler ModemStatusChanged;
         public event LogEventHandler LogEvent;
@@ -274,7 +269,7 @@ namespace MFToolkit.Net.XBee
             else
                 throw new NotSupportedException("This ApiType is not supported.");
 
-#if(DEBUG && !MF && !WindowsCE)
+#if(LOG && !MF && !WindowsCE)
             Console.WriteLine(">>\t" + ByteUtil.PrintBytes(bytes, false));
 #endif
 
@@ -444,7 +439,7 @@ namespace MFToolkit.Net.XBee
 
                                 ByteReader br = new ByteReader(bytes, ByteOrder.BigEndian);
 
-#if(DEBUG && !MF && !WindowsCE)
+#if(LOG && !MF && !WindowsCE)
                                 Console.WriteLine("<<\t" + ByteUtil.PrintBytes(bytes, false));
 #endif
 
@@ -493,7 +488,7 @@ namespace MFToolkit.Net.XBee
             {
                 OnLogEvent(LogEventType.ServerException, ex.ToString());
 
-#if(DEBUG && !MF && !WindowsCE)
+#if(LOG && !MF && !WindowsCE)
                 // Display a message to the console.
                 Console.WriteLine("{0} : DisplayMessage thread terminating - {1}",
                     DateTime.Now.ToString("HH:mm:ss.ffff"),
@@ -693,7 +688,7 @@ namespace MFToolkit.Net.XBee
 
         protected void WriteCommand(string s)
         {
-#if(DEBUG && !MF && !WindowsCE)
+#if(LOG && !MF && !WindowsCE)
             Console.WriteLine(s);
 #endif
             byte[] bytes = Encoding.UTF8.GetBytes(s);
@@ -704,7 +699,7 @@ namespace MFToolkit.Net.XBee
 		{
 			string s = ReadTo("\r");
 
-#if(DEBUG && !MF && !WindowsCE)
+#if(LOG && !MF && !WindowsCE)
             Console.WriteLine(s);
 #endif
 
