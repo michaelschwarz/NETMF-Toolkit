@@ -67,7 +67,6 @@ namespace MFToolkit.Net.Smtp
 		#region Private Variables
 		
         private ISmtpStorage _storage;
-        private string heloResponse;
         private Socket _socket;
 		
 		#endregion
@@ -102,7 +101,7 @@ namespace MFToolkit.Net.Smtp
 
 				ProcessCommands(context);
 			}
-			catch(Exception)
+			catch(Exception ex)
             {
 #if(LOG && !MF && !WindowsCE)
 				Console.WriteLine("Processor Exception: " + ex.Message);
@@ -211,11 +210,16 @@ namespace MFToolkit.Net.Smtp
 							break;
 					}				
 				}
-				catch(Exception)
+				catch(Exception ex)
 				{
-                    isRunning = false;
+                    SocketException sx = ex as SocketException;
 
-                    context.WriteLine(MESSAGE_SYSTEM_ERROR);
+                    if (sx != null && sx.ErrorCode == 10060)
+                        context.WriteLine(MESSAGE_GOODBYE);
+                    else
+                        context.WriteLine(MESSAGE_SYSTEM_ERROR);
+
+                    isRunning = false;
                     context.Close();
 				}
 			}

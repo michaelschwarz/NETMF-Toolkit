@@ -192,6 +192,7 @@ namespace MFToolkit.Net.Pop3
 
 						case "quit":
 							isRunning = false;
+
 							context.WriteLine(MESSAGE_GOODBYE);
 							context.Close();
 							break;
@@ -208,7 +209,10 @@ namespace MFToolkit.Net.Pop3
 				}
 				catch(Exception)
 				{
+                    isRunning = false;
+
 					context.WriteLine(MESSAGE_SYSTEM_ERROR);
+                    context.Close();
 				}
 			}
 		}
