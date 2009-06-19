@@ -1,5 +1,5 @@
 /* 
- * ProcessClientRequest.cs
+ * HttpProcessor.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -46,13 +46,13 @@ using Microsoft.SPOT.Net.Security;
 
 namespace MFToolkit.Net.Web
 {
-    internal sealed class ProcessClientRequest
+    internal sealed class HttpProcessor
     {
         private Socket _client;
         private IHttpHandler _handler;
         private HttpServer _server;
 
-        public ProcessClientRequest(ref Socket Client, IHttpHandler Handler, HttpServer Server)
+        public HttpProcessor(ref Socket Client, IHttpHandler Handler, HttpServer Server)
         {
             _client = Client;
             _handler = Handler;

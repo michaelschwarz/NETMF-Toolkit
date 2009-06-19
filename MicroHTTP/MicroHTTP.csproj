@@ -81,6 +81,9 @@
     <Compile Include="..\HTTP\HttpParameter.cs">
       <Link>HttpParameter.cs</Link>
     </Compile>
+    <Compile Include="..\HTTP\HttpProcessor.cs">
+      <Link>HttpProcessor.cs</Link>
+    </Compile>
     <Compile Include="..\HTTP\HttpRequest.cs">
       <Link>HttpRequest.cs</Link>
     </Compile>
@@ -113,9 +116,6 @@
     </Compile>
     <Compile Include="..\HTTP\Mime\MimeParser.cs">
       <Link>Mime\MimeParser.cs</Link>
-    </Compile>
-    <Compile Include="..\HTTP\ProcessClientRequest.cs">
-      <Link>ProcessClientRequest.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
