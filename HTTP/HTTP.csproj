@@ -67,7 +67,7 @@
     <Compile Include="Mime\MimeParser.cs" />
     <Compile Include="Enums\MimeParserState.cs" />
     <Compile Include="Enums\RequestParserState.cs" />
-    <Compile Include="ProcessClientRequest.cs" />
+    <Compile Include="HttpProcessor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

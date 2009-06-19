@@ -260,7 +260,7 @@ namespace MFToolkit.Net.Web
                 Thread.Sleep(10);
             }
 
-            ProcessClientRequest pcr = new ProcessClientRequest(ref client, _httpHandler, this);
+            HttpProcessor pcr = new HttpProcessor(ref client, _httpHandler, this);
 
             Thread thd = new Thread(new ThreadStart(pcr.ProcessRequest));
 #if(!MF)
