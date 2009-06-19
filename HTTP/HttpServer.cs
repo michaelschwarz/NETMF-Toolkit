@@ -35,6 +35,7 @@ using System.Net.Sockets;
 using System.Collections;
 using System.Threading;
 using Socket = System.Net.Sockets.Socket;
+
 #if(!MF)
 using System.Security.Cryptography.X509Certificates;
 #else
@@ -54,7 +55,6 @@ namespace MFToolkit.Net.Web
         private Thread _thdWorker;
         private bool _stopThreads = true;
         private const int _maxWorkers = 256;        // for AJAX enabled web sites we need a higher max worker process count
-
         private bool _isSecure = false;
         private X509Certificate _certificate;
 
@@ -294,6 +294,9 @@ namespace MFToolkit.Net.Web
 #if(LOG && !MF && !WindowsCE)
                     if (_workerThreads.Count > 0)
                         Console.WriteLine(_workerThreads.Count + " worker threads (" + Address + ":" + Port + ")");
+#elif(LOG && MF)
+                    if (_workerThreads.Count > 0)
+                        Microsoft.SPOT.Debug.Print(_workerThreads.Count + " worker threads (" + Address + ":" + Port + ")");
 #endif
                 }
 

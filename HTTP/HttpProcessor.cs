@@ -141,12 +141,17 @@ namespace MFToolkit.Net.Web
                         stream = new NetworkStream(_client);
                     }
 
-                    stream.ReadTimeout = 20;
+                    stream.ReadTimeout = 200;
                     stream.WriteTimeout = 1000;
 
                     try
                     {
-                        httpRequest.Read(stream, (_client.RemoteEndPoint as IPEndPoint));
+                        if (!httpRequest.Read(stream, (_client.RemoteEndPoint as IPEndPoint)))
+                        {
+                            httpResponse = new HttpResponse();
+                            httpResponse.RaiseError(HttpStatusCode.ServiceUnavailable);
+                            httpResponse.AddHeader("Connection", "close");
+                        }
                     }
                     catch (HttpException ex)
                     {
