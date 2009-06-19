@@ -71,6 +71,8 @@ namespace MFToolkit.Net.Web
         internal long totalBytes = 0;
 
         private const long MAX_CONTENT_LENGTH = 100 * 1024;
+        private const long MAX_REQUEST_TIMEOUT = 20 * 1000;     // 20 seconds
+        private const long MAX_REQUEST_SLIDING_TIMEOUT = 2 * 1000;     // 1 seconds
 
         public HttpRequest()
         {
@@ -390,6 +392,9 @@ namespace MFToolkit.Net.Web
             string value = "";
             MemoryStream ms = null;
 
+            DateTime begin = DateTime.Now;
+            DateTime lastByteReceived = begin;
+
             if (endPoint != null)
                 UserHostAddress = endPoint.Address.ToString();
 
@@ -401,28 +406,50 @@ namespace MFToolkit.Net.Web
                 int bytesRead = 0;
                 int idx = 0;
 
-                try
-                {
-                    bytesRead = stream.Read(buffer, 0, buffer.Length);
-                }
-                catch (Exception)
-                {
-                    if (HttpMethod == "POST" && (_body == null || _body.Length < ContentLength))
-                    {
-                        //Thread.Sleep(10);     // we don't need this as stream.Read is already doing the job
-                        continue;
-                    }
-
-                    break;
-                }
-
-                if (bytesRead == 0)
-                    break;
-
 #if(MF)
                 // set all bytes to null byte (strings are ending with null byte in MF)
                 Array.Clear(buffer, 0, buffer.Length);
 #endif
+
+                try
+                {
+                    bytesRead = stream.Read(buffer, 0, buffer.Length);
+
+                    if (bytesRead > 0)
+                        lastByteReceived = DateTime.Now;
+                }
+                catch (IOException iox)
+                {
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    DateTime nd = DateTime.Now;
+#if(MF)
+                    if((nd.Ticks - lastByteReceived.Ticks) / TimeSpan.TicksPerMillisecond < MAX_REQUEST_SLIDING_TIMEOUT)
+                        continue;
+#else
+                    if ((nd - lastByteReceived).TotalMilliseconds < MAX_REQUEST_SLIDING_TIMEOUT)
+                        continue;
+#endif
+
+                    if (HttpMethod == "POST" && (_body == null || _body.Length < ContentLength))
+                        continue;
+
+#if(MF)
+                    if((nd.Ticks - begin.Ticks) / TimeSpan.TicksPerMillisecond < MAX_REQUEST_TIMEOUT)
+                        continue;
+#else
+                    if ((nd - begin).TotalMilliseconds < MAX_REQUEST_TIMEOUT)
+                        continue;
+#endif
+
+                    break;
+                }
+
+                if (bytesRead == 0)     // should never happen
+                    break;
+
                 totalBytes += bytesRead;
 
 #if(FILELOG && !MF && !WindowsCE)
