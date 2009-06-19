@@ -292,7 +292,8 @@ namespace MFToolkit.Net.Web
                         }
                     }
 #if(LOG && !MF && !WindowsCE)
-                    Console.WriteLine(_workerThreads.Count + " worker threads (" + Address + ":" + Port + ")");
+                    if (_workerThreads.Count > 0)
+                        Console.WriteLine(_workerThreads.Count + " worker threads (" + Address + ":" + Port + ")");
 #endif
                 }
 

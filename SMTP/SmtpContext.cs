@@ -157,12 +157,10 @@ namespace MFToolkit.Net.Smtp
             do
 			{
                 socket.ReceiveTimeout = 2000;
-				count = socket.Receive(byteBuffer);
+                count = socket.Receive(byteBuffer);
 
 				inputBuffer.Append(encoding.GetString(byteBuffer, 0, count));				
 			}
-
-			// TODO: count > 0 is not very good, but there is a problem with one of gmails mail servers
 			while(count > 0 && (output = ReadBuffer()) == null);
 
 #if(LOG && !MF && !WindowsCE)
