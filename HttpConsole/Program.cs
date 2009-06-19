@@ -1,4 +1,29 @@
-﻿using System;
+﻿/* 
+ * Program.cs		(Demo Application)
+ * 
+ * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
+ *
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+ * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+ * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * 
+ */
+using System;
 using System.Collections.Generic;
 using System.Text;
 using MFToolkit.Net.Web;
@@ -11,6 +36,7 @@ using System.Net.Sockets;
 using MFToolkit.Net.XBee;
 using MFToolkit.MicroUtilities;
 using System.Diagnostics;
+using System.Security.Cryptography.X509Certificates;
 
 namespace HttpConsole
 {
@@ -20,18 +46,31 @@ namespace HttpConsole
 
 		static void Main(string[] args)
 		{
-            Thread thd = new Thread(new ThreadStart(UpdateTemperature));
-            thd.IsBackground = true;
-            thd.Start();
+            //Thread thd = new Thread(new ThreadStart(UpdateTemperature));
+            //thd.IsBackground = true;
+            //thd.Start();
 
-            using (HttpServer http = new HttpServer(new MyHttpHandler(Path.Combine(Environment.CurrentDirectory, "..\\..\\root"))))
+            HttpServer http = new HttpServer(new MyHttpHandler(Path.Combine(Environment.CurrentDirectory, "..\\..\\root")));
+            http.LogAccess += new LogAccessEventHandler(http_OnLogAccess);
+            http.Start();
+
+            using (HttpServer https = new HttpServer(8080, new MyHttpHandler(Path.Combine(Environment.CurrentDirectory, "..\\..\\root"))))
             {
-                http.LogAccess += new LogAccessEventHandler(http_OnLogAccess);
-                http.Start();
+                https.IsSecure = true;
+
+                // makecert.exe -r -pe -n "CN=localhost" -len 2048 -ss my -sky exchange c:\temp\test.cer
+                https.Certificate = new X509Certificate("c:\\temp\\test.cer");
+
+                https.LogAccess += new LogAccessEventHandler(http_OnLogAccess);
+                https.Start();
 
                 Console.ReadLine();
                 Console.WriteLine("Shutting down http server...");
+
+                https.Stop();
             }
+
+            http.Stop();
 
             Console.WriteLine("Done.");
 		}
@@ -217,7 +256,7 @@ namespace HttpConsole
 
                 case "/test2.aspx":
                     context.Response.ContentType = "text/html; charset=UTF-8";
-                    context.Response.Write("<html><head><title></title></head><body>" + Encoding.UTF8.GetString(context.Request.Body) + "</body></html>");
+                    context.Response.Write("<html><head><title></title></head><body>" + (context.Request.Body != null ? Encoding.UTF8.GetString(context.Request.Body) : "<i>no body found</i>") + "</body></html>");
                     break;
 
                 case "/cookie":

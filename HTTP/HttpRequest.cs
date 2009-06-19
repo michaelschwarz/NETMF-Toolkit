@@ -25,6 +25,8 @@
  * MS	08-03-24	initial version
  * MS   09-02-10    added GetHeaderValue
  * MS   09-03-09    changed that HttpRequest is reading the request instead of ProcessClientRequest
+ * MS   09-06-19    added support for SSL (now using Stream instead of Socket)
+ *                  changed to speed up http request reading (when finished return)
  * 
  */
 using System;
@@ -37,6 +39,9 @@ using System.Net;
 using MFToolkit.Collection.Spezialized;
 #else
 using System.Collections.Specialized;
+using System.Security.Cryptography.X509Certificates;
+using System.Net.Security;
+using System.Security.Authentication;
 #endif
 
 namespace MFToolkit.Net.Web
@@ -377,7 +382,7 @@ namespace MFToolkit.Net.Web
             return false;
         }
         
-        internal bool ReadSocket(Socket socket)
+        internal bool Read(Stream stream, IPEndPoint endPoint)
         {
             byte[] buffer = new byte[1024];
             RequestParserState state = RequestParserState.ReadMethod;
@@ -385,39 +390,48 @@ namespace MFToolkit.Net.Web
             string value = "";
             MemoryStream ms = null;
 
-            UserHostAddress = (socket.RemoteEndPoint as IPEndPoint).Address.ToString();
+            if (endPoint != null)
+                UserHostAddress = endPoint.Address.ToString();
 
             while (true)
             {
-                if (!socket.Poll(500, SelectMode.SelectRead))
+                if (state == RequestParserState.ReadDone)
+                    return true;
+
+                int bytesRead = 0;
+                int idx = 0;
+
+                try
+                {
+                    bytesRead = stream.Read(buffer, 0, buffer.Length);
+                }
+                catch (Exception)
                 {
                     if (HttpMethod == "POST" && (_body == null || _body.Length < ContentLength))
+                    {
+                        //Thread.Sleep(10);     // we don't need this as stream.Read is already doing the job
                         continue;
+                    }
 
                     break;
                 }
 
-                int avail = socket.Available;
-                if (avail == 0)
-                {
-                    //Thread.Sleep(10);
-                    continue;
-                }
+                if (bytesRead == 0)
+                    break;
 
 #if(MF)
                 // set all bytes to null byte (strings are ending with null byte in MF)
                 Array.Clear(buffer, 0, buffer.Length);
 #endif
-                int bytesRead = socket.Receive(buffer, avail > buffer.Length ? buffer.Length : avail, SocketFlags.None);
-
                 totalBytes += bytesRead;
 
-#if(DEBUG && !MF && !WindowsCE)
-                //File.AppendAllText("loghttp-" + socket.RemoteEndPoint.ToString().Replace(":", "-") + ".txt", Encoding.UTF8.GetString(buffer, 0, bytesRead) + "\r\n");
+#if(FILELOG && !MF && !WindowsCE)
+                File.AppendAllText("loghttp-" + socket.RemoteEndPoint.ToString().Replace(":", "-") + ".txt", Encoding.UTF8.GetString(buffer, 0, bytesRead) + "\r\n");
 #endif
 
-                int idx = 0;
-                
+                if (totalBytes <= idx)
+                    continue;
+
                 do
                 {
                     switch (state)
@@ -454,6 +468,7 @@ namespace MFToolkit.Net.Web
                                 state = RequestParserState.ReadVersion;
                             }
                             break;
+
                         case RequestParserState.ReadParamKey:
                             if (buffer[idx] == '=')
                             {
@@ -472,6 +487,7 @@ namespace MFToolkit.Net.Web
                                 key += (char)buffer[idx++];
                             }
                             break;
+
                         case RequestParserState.ReadParamValue:
                             if (buffer[idx] == '&')
                             {
@@ -503,6 +519,7 @@ namespace MFToolkit.Net.Web
                                 value += (char)buffer[idx++];
                             }
                             break;
+
                         case RequestParserState.ReadVersion:
                             if (buffer[idx] == '\r')
                                 idx++;
@@ -519,6 +536,7 @@ namespace MFToolkit.Net.Web
                                 state = RequestParserState.ReadHeaderKey;
                             }
                             break;
+
                         case RequestParserState.ReadHeaderKey:
                             if (buffer[idx] == '\r')
                                 idx++;
@@ -528,7 +546,10 @@ namespace MFToolkit.Net.Web
                                 if (HttpMethod == "POST")
                                     state = RequestParserState.ReadBody;
                                 else
-                                    state = RequestParserState.ReadDone;
+                                {
+                                    state = RequestParserState.ReadDone;    // well, we don't really need this
+                                    return true;
+                                }
                             }
                             else if (buffer[idx] == ':')
                                 idx++;
@@ -541,6 +562,7 @@ namespace MFToolkit.Net.Web
                                 state = RequestParserState.ReadHeaderValue;
                             }
                             break;
+
                         case RequestParserState.ReadHeaderValue:
                             if (buffer[idx] == '\r')
                                 idx++;
@@ -554,6 +576,7 @@ namespace MFToolkit.Net.Web
                                 state = RequestParserState.ReadHeaderKey;
                             }
                             break;
+
                         case RequestParserState.ReadBody:
 
                             if (ContentLength > MAX_CONTENT_LENGTH)
@@ -570,7 +593,6 @@ namespace MFToolkit.Net.Web
                             
                             if (ms.Length >= ContentLength)
                             {
-                                state = RequestParserState.ReadDone;
                                 _body = ms.ToArray();
 
                                 // if using a <form/> tag with POST check if it is urlencoded or multipart boundary
@@ -626,11 +648,12 @@ namespace MFToolkit.Net.Web
                                         mime = mp.GetNextContent();
                                     }
                                 }
+                                state = RequestParserState.ReadDone;        // well, we don't really need this
+                                return true;
                             }
-
                             break;
 
-                        case RequestParserState.ReadDone:
+                        case RequestParserState.ReadDone:                   // well, we don't really need this
                             return true;
 
                         default:

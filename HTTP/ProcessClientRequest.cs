@@ -25,7 +25,7 @@
  * MS	08-03-24	initial version
  * MS   09-02-10    fixed keep-alive support
  * MS   09-03-09    changed how the request and response is handled
- * 
+ * MS   09-06-19    added support for SSL (now using Stream instead of Socket)
  * 
  */
 using System;
@@ -37,6 +37,12 @@ using System.Text;
 using Socket = System.Net.Sockets.Socket;
 using System.Diagnostics;
 using System.IO;
+#if(!MF)
+using System.Net.Security;
+using System.Security.Authentication;
+#else
+using Microsoft.SPOT.Net.Security;
+#endif
 
 namespace MFToolkit.Net.Web
 {
@@ -71,7 +77,7 @@ namespace MFToolkit.Net.Web
             {
                 while (true)
                 {
-#if(DEBUG && !MF && !WindowsCE)
+#if(LOG && !MF && !WindowsCE)
                     Console.WriteLine((_client.RemoteEndPoint as IPEndPoint).ToString());
 #endif
 
@@ -106,9 +112,40 @@ namespace MFToolkit.Net.Web
                     HttpRequest httpRequest = new HttpRequest();
                     HttpResponse httpResponse = null;
 
+                    Stream stream;
+
+                    if (_server.IsSecure && _server.Certificate != null)
+                    {
+                        SslStream ssl = null;
+
+                        try
+                        {
+#if(!MF)
+                            ssl = new SslStream(new NetworkStream(_client));
+                            ssl.AuthenticateAsServer(_server.Certificate, false, SslProtocols.Default, false);
+#else
+                            ssl = new SslStream(_client);
+                            ssl.AuthenticateAsServer(_server.Certificate, SslVerification.NoVerification, SslProtocols.Default);
+#endif
+                            stream = ssl;
+                        }
+                        catch (Exception)
+                        {
+                            Close();
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        stream = new NetworkStream(_client);
+                    }
+
+                    stream.ReadTimeout = 20;
+                    stream.WriteTimeout = 1000;
+
                     try
                     {
-                        httpRequest.ReadSocket(_client);
+                        httpRequest.Read(stream, (_client.RemoteEndPoint as IPEndPoint));
                     }
                     catch (HttpException ex)
                     {
@@ -150,7 +187,7 @@ namespace MFToolkit.Net.Web
                         }
                     }
 
-                    httpResponse.WriteSocket(_client);
+                    httpResponse.Write(stream);
 
                     LogAccess log = new LogAccess();
                     log.ClientIP = httpRequest.UserHostAddress;

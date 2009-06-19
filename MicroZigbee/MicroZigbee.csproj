@@ -33,6 +33,246 @@
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\.NET Micro Framework\$(MicroFrameworkToolsVersion)\CSharp.Targets" />
   <ItemGroup>
+    <Compile Include="..\Zigbee\Enums\ApiType.cs">
+      <Link>Enums\ApiType.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Enums\AtCommandStatus.cs">
+      <Link>Enums\AtCommandStatus.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Enums\ModemStatusType.cs">
+      <Link>Enums\ModemStatusType.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Enums\ReceiveOptionType.cs">
+      <Link>Enums\ReceiveOptionType.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Enums\SleepModeType.cs">
+      <Link>Enums\SleepModeType.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Enums\SourceActionType.cs">
+      <Link>Enums\SourceActionType.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Enums\TxStatusType.cs">
+      <Link>Enums\TxStatusType.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Enums\XBeeApiType.cs">
+      <Link>Enums\XBeeApiType.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Enums\ZNet\DeliveryStatusType.cs">
+      <Link>Enums\ZNet\DeliveryStatusType.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Enums\ZNet\DiscoveryStatusType.cs">
+      <Link>Enums\ZNet\DiscoveryStatusType.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Enums\ZNet\ZNetDeviceType.cs">
+      <Link>Enums\ZNet\ZNetDeviceType.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\FrameReceived.cs">
+      <Link>FrameReceived.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\LogEvent.cs">
+      <Link>LogEvent.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\ModemStatusChanged.cs">
+      <Link>ModemStatusChanged.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AtCommand.cs">
+      <Link>Request\AtCommand.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AtQueueCommand.cs">
+      <Link>Request\AtQueueCommand.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\ApiEnable.cs">
+      <Link>Request\AT\ApiEnable.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\ApplyChanges.cs">
+      <Link>Request\AT\ApplyChanges.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\Channel.cs">
+      <Link>Request\AT\Channel.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\CyclicSleepPeriod.cs">
+      <Link>Request\AT\CyclicSleepPeriod.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\DestinationAddressHigh.cs">
+      <Link>Request\AT\DestinationAddressHigh.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\DestinationAddressLow.cs">
+      <Link>Request\AT\DestinationAddressLow.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\DestinationNode.cs">
+      <Link>Request\AT\DestinationNode.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\DeviceTypeIdentifier.cs">
+      <Link>Request\AT\DeviceTypeIdentifier.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\FirmwareVersion.cs">
+      <Link>Request\AT\FirmwareVersion.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\ForceSample.cs">
+      <Link>Request\AT\ForceSample.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\HardwareVersion.cs">
+      <Link>Request\AT\HardwareVersion.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\InterfaceDataRate.cs">
+      <Link>Request\AT\InterfaceDataRate.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\NetworkReset.cs">
+      <Link>Request\AT\NetworkReset.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\NodeDiscover.cs">
+      <Link>Request\AT\NodeDiscover.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\NodeIdentifier.cs">
+      <Link>Request\AT\NodeIdentifier.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\ReceivedSignalStrength.cs">
+      <Link>Request\AT\ReceivedSignalStrength.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\RestoreDefaults.cs">
+      <Link>Request\AT\RestoreDefaults.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\SerialNumberHigh.cs">
+      <Link>Request\AT\SerialNumberHigh.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\SerialNumberLow.cs">
+      <Link>Request\AT\SerialNumberLow.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\SleepMode.cs">
+      <Link>Request\AT\SleepMode.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\SoftwareReset.cs">
+      <Link>Request\AT\SoftwareReset.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\SupplyVoltage.cs">
+      <Link>Request\AT\SupplyVoltage.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\TimeBeforeSleep.cs">
+      <Link>Request\AT\TimeBeforeSleep.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\Write.cs">
+      <Link>Request\AT\Write.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\WriteBindingTable.cs">
+      <Link>Request\AT\WriteBindingTable.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\AT\XBeeSensorSample.cs">
+      <Link>Request\AT\XBeeSensorSample.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\RemoteAtRequest.cs">
+      <Link>Request\RemoteAtRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\TxRequest16.cs">
+      <Link>Request\TxRequest16.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\TxRequest64.cs">
+      <Link>Request\TxRequest64.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Request\ZNetTransmitRequest.cs">
+      <Link>Request\ZNetTransmitRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\AtCommandResponse.cs">
+      <Link>Response\AtCommandResponse.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\AT\ApiEnable.cs">
+      <Link>Response\AT\ApiEnable.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\AT\CyclicSleepPeriod.cs">
+      <Link>Response\AT\CyclicSleepPeriod.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\AT\ForceSample.cs">
+      <Link>Response\AT\ForceSample.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\AT\NodeDiscover.cs">
+      <Link>Response\AT\NodeDiscover.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\AT\NodeIdentifier.cs">
+      <Link>Response\AT\NodeIdentifier.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\AT\ReceivedSignalStrength.cs">
+      <Link>Response\AT\ReceivedSignalStrength.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\AT\SleepMode.cs">
+      <Link>Response\AT\SleepMode.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\AT\SupplyVoltage.cs">
+      <Link>Response\AT\SupplyVoltage.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\AT\TimeBeforeSleep.cs">
+      <Link>Response\AT\TimeBeforeSleep.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\IAtCommandResponse.cs">
+      <Link>Response\IAtCommandResponse.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\IAtCommandResponseData.cs">
+      <Link>Response\IAtCommandResponseData.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\ModemStatus.cs">
+      <Link>Response\ModemStatus.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\RemoteAtResponse.cs">
+      <Link>Response\RemoteAtResponse.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\RxResponse16.cs">
+      <Link>Response\RxResponse16.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\RxResponse64.cs">
+      <Link>Response\RxResponse64.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\TxStatusResponse.cs">
+      <Link>Response\TxStatusResponse.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\XBeeSensorRead.cs">
+      <Link>Response\XBeeSensorRead.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\ZNet\AT\ZNetNodeDiscover.cs">
+      <Link>Response\ZNet\AT\ZNetNodeDiscover.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\ZNet\ZNetNodeIdentificationResponse.cs">
+      <Link>Response\ZNet\ZNetNodeIdentificationResponse.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\ZNet\ZNetRxIoSampleResponse.cs">
+      <Link>Response\ZNet\ZNetRxIoSampleResponse.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\ZNet\ZNetRxResponse.cs">
+      <Link>Response\ZNet\ZNetRxResponse.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\ZNet\ZNetTxStatusResponse.cs">
+      <Link>Response\ZNet\ZNetTxStatusResponse.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\XBee.cs">
+      <Link>XBee.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\XBeeAddress16.cs">
+      <Link>XBeeAddress16.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\XBeeAddress64.cs">
+      <Link>XBeeAddress64.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\XBeeChecksum.cs">
+      <Link>XBeeChecksum.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\XBeeFrameRequest.cs">
+      <Link>XBeeFrameRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\XBeeFrameResponse.cs">
+      <Link>XBeeFrameResponse.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\XBeeModule.cs">
+      <Link>XBeeModule.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\XBeePacket.cs">
+      <Link>XBeePacket.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\XBeeReader.cs">
+      <Link>XBeeReader.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\XBeeRequest.cs">
+      <Link>XBeeRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\XBeeResponse.cs">
+      <Link>XBeeResponse.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -51,8 +291,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Enums\" />
-    <Folder Include="Request\AT\" />
-    <Folder Include="Response\AT\" />
+    <Folder Include="Request\ZNet\AT\" />
   </ItemGroup>
 </Project>

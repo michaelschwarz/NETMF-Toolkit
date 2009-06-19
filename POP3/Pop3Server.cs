@@ -1,5 +1,5 @@
-﻿/* 
- * HttpServer.cs
+/* 
+ * Pop3Server.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -22,10 +22,7 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
- * MS   09-02-10    added MT support
- * MS   09-03-09    changed stop http server when there is any exception while starting (i.e. when port is not available)
- * MS   09-04-30    fixed closing threads
- * MS   09-06-19    added support for SSL
+ * 
  * 
  */
 using System;
@@ -35,62 +32,70 @@ using System.Net.Sockets;
 using System.Collections;
 using System.Threading;
 using Socket = System.Net.Sockets.Socket;
-#if(!MF)
-using System.Security.Cryptography.X509Certificates;
-#else
-using Microsoft.SPOT.Net.Security;
-#endif
+using MFToolkit.Net.Mail;
 
-namespace MFToolkit.Net.Web
+namespace MFToolkit.Net.Pop3
 {
-	public class HttpServer : IDisposable
-	{
-        private IHttpHandler _httpHandler;
-        private int _port = 80;
+    public class Pop3Server : IDisposable
+    {
+        private int _port = 110;
         private IPAddress _address = IPAddress.Any;
         private Socket _listenSocket;
         private ArrayList _workerThreads = new ArrayList();
         private Thread _thdListener;
         private Thread _thdWorker;
         private bool _stopThreads = true;
-        private const int _maxWorkers = 256;        // for AJAX enabled web sites we need a higher max worker process count
-
-        private bool _isSecure = false;
-        private X509Certificate _certificate;
+        private const int _maxWorkers = 256;
+        private IPop3Storage _storage;
 
         #region Events
 
-        public event LogAccessEventHandler LogAccess;
-        public event ClientConnectedEventHandler ClientConnected;
+        //public event LogAccessEventHandler LogAccess;
+        //public event ClientConnectedEventHandler ClientConnected;
 
         #endregion
 
-        #region Constructors
+        #region Constructor
 
-        public HttpServer(IHttpHandler Handler)
+        public Pop3Server()
         {
-            _httpHandler = Handler;
         }
 
-        public HttpServer(int Port, IHttpHandler Handler)
-            : this(Handler)
+        public Pop3Server(int Port)
+            : this()
         {
             _port = Port;
         }
 
-        public HttpServer(int Port, IPAddress Address, IHttpHandler Handler)
-            : this(Port, Handler)
+        public Pop3Server(int Port, IPAddress Address)
+            : this(Port)
         {
             _address = Address;
         }
 
-#if(!MF)
-        public HttpServer(IPAddress Address, IHttpHandler Handler)
-            : this(Handler)
+        public Pop3Server(IPAddress Address)
+            : this()
         {
             _address = Address;
         }
-#endif
+
+        public Pop3Server(IPop3Storage storage)
+            : this()
+        {
+            _storage = storage;
+        }
+
+        public Pop3Server(IPAddress Address, IPop3Storage storage)
+            : this(storage)
+        {
+            _address = Address;
+        }
+
+        public Pop3Server(int Port, IPAddress Address, IPop3Storage storage)
+            : this(Address, storage)
+        {
+            _port = Port;
+        }
 
         #endregion
 
@@ -104,18 +109,6 @@ namespace MFToolkit.Net.Web
         public IPAddress Address
         {
             get { return _address; }
-        }
-
-        public bool IsSecure
-        {
-            get { return _isSecure; }
-            set { _isSecure = value; }
-        }
-
-        public X509Certificate Certificate
-        {
-            get { return _certificate; }
-            set { _certificate = value; }
         }
 
         #endregion
@@ -225,23 +218,25 @@ namespace MFToolkit.Net.Web
 
         private bool OnClientConnected(IPAddress address)
         {
-            ClientConnectedEventHandler handler = ClientConnected;
-            
-            bool res = true;
-            
-            if (handler != null)
-                res = handler(this, new ClientConnectedEventArgs(address));
+            //ClientConnectedEventHandler handler = ClientConnected;
 
-            return res;
+            //bool res = true;
+
+            //if (handler != null)
+            //    res = handler(this, new ClientConnectedEventArgs(address));
+
+            //return res;
+
+            return true;
         }
 
-        internal void OnLogAccess(LogAccess data)
-        {
-            LogAccessEventHandler handler = LogAccess;
+        //internal void OnLogAccess(LogAccess data)
+        //{
+        //    LogAccessEventHandler handler = LogAccess;
 
-            if (handler != null)
-                handler(this, new LogAccessEventArgs(data));
-        }
+        //    if (handler != null)
+        //        handler(this, new LogAccessEventArgs(data));
+        //}
 
         private void CreateWorkerProcess(ref Socket client)
         {
@@ -260,9 +255,9 @@ namespace MFToolkit.Net.Web
                 Thread.Sleep(10);
             }
 
-            ProcessClientRequest pcr = new ProcessClientRequest(ref client, _httpHandler, this);
+            Pop3Processor proc = new Pop3Processor(client, _storage);
 
-            Thread thd = new Thread(new ThreadStart(pcr.ProcessRequest));
+            Thread thd = new Thread(new ThreadStart(proc.ProcessConnection));
 #if(!MF)
             thd.Name = "Client Worker Process";
 #endif
@@ -287,7 +282,7 @@ namespace MFToolkit.Net.Web
                         {
                             if (((Thread)_workerThreads[i]).ThreadState == ThreadState.Stopped)
                             {
-                                 _workerThreads.RemoveAt(i);
+                                _workerThreads.RemoveAt(i);
                             }
                         }
                     }

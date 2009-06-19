@@ -29,7 +29,8 @@
  *                  added remove http header
  * MS   09-03-09    changed that http response is written by HttpResponse
  * MS   09-04-30    fixed if socket is already closed
- * 
+ * MS   09-06-19    added support for SSL (now using Stream instead of Socket)
+ *                  
  * 
  */
 using System;
@@ -307,44 +308,36 @@ namespace MFToolkit.Net.Web
             return response;
         }
 
-        public void WriteSocket(Socket socket)
+        public void Write(Stream stream)
         {
-#if(!MF && !WindowsCE)
-            if(socket != null && !socket.Connected)
-                return;
+#if(FILELOG && !MF && !WindowsCE)
+            File.AppendAllText("loghttp-" + socket.RemoteEndPoint.ToString().Replace(":", "-") + " (Response).txt", GetResponseHeader() + "\r\n");
 #endif
 
-            using(NetworkStream ns = new NetworkStream(socket))
+            byte[] bytes = Encoding.UTF8.GetBytes(GetResponseHeader());
+            totalBytes += bytes.Length;
+
+            try
             {
-#if(DEBUG && !MF && !WindowsCE)
-                //File.AppendAllText("loghttp-" + socket.RemoteEndPoint.ToString().Replace(":", "-") + " (Response).txt", GetResponseHeader() + "\r\n");
+                stream.Write(bytes, 0, bytes.Length);
+                stream.Flush();
+
+                if (_content != null && _content.Length > 0)
+                {
+
+                    bytes = _content.ToArray();
+                    totalBytes += bytes.Length;
+
+#if(FILELOG && !MF && !WindowsCE)
+                    File.AppendAllText("loghttp-" + socket.RemoteEndPoint.ToString().Replace(":", "-") + " (Response).txt", Encoding.UTF8.GetString(bytes, 0, bytes.Length) + "\r\n");
 #endif
 
-                byte[] bytes = Encoding.UTF8.GetBytes(GetResponseHeader());
-                totalBytes += bytes.Length;
-
-                try
-                {
-                    ns.Write(bytes, 0, bytes.Length);
-                    ns.Flush();
-
-                    if (_content != null && _content.Length > 0)
-                    {
-
-                        bytes = _content.ToArray();
-                        totalBytes += bytes.Length;
-
-#if(DEBUG && !MF && !WindowsCE)
-                        //File.AppendAllText("loghttp-" + socket.RemoteEndPoint.ToString().Replace(":", "-") + " (Response).txt", Encoding.UTF8.GetString(bytes, 0, bytes.Length) + "\r\n");
-#endif
-
-                        ns.Write(bytes, 0, bytes.Length);
-                        ns.Flush();
-                    }
+                    stream.Write(bytes, 0, bytes.Length);
+                    stream.Flush();
                 }
-                catch (Exception)
-                {
-                }
+            }
+            catch (Exception)
+            {
             }
         }
     }

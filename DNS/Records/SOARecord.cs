@@ -56,7 +56,7 @@ namespace MFToolkit.Net.Dns
         /// A &lt;domain-name&gt; which specifies the mailbox of the
         /// person responsible for this zone.
         /// </summary>
-        public string ResponsibleMailAddress
+        public string ResponsiblMailAddress
         {
             get { return _rname; }
         }

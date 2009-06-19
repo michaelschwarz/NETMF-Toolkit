@@ -1,5 +1,5 @@
-/* 
- * Program.cs		(Demo Application)
+﻿/* 
+ * IMailStorage.cs
  * 
  * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
  *
@@ -22,37 +22,20 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
+ * MS   09-06-19    initial ersion
+ * 
+ * 
  */
 using System;
-using Microsoft.SPOT;
-using MFToolkit.Net.XBee;
-using System.Threading;
 
-namespace MicroZigbeeConsole
+namespace MFToolkit.Net.Mail
 {
-	public class Program
-	{
-		public static void Main()
-		{
-			Debug.Print(
-				Resources.GetString(Resources.StringResources.String1));
-
-			using (XBee xbee = new XBee("COM1", 9600))
-			{
-                xbee.FrameReceived += new FrameReceivedEventHandler(xbee_OnPacketReceived);
-				xbee.Open();
-
-				// read power supply
-				xbee.Execute (new SupplyVoltageCommand());
-
-				Thread.Sleep(10 * 60 * 1000);
-			}
-		}
-
-		static void xbee_OnPacketReceived(object sender, FrameReceivedEventArgs e)
-		{
-            XBeeResponse response = e.Response;
-			Debug.Print(response.ToString());
-		}
-	}
+    /// <summary>
+    /// Provides an interface to login and logout from mail servers
+    /// </summary>
+    public interface IMailStorage
+    {
+        bool Login(string username, string password);
+        void Logout(string username);
+    }
 }

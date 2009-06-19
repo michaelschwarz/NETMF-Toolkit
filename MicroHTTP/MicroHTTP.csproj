@@ -123,8 +123,10 @@
     <Reference Include="Microsoft.SPOT.IO" />
     <Reference Include="Microsoft.SPOT.Native" />
     <Reference Include="Microsoft.SPOT.Net" />
+    <Reference Include="Microsoft.SPOT.Net.Security" />
     <Reference Include="System" />
     <Reference Include="System.IO" />
+    <Reference Include="System.Net.Security" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
