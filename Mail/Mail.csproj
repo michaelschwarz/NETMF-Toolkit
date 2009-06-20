@@ -40,6 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CollectionBase.cs" />
     <Compile Include="InvalidMailAddressException.cs" />
     <Compile Include="MailAddress.cs" />
     <Compile Include="IMailStorage.cs" />
