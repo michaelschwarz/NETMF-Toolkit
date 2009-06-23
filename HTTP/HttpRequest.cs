@@ -624,7 +624,7 @@ namespace MFToolkit.Net.Web
 
                                 // if using a <form/> tag with POST check if it is urlencoded or multipart boundary
 
-                                if (ContentType == "application/x-www-form-urlencoded")
+                                if (ContentType.IndexOf("application/x-www-form-urlencoded") != -1)
                                 {
                                     _form = new NameValueCollection();
                                     key = "";
