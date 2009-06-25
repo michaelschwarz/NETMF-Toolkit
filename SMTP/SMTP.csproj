@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Enums\SmtpStatusCode.cs" />
+    <Compile Include="SmtpClient.cs" />
     <Compile Include="SmtpContext.cs" />
     <Compile Include="SmtpMessage\MimeParser.cs" />
     <Compile Include="SmtpMessage\MailMessage.cs" />

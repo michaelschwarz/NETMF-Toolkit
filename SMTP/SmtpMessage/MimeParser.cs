@@ -1,3 +1,4 @@
+#if(!MF)
 /* 
  * MimeParser.cs
  * 
@@ -141,3 +142,4 @@ namespace MFToolkit.Net.Smtp
 		}
 	}
 }
+#endif

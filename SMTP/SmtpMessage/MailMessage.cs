@@ -27,25 +27,25 @@
  */
 using System;
 using System.Text;
-using System.Text.RegularExpressions;
 using MFToolkit.Net.Mail;
+#if(MF)
+using MFToolkit.Text;
+#endif
 
 namespace MFToolkit.Net.Smtp
 {
 	public class MailMessage
 	{
-		#region Constants
-
-		private static readonly Regex SUBJECT_ENCODING = new Regex("=\\?[a-z0-9-]*\\?[BQ]\\?(.*)\\?=", RegexOptions.IgnoreCase);
-
-		#endregion
-
 		#region Private Variables
 
 		private MailAddress senderAddress;
 		private MailAddressCollection recipientAddresses;
 		private string subject;
+#if(MF)
+        private DateTime sendDate = DateTime.MinValue;
+#else
 		private DateTime? sendDate;
+#endif
         private int headerEnd = 0;
 		private StringBuilder message;
 
@@ -96,8 +96,12 @@ namespace MFToolkit.Net.Smtp
 		/// <summary>
 		/// The mail sent date.
 		/// </summary>
-		public DateTime? Date
-		{
+#if(MF)
+		public DateTime Date
+#else
+        public DateTime? Date
+#endif
+        {
 			get
 			{
 				return sendDate;
@@ -149,6 +153,7 @@ namespace MFToolkit.Net.Smtp
 		/// <param name="data">The string to be added.</param>
 		public void AddData(string data)
 		{
+#if(!MF)
             if (headerEnd <= 0)
             {
                 try
@@ -157,17 +162,9 @@ namespace MFToolkit.Net.Smtp
                     {
                         // TODO: remove the parsing to the properties (ParseHeaderValue) because subject sometimes will have a linebreak
                         subject = MimeParser.CDecode(data.Substring(9));
-
-                        //Match m = SUBJECT_ENCODING.Match(subject);
-                        //if (m.Success)
-                        //{
-                        //    subject = m.Groups[1].Captures[0].Value;
-                        //    subject = System.Text.Encoding.GetEncoding("iso-8859-1").GetString(System.Text.Encoding.Default.GetBytes(subject));
-                        //}
                     }
                     else if (data.ToUpper().StartsWith("CONTENT-TYPE: ") == true)
                     {
-
                     }
                     else if (data.ToUpper().StartsWith("DATE: ") == true)
                     {
@@ -178,7 +175,7 @@ namespace MFToolkit.Net.Smtp
                 {
                 }
             }
-
+#endif
 			this.message.Append(data);
 		}
 

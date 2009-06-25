@@ -320,7 +320,7 @@ namespace MFToolkit.Net.Web
             try
             {
                 stream.Write(bytes, 0, bytes.Length);
-                stream.Flush();
+                //stream.Flush();
 
                 if (_content != null && _content.Length > 0)
                 {
@@ -333,7 +333,7 @@ namespace MFToolkit.Net.Web
 #endif
 
                     stream.Write(bytes, 0, bytes.Length);
-                    stream.Flush();
+                    //stream.Flush();
                 }
             }
             catch (Exception)

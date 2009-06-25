@@ -23,22 +23,52 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  * MS   09-02-16    added StringBuilder
- * 
+ * MS   09-06-19    added string extensions
  * 
  */
 using System;
 using Microsoft.SPOT;
 using System.Collections;
 
+namespace System.Runtime.CompilerServices
+{
+    public class ExtensionAttribute : Attribute
+    {
+    }
+}
+
 namespace MFToolkit.Text
 {
+    public static class StringExtensions
+    {
+        public static bool StartsWith(this string s, string pat)
+        {
+            return true;
+        }
+    }
+
     public class StringBuilder
     {
         private ArrayList _content;
 
+        #region Public Properties
+
+        public int Length
+        {
+            get { return _content.Count; }
+        }
+
+        #endregion
+
         public StringBuilder()
         {
             _content = new ArrayList();
+        }
+
+        public StringBuilder(string s)
+        {
+            _content = new ArrayList();
+            Append(s);
         }
 
         public void Append(string s)

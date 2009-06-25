@@ -42,7 +42,7 @@ namespace MFToolkit.Net.Mail
 
 #if(!MF)
 		private static readonly Regex ILLEGAL_CHARACTERS = new Regex("[][)(@><\\\",;:]");
-        private static readonly Regex ADDRESS_REGEX = new Regex("<[a-z0-9-_\\. ]+@[a-z0-9-_\\.]+>", RegexOptions.IgnoreCase);
+        private static readonly Regex ADDRESS_REGEX = new Regex("[a-z0-9-_\\=\\.]+@[a-z0-9-_\\.]+", RegexOptions.IgnoreCase);
 #endif
 
         #endregion
@@ -59,12 +59,16 @@ namespace MFToolkit.Net.Mail
 		public MailAddress(string address)
 		{
 			this.Address = address;
+
+            Verify();
 		}
 
 		public MailAddress(string localPart, string domain)
 		{
 			this.LocalPart = localPart;
 			this.Domain = domain;
+
+            Verify();
 		}
 
 		#endregion
@@ -158,12 +162,18 @@ namespace MFToolkit.Net.Mail
 		private void VerifySpecialCharacters(string data)
 		{
 #if(!MF)
-			if(ILLEGAL_CHARACTERS.IsMatch(data))
-			{
+            if (ILLEGAL_CHARACTERS.IsMatch(data))
                 throw new InvalidMailAddressException("Illegal characters found.");
-	    	}
 #endif
 		}
+
+        private void Verify()
+        {
+#if(!MF)
+            if(!ADDRESS_REGEX.IsMatch(Address))
+                throw new InvalidMailAddressException("Illegal characters found.");
+#endif
+        }
 
 		#endregion
 	}

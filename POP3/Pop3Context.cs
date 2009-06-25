@@ -28,6 +28,8 @@ using System.Net.Sockets;
 using System.Text;
 using System.Data;
 using System.Threading;
+using System.IO;
+using System.Net;
 
 namespace MFToolkit.Net.Pop3
 {
@@ -41,23 +43,27 @@ namespace MFToolkit.Net.Pop3
 		
 		#region Private Variables
 
-		private Socket socket;
-		private int lastCommand;
-		private string username;
-		private string password;
-		private Encoding encoding;
-		private StringBuilder inputBuffer;
+		private Stream _stream;
+        private IPEndPoint _localEndPoint;
+        private IPEndPoint _remoteEndPoint;
+		private int _lastCommand;
+		private string _username;
+		private string _password;
+		private Encoding _encoding;
+		private StringBuilder _inputBuffer;
 			
 		#endregion
 		
 		#region Constructors
 		
-		public Pop3Context(Socket client)
+		public Pop3Context(Stream client, IPEndPoint localEndPoint, IPEndPoint remoteEndPoint)
 		{
-			lastCommand = -1;
-			socket = client;
-			encoding = Encoding.ASCII;
-			inputBuffer = new StringBuilder();
+			_lastCommand = -1;
+			_stream = client;
+            _localEndPoint = localEndPoint;
+            _remoteEndPoint = remoteEndPoint;
+			_encoding = Encoding.ASCII;
+			_inputBuffer = new StringBuilder();
 		}
 		
 		#endregion
@@ -71,11 +77,11 @@ namespace MFToolkit.Net.Pop3
 		{
 			get
 			{
-				return lastCommand;
+				return _lastCommand;
 			}
 			set
 			{
-				lastCommand = value;
+				_lastCommand = value;
 			}
 		}
 		
@@ -86,11 +92,11 @@ namespace MFToolkit.Net.Pop3
 		{
 			get
 			{
-				return username;
+				return _username;
 			}
 			set
 			{
-				username = value;
+				_username = value;
 			}
 		}
 		
@@ -101,37 +107,48 @@ namespace MFToolkit.Net.Pop3
 		{
 			get
 			{
-				return password;
+				return _password;
 			}
 			set
 			{
-				password = value;
+				_password = value;
 			}
 		}
 
-		
-		/// <summary>
-		/// The Socket that is connected to the client.
-		/// </summary>
-		public Socket Socket
-		{
-			get
-			{
-				return socket;
-			}
-		}
-		
+        public IPEndPoint LocalEndPoint
+        {
+            get
+            {
+                return _localEndPoint;
+            }
+        }
+
+        public IPEndPoint RemoteEndPoint
+        {
+            get
+            {
+                return _remoteEndPoint;
+            }
+        }
+
 		#endregion
 		
 		#region Public Methods
-		
-		public void WriteLine(string data)
+
+        public void Write(string s)
+        {
+            byte[] bytes = _encoding.GetBytes(s);
+            _stream.Write(bytes, 0, bytes.Length);
+        }
+
+        public void WriteLine(string line)
         {
 #if(LOG && !MF && !WindowsCE)
-			Console.WriteLine(" > " + data);
+            Console.WriteLine(" > " + line);
 #endif
-            socket.Send(encoding.GetBytes(data + EOL));
-		}
+
+            Write(line + EOL);
+        }
 		
 		public String ReadLine()
 		{
@@ -145,16 +162,49 @@ namespace MFToolkit.Net.Pop3
 			}
 						
 			byte[] byteBuffer = new byte[80];
-			int count;
+            int count = 0;
 
-			// TODO: read from Stream instead of the Socket to support SSL
+            DateTime begin = DateTime.Now;
+            DateTime lastByteReceived = begin;
 
-			do
-			{
-                socket.ReceiveTimeout = 2000;
-				count = socket.Receive(byteBuffer);
+            do
+            {
+                _stream.ReadTimeout = 2000;
 
-				inputBuffer.Append(encoding.GetString(byteBuffer, 0, count));				
+                try
+                {
+                    count = _stream.Read(byteBuffer, 0, byteBuffer.Length);
+
+                    if (count > 0)
+                        lastByteReceived = DateTime.Now;
+                }
+                catch (IOException)
+                {
+                    continue;
+                }
+                catch (Exception)
+                {
+                    DateTime nd = DateTime.Now;
+#if(MF)
+                    if((nd.Ticks - lastByteReceived.Ticks) / TimeSpan.TicksPerMillisecond < 10 * 1000)
+                        continue;
+#else
+                    if ((nd - lastByteReceived).TotalMilliseconds < 10 * 1000)
+                        continue;
+#endif
+                }
+
+#if(MF)
+                string s = "";
+                foreach (char c in encoding.GetChars(byteBuffer))
+                {
+                    s += c;
+                }
+                inputBuffer.Append(s);
+#else
+                _inputBuffer.Append(_encoding.GetString(byteBuffer, 0, count));
+#endif
+
 			}
 			while(count > 0 && (output = ReadBuffer()) == null);
 
@@ -166,7 +216,7 @@ namespace MFToolkit.Net.Pop3
 		
 		public void Reset()
 		{
-			lastCommand = -1;
+			_lastCommand = -1;
 		}
 		
 		/// <summary>
@@ -174,10 +224,10 @@ namespace MFToolkit.Net.Pop3
 		/// </summary>
 		public void Close()
 		{
-			socket.Shutdown(SocketShutdown.Both);
-			socket.Close();
+			_stream.Close();
+            _stream.Dispose();
 
-			socket = null;
+			_stream = null;
 		}
 		
 		#endregion
@@ -186,14 +236,15 @@ namespace MFToolkit.Net.Pop3
 		
 		private string ReadBuffer()
 		{
-			if(inputBuffer.Length > 0)				
+			if(_inputBuffer.Length > 0)				
 			{
-				string buffer = inputBuffer.ToString();
+				string buffer = _inputBuffer.ToString();
+
 				int idx = buffer.IndexOf(EOL);
 				if(idx != -1)
 				{
 					string output = buffer.Substring(0, idx);
-					inputBuffer = new StringBuilder(buffer.Substring(idx + EOL.Length));
+					_inputBuffer = new StringBuilder(buffer.Substring(idx + EOL.Length));
 					return output;
 				}				
 			}

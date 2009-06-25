@@ -34,6 +34,12 @@ using System.Threading;
 using Socket = System.Net.Sockets.Socket;
 using MFToolkit.Net.Mail;
 
+#if(!MF)
+using System.Security.Cryptography.X509Certificates;
+#else
+using Microsoft.SPOT.Net.Security;
+#endif
+
 namespace MFToolkit.Net.Pop3
 {
     public class Pop3Server : IDisposable
@@ -47,6 +53,8 @@ namespace MFToolkit.Net.Pop3
         private bool _stopThreads = true;
         private const int _maxWorkers = 256;
         private IPop3Storage _storage;
+        private bool _isSecure = false;
+        private X509Certificate _certificate;
 
         #region Events
 
@@ -109,6 +117,18 @@ namespace MFToolkit.Net.Pop3
         public IPAddress Address
         {
             get { return _address; }
+        }
+
+        public bool IsSecure
+        {
+            get { return _isSecure; }
+            set { _isSecure = value; }
+        }
+
+        public X509Certificate Certificate
+        {
+            get { return _certificate; }
+            set { _certificate = value; }
         }
 
         #endregion
@@ -255,7 +275,7 @@ namespace MFToolkit.Net.Pop3
                 Thread.Sleep(10);
             }
 
-            Pop3Processor proc = new Pop3Processor(client, _storage);
+            Pop3Processor proc = new Pop3Processor(this, client, _storage);
 
             Thread thd = new Thread(new ThreadStart(proc.ProcessConnection));
 #if(!MF)
@@ -289,6 +309,9 @@ namespace MFToolkit.Net.Pop3
 #if(LOG && !MF && !WindowsCE)
                     if (_workerThreads.Count > 0)
                         Console.WriteLine(_workerThreads.Count + " worker threads (" + Address + ":" + Port + ")");
+#elif(LOG && MF)
+                    if (_workerThreads.Count > 0)
+                        Microsoft.SPOT.Debug.Print(_workerThreads.Count + " worker threads (" + Address + ":" + Port + ")");
 #endif
                 }
 

@@ -29,9 +29,17 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Text.RegularExpressions;
-using MSchwarz.Net.Mail;
 using MFToolkit.Net.Mail;
+using System.IO;
+
+#if(!MF)
+using System.Net.Security;
+using System.Security.Authentication;
+using System.Text.RegularExpressions;
+#else
+using MFToolkit.Text;
+using Microsoft.SPOT.Net.Security;
+#endif
 
 namespace MFToolkit.Net.Smtp
 {
@@ -47,7 +55,7 @@ namespace MFToolkit.Net.Smtp
 		public const int COMMAND_RCPT = 5;
 		public const int COMMAND_DATA = 6;
 
-		private const string MESSAGE_DEFAULT_WELCOME = "220 SMTP server ready {0}";
+		private const string MESSAGE_DEFAULT_WELCOME = "220 SMTP server ready";
 		private const string MESSAGE_DEFAULT_HELO_RESPONSE = "250 OK";
 		private const string MESSAGE_OK = "250 OK";
 		private const string MESSAGE_START_DATA = "354 Start mail input; end with <CRLF>.<CRLF>";
@@ -60,12 +68,15 @@ namespace MFToolkit.Net.Smtp
         private const string MESSAGE_SENDER_NOT_ALLOWED = "554 Sender address rejected: Access denied";
 		private const string MESSAGE_SYSTEM_ERROR = "554 Transaction failed";
 
-        private static readonly Regex ADDRESS_REGEX = new Regex("<[a-z0-9-_\\. ]+@[a-z0-9-_\\.]+>", RegexOptions.IgnoreCase);
-		
+#if(!MF)
+        private static readonly Regex ADDRESS_REGEX = new Regex("<[a-z0-9-_\\=\\.]+@[a-z0-9-_\\.]+>", RegexOptions.IgnoreCase);
+#endif
+
 		#endregion
 		
 		#region Private Variables
-		
+
+        private SmtpServer _server;
         private ISmtpStorage _storage;
         private Socket _socket;
 		
@@ -73,13 +84,14 @@ namespace MFToolkit.Net.Smtp
 		
 		#region Constructors
 
-        public SmtpProcessor(Socket socket)
+        public SmtpProcessor(SmtpServer server, Socket socket)
 		{
+            _server = server;
             _socket = socket;
 		}
 
-		public SmtpProcessor(Socket socket, ISmtpStorage storage)
-            : this(socket)
+		public SmtpProcessor(SmtpServer server, Socket socket, ISmtpStorage storage)
+            : this(server, socket)
 		{
             _storage = storage;
 		}
@@ -90,7 +102,35 @@ namespace MFToolkit.Net.Smtp
 		
 		public void ProcessConnection()
 		{
-			SmtpContext context = new SmtpContext(_socket);
+            Stream stream;
+
+            if (_server.IsSecure && _server.Certificate != null)
+            {
+                SslStream ssl = null;
+
+                try
+                {
+#if(!MF)
+                    ssl = new SslStream(new NetworkStream(_socket), false);
+                    ssl.AuthenticateAsServer(_server.Certificate); // , false, SslProtocols.Default, false);
+#else
+                    ssl = new SslStream(_socket);
+                    ssl.AuthenticateAsServer(_server.Certificate, SslVerification.NoVerification, SslProtocols.Default);
+#endif
+                    stream = ssl;
+                }
+                catch (Exception)
+                {
+                    //Close();
+                    return;
+                }
+            }
+            else
+            {
+                stream = new NetworkStream(_socket);
+            }
+
+            SmtpContext context = new SmtpContext(stream, (IPEndPoint)_socket.LocalEndPoint, (IPEndPoint)_socket.RemoteEndPoint);
 
 			try 
 			{
@@ -106,7 +146,11 @@ namespace MFToolkit.Net.Smtp
 #if(LOG && !MF && !WindowsCE)
 				Console.WriteLine("Processor Exception: " + ex.Message);
 #endif
-                if (_socket != null && _socket.Connected)
+                if (_socket != null
+#if(!MF)
+                    && _socket.Connected
+#endif
+                )
 				{
 					context.WriteLine("421 Service not available, closing transmission channel");
 				}
@@ -118,7 +162,9 @@ namespace MFToolkit.Net.Smtp
 				_socket = null;
 				context = null;
 
+#if(!MF && !WindowsCE)
 				System.GC.Collect();
+#endif
 			}
 		}
 		
@@ -129,8 +175,7 @@ namespace MFToolkit.Net.Smtp
 		private void SendWelcomeMessage(SmtpContext context)
         {
 #if(LOG && !MF && !WindowsCE)
-			IPEndPoint clientEndPoint = (IPEndPoint) context.Socket.RemoteEndPoint;
-			Console.WriteLine("*** Remote IP: {0} ***", clientEndPoint);
+            Console.WriteLine("*** Remote IP: {0} ***", context.RemoteEndPoint);
 #endif
             context.WriteLine(MESSAGE_DEFAULT_WELCOME);
 		}
@@ -163,10 +208,10 @@ namespace MFToolkit.Net.Smtp
 							Helo(context, inputs);
 							break;
 
-
                         case "ehlo":
                             Ehlo(context, inputs);
                             break;
+
 						case "rset":
 							Rset(context);
 							break;
@@ -186,7 +231,7 @@ namespace MFToolkit.Net.Smtp
                             // TODO: move the input line to Mail(...)
 							if(inputs[1].ToLower().StartsWith("from"))
 							{
-								Mail(context, inputLine.Substring(inputLine.IndexOf(" ")));
+								Mail(context, inputLine.Substring(inputLine.IndexOf(":")));
 								break;
 							}
 							context.WriteLine(MESSAGE_UNKNOWN_COMMAND);
@@ -195,7 +240,7 @@ namespace MFToolkit.Net.Smtp
 						case "rcpt":
 							if(inputs[1].ToLower().StartsWith("to")) 							
 							{
-								Rcpt(context, inputLine.Substring(inputLine.IndexOf(" ")));
+                                Rcpt(context, inputLine.Substring(inputLine.IndexOf(":")));
 								break;
 							}
 							context.WriteLine(MESSAGE_UNKNOWN_COMMAND);
@@ -300,7 +345,7 @@ namespace MFToolkit.Net.Smtp
 			{
                 try
                 {
-                    MailAddress MailAddress = new MailAddress(argument);
+                    MailAddress MailAddress = new MailAddress(ParseAddress(argument));
 
                     if (_storage == null || _storage.AcceptSender(MailAddress))
                     {
@@ -333,7 +378,7 @@ namespace MFToolkit.Net.Smtp
 			{
                 try
                 {
-                    MailAddress MailAddress = new MailAddress(argument);
+                    MailAddress MailAddress = new MailAddress(ParseAddress(argument));
 
                     if (_storage == null || _storage.AcceptRecipient(MailAddress))
                     {
@@ -363,14 +408,14 @@ namespace MFToolkit.Net.Smtp
 			
 			MailMessage message = context.Message;
 			
-			IPEndPoint clientEndPoint = (IPEndPoint) context.Socket.RemoteEndPoint;
-			IPEndPoint localEndPoint = (IPEndPoint) context.Socket.LocalEndPoint;
+            //IPEndPoint clientEndPoint = (IPEndPoint) context.Socket.RemoteEndPoint;
+            //IPEndPoint localEndPoint = (IPEndPoint) context.Socket.LocalEndPoint;
 
 			StringBuilder header = new StringBuilder();
 
-            header.Append(String.Format("Received: from {0} ({0} [{1}])", context.ClientDomain, clientEndPoint.Address));
+            header.Append("Received: from " + context.ClientDomain + " (" + context.ClientDomain + " [" + context.RemoteEndPoint.Address + "])");
 			header.Append("\r\n");
-			header.Append(String.Format("     by {0}", localEndPoint.Address));			// TODO: can be replaced by hostname or something else
+			header.Append("     by " + context.LocalEndPoint.Address);
 			header.Append("\r\n");
 			header.Append("     " + System.DateTime.Now);
 			header.Append("\r\n");
@@ -395,10 +440,10 @@ namespace MFToolkit.Net.Smtp
                 context.WriteLine(MESSAGE_OK);
             else
             {
-                if (!String.IsNullOrEmpty(spoolError))
+                if (spoolError != null && spoolError.Length > 0)
                 {
                     context.Write("554");
-                    context.WriteLine(spoolError.Replace("\r\n", " "));
+                    context.WriteLine(spoolError);
                 }
                 else
                     context.WriteLine(MESSAGE_SYSTEM_ERROR);
@@ -407,6 +452,38 @@ namespace MFToolkit.Net.Smtp
 			context.Reset();
 		}
 
+        private string ParseAddress(string input)
+        {
+            if (input == null || input.Length == 0)
+                return null;
+
+#if(!MF)
+            System.Text.RegularExpressions.Match match = ADDRESS_REGEX.Match(input);
+
+            if (match.Success)
+            {
+                string matchText = match.Value;
+                
+                matchText = matchText.Remove(0, 1);
+                matchText = matchText.Remove(matchText.Length - 1, 1);
+
+                return matchText;
+            }
+
+            return null;
+#else
+            string addr = "";
+            for(int i=0; i<input.Length; i++)
+            {
+                if(input[i] == '<' || input[i] == '>')
+                    continue;
+                
+                addr += input[i];
+            }
+            return addr;
+#endif
+        }
+
 		#endregion
-	}
+    }
 }

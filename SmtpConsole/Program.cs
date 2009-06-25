@@ -64,6 +64,8 @@ namespace SmtpConsole
         static void RunSmtp()
         {
             SmtpServer smtp = new SmtpServer(storage);
+            //smtp.IsSecure = true;
+            //smtp.Certificate = new System.Security.Cryptography.X509Certificates.X509Certificate("c:\\temp\\michael.cer");
             smtp.Start();
 
             while (!stop)
