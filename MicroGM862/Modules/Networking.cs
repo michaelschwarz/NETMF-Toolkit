@@ -575,7 +575,7 @@ namespace MFToolkit.MicroGM862.Modules
                         break;
                 }
             }
-            catch (System.Threading.ThreadAbortException ex)
+            catch (System.Threading.ThreadAbortException)
             {
                 // Close online connection
                 if (_device.EscapeSequence(1500, 1500, 5000) != AT_Interface.ResponseCodes.OK)
