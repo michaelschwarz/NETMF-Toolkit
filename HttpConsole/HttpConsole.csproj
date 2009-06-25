@@ -66,6 +66,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="root\HTMLPage1.htm" />
     <Content Include="root\index.htm" />
     <Content Include="root\ms.jpg" />
     <Content Include="root\robots.txt" />

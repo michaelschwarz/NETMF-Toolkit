@@ -74,13 +74,14 @@ namespace MFToolkit.Net.Web
 
         internal void ProcessRequest()
         {
+#if(LOG && !MF && !WindowsCE)
+            Console.WriteLine((_client.RemoteEndPoint as IPEndPoint).ToString());
+#endif
+
             using (_client)
             {
                 while (true)
                 {
-#if(LOG && !MF && !WindowsCE)
-                    Console.WriteLine((_client.RemoteEndPoint as IPEndPoint).ToString());
-#endif
 
                     #region Wait for first byte (used for keep-alive, too)
 
@@ -194,6 +195,8 @@ namespace MFToolkit.Net.Web
                     }
 
                     httpResponse.Write(stream);
+
+                    stream.Flush();
 
                     LogAccess log = new LogAccess();
                     log.ClientIP = httpRequest.UserHostAddress;

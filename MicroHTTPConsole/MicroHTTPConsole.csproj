@@ -45,8 +45,10 @@
     <Reference Include="Microsoft.SPOT.Graphics" />
     <Reference Include="Microsoft.SPOT.Native" />
     <Reference Include="Microsoft.SPOT.Net" />
+    <Reference Include="Microsoft.SPOT.Net.Security" />
     <Reference Include="System" />
     <Reference Include="System.IO" />
+    <Reference Include="System.Net.Security" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources.resx">
@@ -71,6 +73,10 @@
     <ProjectReference Include="..\MicroUtilities\MicroUtilities.csproj">
       <Project>{25F61F25-06B4-4539-8AD3-F2317316A548}</Project>
       <Name>MicroUtilities</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MicroZigbee\MicroZigbee.csproj">
+      <Project>{60B9F011-DF1C-4624-8E04-52A2127C4CEE}</Project>
+      <Name>MicroZigbee</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

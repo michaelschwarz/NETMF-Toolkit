@@ -44,8 +44,43 @@ namespace HttpConsole
 	{
         public static double temperature = 17.235;
 
+        static void HttpTest()
+        {
+            HttpWebRequest r = (HttpWebRequest)HttpWebRequest.Create("http://192.168.178.20/");
+            r.UserAgent = "MFToolkit Test";
+            r.Method = "GET";
+
+            using (StreamReader sr = new StreamReader(r.GetResponse().GetResponseStream()))
+                Console.WriteLine(sr.ReadToEnd().Length);
+        }
 		static void Main(string[] args)
 		{
+            //if (args != null && args.Length == 1)
+            //{
+            //    int c = 0;
+            //    while (++c < 100)
+            //    {
+            //        List<Thread> threads = new List<Thread>();
+
+            //        for (var i = 0; i < 30; i++)
+            //        {
+            //            Thread thd = new Thread(new ThreadStart(HttpTest));
+            //            thd.IsBackground = true;
+            //            thd.Start();
+
+            //            threads.Add(thd);
+            //        }
+
+            //        foreach (Thread thd in threads)
+            //            thd.Join();
+            //    }
+            //    return;
+            //}
+            //else
+            //    Process.Start("HttpConsole.exe", "test");
+
+
+
             //Thread thd = new Thread(new ThreadStart(UpdateTemperature));
             //thd.IsBackground = true;
             //thd.Start();
@@ -54,21 +89,22 @@ namespace HttpConsole
             http.LogAccess += new LogAccessEventHandler(http_OnLogAccess);
             http.Start();
 
-            using (HttpServer https = new HttpServer(8080, new MyHttpHandler(Path.Combine(Environment.CurrentDirectory, "..\\..\\root"))))
-            {
-                https.IsSecure = true;
+            //using (HttpServer https = new HttpServer(8080, new MyHttpHandler(Path.Combine(Environment.CurrentDirectory, "..\\..\\root"))))
+            //{
+            //    https.IsSecure = true;
+            //    //makecert.exe -r -pe -n "CN=localhost" -len 2048 -ss my -sky exchange c:\temp\test.cer
+            //    https.Certificate = new X509Certificate("c:\\temp\\test.cer");
 
-                // makecert.exe -r -pe -n "CN=localhost" -len 2048 -ss my -sky exchange c:\temp\test.cer
-                https.Certificate = new X509Certificate("c:\\temp\\test.cer");
+            //    https.LogAccess += new LogAccessEventHandler(http_OnLogAccess);
+            //    https.Start();
 
-                https.LogAccess += new LogAccessEventHandler(http_OnLogAccess);
-                https.Start();
+            //    Console.ReadLine();
+            //    Console.WriteLine("Shutting down http server...");
 
-                Console.ReadLine();
-                Console.WriteLine("Shutting down http server...");
+            //    https.Stop();
+            //}
 
-                https.Stop();
-            }
+            Console.ReadLine();
 
             http.Stop();
 
@@ -160,11 +196,9 @@ namespace HttpConsole
         static void http_OnLogAccess(object sender, LogAccessEventArgs e)
         {
             LogAccess data = e.Data;
-
             Console.WriteLine(data.Date + "\t" + data.ClientIP + "\t" + data.Method + "\t" + data.RawUrl);
             Console.WriteLine(data.UserAgent);
-            if(data.HttpReferer != null) Console.WriteLine(data.HttpReferer);
-            //Console.WriteLine("------------------------------------------------------------");
+            Console.WriteLine("------------------------------------------------------------");
         }
 	}
 
@@ -194,6 +228,8 @@ namespace HttpConsole
                             context.Response.ContentType = "text/html; charset=UTF-8";
                         else if (Path.GetExtension(filename) == ".jpg")
                             context.Response.ContentType = "image/jpeg";
+                        else if (Path.GetExtension(filename) == ".xml")
+                            context.Response.ContentType = "text/xml; charset=UTF-8";
 
                         context.Response.Write(File.ReadAllBytes(filename));
                         return;
@@ -290,8 +326,11 @@ function test() {
     var x = window.ActiveXObject ? new ActiveXObject(""Microsoft.XMLHTTP"") : new XMLHttpRequest();
     x.onreadystatechange = function() {
         if(x.readyState == 4) {
+            if(x.status != 200)
+                alert(x.status + ' ' + x.responseText);
+
             document.getElementById('txtbox1').value = x.responseText;
-            if(++c <= 5)
+            if(++c <= 50)
                 setTimeout(test, 1);
         }
     }
@@ -391,6 +430,7 @@ setTimeout(test, 1);
 <a href=""test"">Redirect Test</a> calls /test and gets redirected to /test.aspx<br/>
 <a href=""test.aspx"">AJAX Test</a> requests 5 times a value from webserver<br/>
 <a href=""cookie"">Cookie Test</a> sets and displays a cookie<br/></p>
+<a href=""#"" onclick=""this.href='HTMLPage1.htm';"">JavaScript demo test<br/></p>
 <hr size=1/>
 <p>Any feedback welcome: <a href=""http://weblogs.asp.net/mschwarz/contact.aspx"">contact</a>
 <a href=""http://michael-schwarz.blogspot.com/"">My Blog</a> <a href=""http://weblogs.asp.net/mschwarz/"">My Blog (en)</a><br/>

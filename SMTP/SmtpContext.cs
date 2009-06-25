@@ -25,9 +25,16 @@
  * 
  * 
  */
+// TODO: instead of reading "lines" we have to read bytes for different content types
 using System;
 using System.Net.Sockets;
 using System.Text;
+using System.IO;
+using System.Net;
+
+#if(MF)
+using MFToolkit.Text;
+#endif
 
 namespace MFToolkit.Net.Smtp
 {
@@ -41,24 +48,34 @@ namespace MFToolkit.Net.Smtp
 		
 		#region Private Variables
 
-        private Socket socket;
-		private int lastCommand;
-		private string clientDomain;
-		private MailMessage message;
-		private Encoding encoding;
-		private StringBuilder inputBuffer;
+        private Stream _stream;
+        private IPEndPoint _localEndPoint;
+        private IPEndPoint _remoteEndPoint;
+		private int _lastCommand;
+		private string _clientDomain;
+		private MailMessage _message;
+		private Encoding _encoding;
+		private StringBuilder _inputBuffer;
 			
 		#endregion
 		
 		#region Constructors
 		
-		public SmtpContext(Socket client)
+		public SmtpContext(Stream client, IPEndPoint localEndPoint, IPEndPoint remoteEndPoint)
 		{
-			lastCommand = -1;
-            socket = client;
-            message = new MailMessage();
-			encoding = Encoding.ASCII;
-			inputBuffer = new StringBuilder();
+			_lastCommand = -1;
+            _stream = client;
+            _localEndPoint = localEndPoint;
+            _remoteEndPoint = remoteEndPoint;
+            _message = new MailMessage();
+
+#if(!MF)
+			_encoding = Encoding.ASCII;
+#else
+            encoding = Encoding.UTF8;
+#endif
+
+			_inputBuffer = new StringBuilder();
 		}
 		
 		#endregion
@@ -72,11 +89,11 @@ namespace MFToolkit.Net.Smtp
 		{
 			get
 			{
-				return lastCommand;
+				return _lastCommand;
 			}
 			set
 			{
-				lastCommand = value;
+				_lastCommand = value;
 			}
 		}
 		
@@ -87,22 +104,11 @@ namespace MFToolkit.Net.Smtp
 		{
 			get
 			{
-				return clientDomain;
+				return _clientDomain;
 			}
 			set
 			{
-				clientDomain = value;
-			}
-		}
-		
-		/// <summary>
-		/// The Socket that is connected to the client.
-		/// </summary>
-		public Socket Socket
-		{
-			get
-			{
-				return socket;
+				_clientDomain = value;
 			}
 		}
 		
@@ -113,28 +119,45 @@ namespace MFToolkit.Net.Smtp
 		{
 			get
 			{
-				return message;
+				return _message;
 			}
 			set
 			{
-				message = value;
+				_message = value;
 			}
 		}
-		
+
+        public IPEndPoint LocalEndPoint
+        {
+            get
+            {
+                return _localEndPoint;
+            }
+        }
+
+        public IPEndPoint RemoteEndPoint
+        {
+            get
+            {
+                return _remoteEndPoint;
+            }
+        }
+
 		#endregion
 		
 		#region Public Methods
 
         public void Write(string s)
         {
-#if(LOG && !MF && !WindowsCE)
-            Console.WriteLine(" > " + s);
-#endif
-            socket.Send(encoding.GetBytes(s));
+            byte[] bytes = _encoding.GetBytes(s);
+            _stream.Write(bytes, 0, bytes.Length);
         }
 
 		public void WriteLine(string line)
 		{
+#if(LOG && !MF && !WindowsCE)
+            Console.WriteLine(" > " + line);
+#endif
             Write(line + EOL);
 		}
 		
@@ -150,17 +173,51 @@ namespace MFToolkit.Net.Smtp
 			}
 						
 			byte[] byteBuffer = new byte[80];
-			int count;
-
-            // TODO: read from Stream instead of the Socket to support SSL
+            int count = 0;
+            
+            DateTime begin = DateTime.Now;
+            DateTime lastByteReceived = begin;
 
             do
 			{
-                socket.ReceiveTimeout = 2000;
-                count = socket.Receive(byteBuffer);
+                _stream.ReadTimeout = 500;
 
-				inputBuffer.Append(encoding.GetString(byteBuffer, 0, count));				
-			}
+                try
+                {
+                    count = _stream.Read(byteBuffer, 0, byteBuffer.Length);
+
+                    if (count > 0)
+                        lastByteReceived = DateTime.Now;
+                }
+                catch (IOException)
+                {
+                    continue;
+                }
+                catch (Exception)
+                {
+                    DateTime nd = DateTime.Now;
+#if(MF)
+                    if((nd.Ticks - lastByteReceived.Ticks) / TimeSpan.TicksPerMillisecond < 10 * 1000)
+                        continue;
+#else
+                    if ((nd - lastByteReceived).TotalMilliseconds < 10 * 1000)
+                        continue;
+#endif
+                }
+
+
+#if(MF)
+                string s = "";
+                foreach (char c in encoding.GetChars(byteBuffer))
+                {
+                    s += c;
+                }
+                inputBuffer.Append(s);
+#else
+                _inputBuffer.Append(_encoding.GetString(byteBuffer, 0, count));
+#endif
+
+            }
 			while(count > 0 && (output = ReadBuffer()) == null);
 
 #if(LOG && !MF && !WindowsCE)
@@ -171,16 +228,16 @@ namespace MFToolkit.Net.Smtp
 		
 		public void Reset()
 		{
-			message = new MailMessage();
-			lastCommand = SmtpProcessor.COMMAND_HELO;
+			_message = new MailMessage();
+			_lastCommand = SmtpProcessor.COMMAND_HELO;
 		}
 		
 		public void Close()
 		{
-			socket.Shutdown(SocketShutdown.Both);
-			socket.Close();
+            _stream.Close();
+            _stream.Dispose();
 
-			socket = null;
+            _stream = null;
 		}
 		
 		#endregion
@@ -189,14 +246,15 @@ namespace MFToolkit.Net.Smtp
 		
 		private string ReadBuffer()
 		{
-			if(inputBuffer.Length > 0)				
+			if(_inputBuffer.Length > 0)				
 			{
-				string buffer = inputBuffer.ToString();
-				int eolIndex = buffer.IndexOf(EOL);
-				if(eolIndex != -1)
+				string buffer = _inputBuffer.ToString();
+
+				int idx = buffer.IndexOf(EOL);
+				if(idx != -1)
 				{
-					string output = buffer.Substring(0, eolIndex);
-					inputBuffer = new StringBuilder(buffer.Substring(eolIndex + EOL.Length));
+					string output = buffer.Substring(0, idx);
+					_inputBuffer = new StringBuilder(buffer.Substring(idx + EOL.Length));
 					return output;
 				}				
 			}

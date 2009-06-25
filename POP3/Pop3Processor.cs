@@ -27,9 +27,16 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Data;
 using MFToolkit.Net.Mail;
+using System.IO;
+
+#if(!MF)
+using System.Net.Security;
+using System.Security.Authentication;
+#else
+using MFToolkit.Text;
+using Microsoft.SPOT.Net.Security;
+#endif
 
 namespace MFToolkit.Net.Pop3
 {
@@ -45,6 +52,7 @@ namespace MFToolkit.Net.Pop3
 		public const int COMMAND_RETR = 6;
 		public const int COMMAND_DELE = 7;
 		public const int COMMAND_UIDL = 8;
+        public const int COMMAND_TOP = 9;
 
 		private const string EOL = "\r\n";
 
@@ -70,22 +78,23 @@ namespace MFToolkit.Net.Pop3
 		#endregion
 		
 		#region Private Variables
-		
+
+        private Pop3Server _server;
 		private IPop3Storage _storage;
-        private string welcomeMessage;
         private Socket _socket;
 
 		#endregion
 		
 		#region Constructors
 
-        public Pop3Processor(Socket socket)
+        public Pop3Processor(Pop3Server server, Socket socket)
         {
+            _server = server;
             _socket = socket;
         }
 
-        public Pop3Processor(Socket socket, IPop3Storage storage)
-            : this(socket)
+        public Pop3Processor(Pop3Server server, Socket socket, IPop3Storage storage)
+            : this(server, socket)
 		{
             _storage = storage;
 		}
@@ -100,7 +109,35 @@ namespace MFToolkit.Net.Pop3
 		
 		public void ProcessConnection()
 		{
-			Pop3Context context = new Pop3Context(_socket);
+            Stream stream;
+
+            if (_server.IsSecure && _server.Certificate != null)
+            {
+                SslStream ssl = null;
+
+                try
+                {
+#if(!MF)
+                    ssl = new SslStream(new NetworkStream(_socket));
+                    ssl.AuthenticateAsServer(_server.Certificate, false, SslProtocols.Default, false);
+#else
+                    ssl = new SslStream(_socket);
+                    ssl.AuthenticateAsServer(_server.Certificate, SslVerification.NoVerification, SslProtocols.Default);
+#endif
+                    stream = ssl;
+                }
+                catch (Exception)
+                {
+                    //Close();
+                    return;
+                }
+            }
+            else
+            {
+                stream = new NetworkStream(_socket);
+            }
+
+            Pop3Context context = new Pop3Context(stream, (IPEndPoint)_socket.LocalEndPoint, (IPEndPoint)_socket.RemoteEndPoint);
 
 			try 
 			{
@@ -132,8 +169,7 @@ namespace MFToolkit.Net.Pop3
 		private void SendWelcomeMessage(Pop3Context context)
         {
 #if(LOG && !MF && !WindowsCE)
-			IPEndPoint clientEndPoint = (IPEndPoint) context.Socket.RemoteEndPoint;
-			Console.WriteLine("*** Remote IP: {0} ***", clientEndPoint);
+            Console.WriteLine("*** Remote IP: {0} ***", context.RemoteEndPoint);
 #endif
 
             context.WriteLine(MESSAGE_DEFAULT_WELCOME);
