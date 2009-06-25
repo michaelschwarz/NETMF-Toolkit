@@ -418,11 +418,11 @@ namespace MFToolkit.Net.Web
                     if (bytesRead > 0)
                         lastByteReceived = DateTime.Now;
                 }
-                catch (IOException iox)
+                catch (IOException)
                 {
                     break;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     DateTime nd = DateTime.Now;
 #if(MF)

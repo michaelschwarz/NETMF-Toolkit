@@ -41,15 +41,6 @@ namespace ZigbeeConsole
 
         static void Main(string[] args)
         {
-            using (XBee xbee = new XBee("COM4", 9600, ApiType.Enabled))
-            {
-                xbee.Open();
-                Console.WriteLine(xbee.Execute<AtCommandResponse>(new NodeIdentifierCommand()));
-
-            }
-
-            return;
-
             Thread thd1 = new Thread(new ThreadStart(RunModule1));
             thd1.IsBackground = true;
             thd1.Start();
