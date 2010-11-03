@@ -426,11 +426,11 @@ namespace MFToolkit.Net.Web
                 {
                     DateTime nd = DateTime.Now;
 #if(MF)
-                    if((nd.Ticks - lastByteReceived.Ticks) / TimeSpan.TicksPerMillisecond < MAX_REQUEST_SLIDING_TIMEOUT)
-                        continue;
+                    if((nd.Ticks - lastByteReceived.Ticks) / TimeSpan.TicksPerMillisecond > MAX_REQUEST_SLIDING_TIMEOUT)
+                        break;
 #else
-                    if ((nd - lastByteReceived).TotalMilliseconds < MAX_REQUEST_SLIDING_TIMEOUT)
-                        continue;
+                    if ((nd - lastByteReceived).TotalMilliseconds > MAX_REQUEST_SLIDING_TIMEOUT)
+                        break;
 #endif
 
                     if (HttpMethod == "POST" && (_body == null || _body.Length < ContentLength))

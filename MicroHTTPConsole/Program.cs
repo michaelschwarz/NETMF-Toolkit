@@ -19,6 +19,8 @@ namespace MicroHTTPConsole
     {
         internal static bool stopThread = false;
 
+        #region certificate
+
         // Self Signed Certificate (Public and Private Key Concatenated).  Binary version of Certificates\SelfSigned.PEM
         public static byte[] caCert = new byte[] {
            0x2d,0x2d,0x2d,0x2d,0x2d,0x42,0x45,0x47,0x49,0x4e,0x20,0x43,0x45,0x52,0x54,
@@ -402,6 +404,8 @@ namespace MicroHTTPConsole
 
            };
 
+        #endregion
+
         public static void Main()
         {
             // Demo for MFToolkit.Cryptography
@@ -414,17 +418,19 @@ namespace MicroHTTPConsole
             //}
 
             // Demo for NtpClient
-            //Microsoft.SPOT.ExtendedTimeZone.SetTimeZone(TimeZoneId.Berlin);
+            //Microsoft.SPOT.Time.TimeService.SetTimeZoneOffset(60);
+            //Microsoft.SPOT.Time.TimeService.SetUtcTime(NtpClient.GetNetworkTime().Ticks);
             //Microsoft.SPOT.Hardware.Utility.SetLocalTime(NtpClient.GetNetworkTime());
 
             // Demo for HttpServer
             foreach (NetworkInterface net in NetworkInterface.GetAllNetworkInterfaces())
                 Debug.Print(net.IPAddress.ToString());
 
-            using (HttpServer http = new HttpServer(new MyHttpHandler()))
+            // change the port 80 to 81 if running inside the emulator
+            using (HttpServer http = new HttpServer(81, new MyHttpHandler()))
             {
-                http.IsSecure = true;
-                http.Certificate = new X509Certificate(caCert);
+                //http.IsSecure = true;
+                //http.Certificate = new X509Certificate(caCert);
                 http.Start();
                  
                 while (!stopThread)
@@ -459,17 +465,6 @@ namespace MicroHTTPConsole
         public void ProcessRequest(HttpContext context)
         {
             context.Response.RemoveHeader("Connection");
-
-
-            // check if this is a XBee http request
-
-
-
-
-
-
-
-
 
             //if (!String.IsNullOrEmpty(_rootFolder) && context.Request.Path != null)
             //{
@@ -672,8 +667,7 @@ setTimeout(test, 1);
 <a href=""cookie"">Cookie Test</a> sets and displays a cookie<br/></p>
 <hr size=1/>
 <p>Any feedback welcome: <a href=""http://weblogs.asp.net/mschwarz/contact.aspx"">contact</a>
-<a href=""http://michael-schwarz.blogspot.com/"">My Blog</a> <a href=""http://weblogs.asp.net/mschwarz/"">My Blog (en)</a><br/>
-<a href=""http://www.control-my-world.com/"">Control My World</a></p>
+<a href=""http://michael-schwarz.blogspot.com/"">My Blog</a> <a href=""http://weblogs.asp.net/mschwarz/"">My Blog (en)</a></p>
 </body></html>");
                     break;
             } 
