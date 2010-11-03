@@ -34,9 +34,6 @@ namespace MicroZigbeeConsole
 	{
 		public static void Main()
 		{
-			Debug.Print(
-				Resources.GetString(Resources.StringResources.String1));
-
 			using (XBee xbee = new XBee("COM1", 9600))
 			{
                 xbee.FrameReceived += new FrameReceivedEventHandler(xbee_OnPacketReceived);

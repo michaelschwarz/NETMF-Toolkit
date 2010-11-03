@@ -402,7 +402,7 @@ namespace MFToolkit.MicroC6820
 #if(DEBUG)
             Debug.Print(SendCommand(id_cmd).ToString());
 #else
-            SendCommand(id_cmd).ToString()
+            SendCommand(id_cmd).ToString();
 #endif
 
             /*
@@ -412,34 +412,34 @@ namespace MFToolkit.MicroC6820
 #if(DEBUG)
             Debug.Print(SendCommand(para_cmd).ToString());
 #else
-            SendCommand(para_cmd).ToString()
+            SendCommand(para_cmd).ToString();
 #endif
 
             Thread.Sleep(1000);
 
             if (!ReceiveACK(CMD_SEQUENCE_CAPTURE, 1000, ref returnValue) || (returnValue != 0))
             {
-                String errorMsg = "Failed";
-                switch (returnValue)
-                {
-                    case 2:
-                        errorMsg = "Now in USB mode";
-                        break;
-                    case 3:
-                        errorMsg = "Mode error";
-                        break;
-                    case 4:
-                        errorMsg = "Memory full(RAM)";
-                        break;
-                    case 5:
-                        errorMsg = "Memory full (Flash)";
-                        break;
-                    case 6:
-                        errorMsg = "External memory card write-protect";
-                        break;
-                    default:
-                        break;
-                }
+                //String errorMsg = "Failed";
+                //switch (returnValue)
+                //{
+                //    case 2:
+                //        errorMsg = "Now in USB mode";
+                //        break;
+                //    case 3:
+                //        errorMsg = "Mode error";
+                //        break;
+                //    case 4:
+                //        errorMsg = "Memory full(RAM)";
+                //        break;
+                //    case 5:
+                //        errorMsg = "Memory full (Flash)";
+                //        break;
+                //    case 6:
+                //        errorMsg = "External memory card write-protect";
+                //        break;
+                //    default:
+                //        break;
+                //}
 
                 // throw new Exception("C6820 failed to capture jpeg,error message:" + errorMsg);
                 

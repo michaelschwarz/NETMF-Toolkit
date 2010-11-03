@@ -34,7 +34,6 @@ using System.Threading;
 using System.Net;
 using System.Net.Sockets;
 using MFToolkit.Net.XBee;
-using MFToolkit.MicroUtilities;
 using System.Diagnostics;
 using System.Security.Cryptography.X509Certificates;
 
