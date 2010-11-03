@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZigbeeConsole", "ZigbeeConsole\ZigbeeConsole.csproj", "{74F0327C-8A14-44B4-A13D-5746A751D705}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zigbee", "Zigbee\Zigbee.csproj", "{712410B3-03CB-4771-9AFE-75CA1C65EC3E}"
@@ -37,11 +37,31 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroGM862", "MicroGM862\Mi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroGM862Demo", "MicroGM862Demo\MicroGM862Demo.csproj", "{7B339108-37DE-40EB-85CB-9D736106D6EB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroC6820", "MicroC6820\MicroC6820.csproj", "{2086F783-8A1A-4B7F-BC5D-ADA834DA582D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetBIOS", "NetBIOS\NetBIOS.csproj", "{6B3FF62F-B34C-4953-8728-451DE0CC4FAC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NTP", "NTP\NTP.csproj", "{8D2864CD-DF2E-494F-9DD1-2C31ECCF55D3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "POP3", "POP3\POP3.csproj", "{FA631D64-99F8-4EC3-A387-93FC13257337}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SMTP", "SMTP\SMTP.csproj", "{A0F47113-574C-40F3-BE10-158763874C09}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmtpConsole", "SmtpConsole\SmtpConsole.csproj", "{95F02639-1AE4-403F-ADD1-18430B8F690E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SsdpConsole", "SsdpConsole\SsdpConsole.csproj", "{20E5FD40-8E46-47A4-9921-F3A541C9BE16}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroNTP", "MicroNTP\MicroNTP.csproj", "{7E0CDF9D-1EDC-4F9A-A4F6-01151BB89BB7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mail", "Mail\Mail.csproj", "{AF3BF08F-EDD6-4722-820A-4ABD8922DCD0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SSDP", "SSDP\SSDP.csproj", "{B97AA318-DDB2-4FCB-AEE6-C1E5134A538A}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 19
+		SccNumberOfProjects = 29
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = https://tfs05.codeplex.com/
+		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs05
 		SccLocalPath0 = .
 		SccProjectUniqueName1 = ZigbeeConsole\\ZigbeeConsole.csproj
 		SccProjectName1 = ZigbeeConsole
@@ -97,6 +117,36 @@ Global
 		SccProjectUniqueName18 = MicroGM862Demo\\MicroGM862Demo.csproj
 		SccProjectName18 = MicroGM862Demo
 		SccLocalPath18 = MicroGM862Demo
+		SccProjectUniqueName19 = MicroC6820\\MicroC6820.csproj
+		SccProjectName19 = MicroC6820
+		SccLocalPath19 = MicroC6820
+		SccProjectUniqueName20 = NetBIOS\\NetBIOS.csproj
+		SccProjectName20 = NetBIOS
+		SccLocalPath20 = NetBIOS
+		SccProjectUniqueName21 = NTP\\NTP.csproj
+		SccProjectName21 = NTP
+		SccLocalPath21 = NTP
+		SccProjectUniqueName22 = POP3\\POP3.csproj
+		SccProjectName22 = POP3
+		SccLocalPath22 = POP3
+		SccProjectUniqueName23 = SMTP\\SMTP.csproj
+		SccProjectName23 = SMTP
+		SccLocalPath23 = SMTP
+		SccProjectUniqueName24 = SmtpConsole\\SmtpConsole.csproj
+		SccProjectName24 = SmtpConsole
+		SccLocalPath24 = SmtpConsole
+		SccProjectUniqueName25 = SsdpConsole\\SsdpConsole.csproj
+		SccProjectName25 = SsdpConsole
+		SccLocalPath25 = SsdpConsole
+		SccProjectUniqueName26 = MicroNTP\\MicroNTP.csproj
+		SccProjectName26 = MicroNTP
+		SccLocalPath26 = MicroNTP
+		SccProjectUniqueName27 = Mail\\Mail.csproj
+		SccProjectName27 = Mail
+		SccLocalPath27 = Mail
+		SccProjectUniqueName28 = SSDP\\SSDP.csproj
+		SccProjectName28 = SSDP
+		SccLocalPath28 = SSDP
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -183,6 +233,46 @@ Global
 		{7B339108-37DE-40EB-85CB-9D736106D6EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7B339108-37DE-40EB-85CB-9D736106D6EB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7B339108-37DE-40EB-85CB-9D736106D6EB}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{2086F783-8A1A-4B7F-BC5D-ADA834DA582D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2086F783-8A1A-4B7F-BC5D-ADA834DA582D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2086F783-8A1A-4B7F-BC5D-ADA834DA582D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2086F783-8A1A-4B7F-BC5D-ADA834DA582D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B3FF62F-B34C-4953-8728-451DE0CC4FAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B3FF62F-B34C-4953-8728-451DE0CC4FAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B3FF62F-B34C-4953-8728-451DE0CC4FAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B3FF62F-B34C-4953-8728-451DE0CC4FAC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8D2864CD-DF2E-494F-9DD1-2C31ECCF55D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D2864CD-DF2E-494F-9DD1-2C31ECCF55D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D2864CD-DF2E-494F-9DD1-2C31ECCF55D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D2864CD-DF2E-494F-9DD1-2C31ECCF55D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA631D64-99F8-4EC3-A387-93FC13257337}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA631D64-99F8-4EC3-A387-93FC13257337}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA631D64-99F8-4EC3-A387-93FC13257337}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA631D64-99F8-4EC3-A387-93FC13257337}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0F47113-574C-40F3-BE10-158763874C09}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0F47113-574C-40F3-BE10-158763874C09}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0F47113-574C-40F3-BE10-158763874C09}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0F47113-574C-40F3-BE10-158763874C09}.Release|Any CPU.Build.0 = Release|Any CPU
+		{95F02639-1AE4-403F-ADD1-18430B8F690E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95F02639-1AE4-403F-ADD1-18430B8F690E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95F02639-1AE4-403F-ADD1-18430B8F690E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95F02639-1AE4-403F-ADD1-18430B8F690E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20E5FD40-8E46-47A4-9921-F3A541C9BE16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20E5FD40-8E46-47A4-9921-F3A541C9BE16}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20E5FD40-8E46-47A4-9921-F3A541C9BE16}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20E5FD40-8E46-47A4-9921-F3A541C9BE16}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E0CDF9D-1EDC-4F9A-A4F6-01151BB89BB7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E0CDF9D-1EDC-4F9A-A4F6-01151BB89BB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E0CDF9D-1EDC-4F9A-A4F6-01151BB89BB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E0CDF9D-1EDC-4F9A-A4F6-01151BB89BB7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF3BF08F-EDD6-4722-820A-4ABD8922DCD0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF3BF08F-EDD6-4722-820A-4ABD8922DCD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF3BF08F-EDD6-4722-820A-4ABD8922DCD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF3BF08F-EDD6-4722-820A-4ABD8922DCD0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B97AA318-DDB2-4FCB-AEE6-C1E5134A538A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B97AA318-DDB2-4FCB-AEE6-C1E5134A538A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B97AA318-DDB2-4FCB-AEE6-C1E5134A538A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B97AA318-DDB2-4FCB-AEE6-C1E5134A538A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

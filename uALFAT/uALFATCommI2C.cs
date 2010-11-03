@@ -131,7 +131,7 @@ namespace MFToolkit.Devices
         public bool SendByte(byte b)
         {
             // Create write transaction
-            I2CDevice.I2CTransaction[] WriteByte = new I2CDevice.I2CTransaction[] { _i2cconnection.CreateWriteTransaction(new byte[] { b }) };
+            I2CDevice.I2CTransaction[] WriteByte = new I2CDevice.I2CTransaction[] { I2CDevice.CreateWriteTransaction(new byte[1] { b }) };
 
             // Execute
             int bytessend = _i2cconnection.Execute(WriteByte, 100);
@@ -163,7 +163,7 @@ namespace MFToolkit.Devices
             do
             {
                 // Create read transaction
-                I2CDevice.I2CTransaction[] ReadByte = new I2CDevice.I2CTransaction[] { _i2cconnection.CreateReadTransaction(buf) };
+                I2CDevice.I2CTransaction[] ReadByte = new I2CDevice.I2CTransaction[] { I2CDevice.CreateReadTransaction(buf) };
 
                 // Execute and check if byte is read succesfull
                 int bytesread = _i2cconnection.Execute(ReadByte, 100);
@@ -181,7 +181,7 @@ namespace MFToolkit.Devices
             if (b == 0xfe)
             {
                 // Create read transaction
-                I2CDevice.I2CTransaction[] ReadByte = new I2CDevice.I2CTransaction[] { _i2cconnection.CreateReadTransaction(buf) };
+                I2CDevice.I2CTransaction[] ReadByte = new I2CDevice.I2CTransaction[] { I2CDevice.CreateReadTransaction(buf) };
 
                 // Execute and check if byte is read succesfull
                 int bytesread = _i2cconnection.Execute(ReadByte, 100);

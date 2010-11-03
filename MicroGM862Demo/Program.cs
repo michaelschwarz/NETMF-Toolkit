@@ -47,7 +47,7 @@ namespace MFToolkit.MicroGM862Demo
             // so it could interfere with the processing of GM862 responses
             Thread HeavyWork = new Thread(new ThreadStart(delegate()
             {
-                Microsoft.SPOT.Math.Randomize();
+                Random rand = new Random();
                 long testOperator = 0;
 
                 while (true)
@@ -55,7 +55,7 @@ namespace MFToolkit.MicroGM862Demo
                     do
                     {
                         for(int x = 0; x < 1000; x++)
-                            testOperator = Microsoft.SPOT.Math.Random(1100);
+                            testOperator = rand.Next(1100);
 
                     } while (testOperator > 1000);
 
