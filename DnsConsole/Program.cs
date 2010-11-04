@@ -35,8 +35,8 @@ namespace DnsConsole
 	{
 		static void Main(string[] args)
 		{
-            NetBIOS nbt = new NetBIOS();
-            nbt.Register("HANS", IPAddress.Parse("192.168.177.1"));
+            //NetBIOS nbt = new NetBIOS();
+            //nbt.Register("HANS", IPAddress.Parse("192.168.177.1"));
 
             //try
             //{
