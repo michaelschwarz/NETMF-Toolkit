@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Michael Schwarz")]
 [assembly: AssemblyProduct("MicroIO Library")]
-[assembly: AssemblyCopyright("Copyright ©  2009, Michael Schwarz")]
+[assembly: AssemblyCopyright("Copyright ©  2010, Michael Schwarz")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -21,5 +21,5 @@ using System.Runtime.InteropServices;
 //      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion("9.3.9.1")]
-[assembly: AssemblyFileVersion("9.3.9.1")]
+[assembly: AssemblyVersion("10.11.4.1")]
+[assembly: AssemblyFileVersion("10.11.4.1")]

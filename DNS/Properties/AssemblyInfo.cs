@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Michael Schwarz")]
 [assembly: AssemblyProduct("DNS Library")]
-[assembly: AssemblyCopyright("Copyright ©  2009, Michael Schwarz")]
+[assembly: AssemblyCopyright("Copyright ©  2010, Michael Schwarz")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("9.3.9.1")]
-[assembly: AssemblyFileVersion("9.3.9.1")]
+[assembly: AssemblyVersion("10.11.4.1")]
+[assembly: AssemblyFileVersion("10.11.4.1")]

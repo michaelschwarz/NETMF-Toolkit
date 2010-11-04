@@ -75,8 +75,6 @@ namespace MFToolkit.MicroUtilities
             "Saturday"
         };
 
-
-
         // Return integer string with padding
         private static String _padding(byte length, int value, char padding)
         {

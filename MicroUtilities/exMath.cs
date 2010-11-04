@@ -567,8 +567,6 @@ namespace MFToolkit.MicroUtilities
                 return Ceiling(x);
         }
 
-
-
         #region Internaly used functions
 
         private static double expm1(double x)
@@ -627,7 +625,6 @@ namespace MFToolkit.MicroUtilities
         }
 
         #endregion
-
     }
 }
 
