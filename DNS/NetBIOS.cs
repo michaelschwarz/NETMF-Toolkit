@@ -68,7 +68,7 @@ namespace MFToolkit.Net.Dns
 #if(MF)
                 res.Answers.Length == 0
 #else
- res.Answers.Count == 0
+                res.Answers.Count == 0
 #endif
 )
                 return null;
@@ -89,8 +89,7 @@ namespace MFToolkit.Net.Dns
             request.Header.RD = false;
             request.Header.B = false;
 
-#if(MF)
-#else
+
             Additional add = new Additional();
             add.Domain = EncodeName(name);
             add.Class = DnsClass.IN;
@@ -100,9 +99,11 @@ namespace MFToolkit.Net.Dns
             NBRecord nb = new NBRecord(address);
             add.Record = nb;
             
+#if(MF)
+            request.AdditionalRecords = new Additional[] { add };
+#else
             request.AdditionalRecords.Add(add);
 #endif
-
 
             DnsResponse res = Invoke(request, false);
 
@@ -155,6 +156,10 @@ namespace MFToolkit.Net.Dns
 
                     socket.ReceiveTimeout = 300;
                     //socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReceiveTimeout, 300);
+
+#if(DEBUG && MF)
+                    Microsoft.SPOT.Debug.Print(MFToolkit.IO.ByteUtil.PrintBytes(bytes));
+#endif
 
                     socket.SendTo(bytes, bytes.Length, SocketFlags.None, new IPEndPoint(IPAddress.Parse("192.168.178.255"), 137));
 
