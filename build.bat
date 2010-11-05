@@ -1,62 +1,62 @@
+rmdir Release /S /Q
+rmdir Debug /S /Q
+
 mkdir Release
 mkdir Debug
 
-del Release\*.*
-del Debug\*.*
+xcopy DNS\bin\Release\*.* Release\DNS /E /I
+xcopy DNS\bin\Debug\*.* Debug\DNS /E /I
 
-copy DNS\bin\Release\DNS.dll Release\
-copy DNS\bin\Debug\DNS.* Debug\
+xcopy HTTP\bin\Release\*.* Release\HTTP /E /I
+xcopy HTTP\bin\Debug\*.* Debug\HTTP /E /I
 
-copy HTTP\bin\Release\HTTP.dll Release\
-copy HTTP\bin\Debug\HTTP.* Debug\
+xcopy IO\bin\Release\*.* Release\IO /E /I
+xcopy IO\bin\Debug\*.* Debug\IO /E /I
 
-copy IO\bin\Release\IO.dll Release\
-copy IO\bin\Debug\IO.* Debug\
+xcopy Mail\bin\Release\*.* Release\Mail /E /I
+xcopy Mail\bin\Debug\*.* Debug\Mail /E /I
 
-copy Mail\bin\Release\Mail.dll Release\
-copy Mail\bin\Debug\Mail.* Debug\
+xcopy MicroC6820\bin\Release\*.* Release\MicroC6820 /E /I
+xcopy MicroC6820\bin\Debug\*.* Debug\MicroC6820 /E /I
 
-copy MicroC6820\bin\Release\MicroC6820.dll Release\
-copy MicroC6820\bin\Debug\MicroC6820.* Debug\
+xcopy MicroDNS\bin\Release\*.* Release\MicroDNS /E /I
+xcopy MicroDNS\bin\Debug\*.* Debug\MicroDNS /E /I
 
-copy MicroDNS\bin\Release\MicroDNS.dll Release\
-copy MicroDNS\bin\Debug\MicroDNS.* Debug\
+xcopy MicroGM862\bin\Release\*.* Release\MicroGM862 /E /I
+xcopy MicroGM862\bin\Debug\*.* Debug\MicroGM862 /E /I
 
-copy MicroGM862\bin\Release\MFToolkit.MicroGM862.dll Release\
-copy MicroGM862\bin\Debug\MFToolkit.MicroGM862.* Debug\
+xcopy MicroHTTP\bin\Release\*.* Release\MicroHTTP /E /I
+xcopy MicroHTTP\bin\Debug\*.* Debug\MicroHTTP /E /I
 
-copy MicroHTTP\bin\Release\MicroHTTP.dll Release\
-copy MicroHTTP\bin\Debug\MicroHTTP.* Debug\
+xcopy MicroIO\bin\Release\*.* Release\MicroIO /E /I
+xcopy MicroIO\bin\Debug\*.* Debug\MicroIO /E /I
 
-copy MicroIO\bin\Release\MicroIO.dll Release\
-copy MicroIO\bin\Debug\MicroIO.* Debug\
+xcopy MicroNTP\bin\Release\*.* Release\MicroNTP /E /I
+xcopy MicroNTP\bin\Debug\*.* Debug\MicroNTP /E /I
 
-copy MicroNTP\bin\Release\MicroNTP.dll Release\
-copy MicroNTP\bin\Debug\MicroNTP.* Debug\
+xcopy MicroUtilities\bin\Release\*.* Release\MicroUtilities /E /I
+xcopy MicroUtilities\bin\Debug\*.* Debug\MicroUtilities /E /I
 
-copy MicroUtilities\bin\Release\MFToolkit.MicroUtilities.dll Release\
-copy MicroUtilities\bin\Debug\MFToolkit.MicroUtilities.* Debug\
+xcopy MicroZigbee\bin\Release\*.* Release\MicroXBee /E /I
+xcopy MicroZigbee\bin\Debug\*.* Debug\MicroXBee /E /I
 
-copy MicroZigbee\bin\Release\MicroXBee.dll Release\
-copy MicroZigbee\bin\Debug\MicroXBee.* Debug\
+xcopy NetBIOS\bin\Release\*.* Release\NetBIOS /E /I
+xcopy NetBIOS\bin\Debug\*.* Debug\NetBIOS /E /I
 
-copy NetBIOS\bin\Release\NetBIOS.dll Release\
-copy NetBIOS\bin\Debug\NetBIOS.* Debug\
+xcopy NTP\bin\Release\*.* Release\NTP /E /I
+xcopy NTP\bin\Debug\*.* Debug\NTP /E /I
 
-copy NTP\bin\Release\NTP.dll Release\
-copy NTP\bin\Debug\NTP.* Debug\
+xcopy POP3\bin\Release\*.* Release\POP3 /E /I
+xcopy POP3\bin\Debug\*.* Debug\POP3 /E /I
 
-copy POP3\bin\Release\POP3.dll Release\
-copy POP3\bin\Debug\POP3.* Debug\
+xcopy SMTP\bin\Release\*.* Release\SMTP /E /I
+xcopy SMTP\bin\Debug\*.* Debug\SMTP /E /I
 
-copy SMTP\bin\Release\SMTP.dll Release\
-copy SMTP\bin\Debug\SMTP.* Debug\
+xcopy SSDP\bin\Release\*.* Release\SSDP /E /I
+xcopy SSDP\bin\Debug\*.* Debug\SSDP /E /I
 
-copy SSDP\bin\Release\SSDP.dll Release\
-copy SSDP\bin\Debug\SSDP.* Debug\
+xcopy uALFAT\bin\Release\*.* Release\uALFAT /E /I
+xcopy uALFAT\bin\Debug\*.* Debug\uALFAT /E /I
 
-copy uALFAT\bin\Release\uALFAT.dll Release\
-copy uALFAT\bin\Debug\uALFAT.* Debug\
-
-copy Zigbee\bin\Release\XBee.dll Release\
-copy Zigbee\bin\Debug\XBee.* Debug\
+xcopy Zigbee\bin\Release\*.* Release\XBee /E /I
+xcopy Zigbee\bin\Debug\*.* Debug\XBee /E /I
