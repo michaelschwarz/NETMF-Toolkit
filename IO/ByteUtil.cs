@@ -54,7 +54,7 @@ namespace MFToolkit.IO
         public static string PrintByte(byte b)
         {
 #if(MF)
-			return b.ToString();
+            return ByteToHex(b);
 #else
             return b.ToString("X2");
 #endif
