@@ -25,6 +25,8 @@
  */
 /*
  * MS	08-11-10	changed _value to protected
+ * MS   10-11-08    fixed missing Value set in ctors (work item 4218)
+ * 
  * 
  */
 using System;
@@ -82,6 +84,7 @@ namespace MFToolkit.Net.XBee
         {
             this.ApiID = XBeeApiType.AtCommand;
             this.Command = command;
+            this.Value = value;
         }
 
         #endregion
