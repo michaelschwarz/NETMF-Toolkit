@@ -26,6 +26,7 @@
  * MS   09-03-09    changed stop http server when there is any exception while starting (i.e. when port is not available)
  * MS   09-04-30    fixed closing threads
  * MS   09-06-19    added support for SSL
+ * MS   10-11-08    fixed non-thread safe usage (work item 4318)
  * 
  */
 using System;
@@ -226,7 +227,7 @@ namespace MFToolkit.Net.Web
                     continue;
                 }
 
-                CreateWorkerProcess(ref client);
+                CreateWorkerProcess(client);
             }
         }
 
@@ -250,7 +251,7 @@ namespace MFToolkit.Net.Web
                 handler(this, new LogAccessEventArgs(data));
         }
 
-        private void CreateWorkerProcess(ref Socket client)
+        private void CreateWorkerProcess(Socket client)
         {
             int workerCount;
 

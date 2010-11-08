@@ -232,7 +232,7 @@ namespace MFToolkit.Net.Smtp
                     continue;
                 }
 
-                CreateWorkerProcess(ref client);
+                CreateWorkerProcess(client);
             }
         }
 
@@ -258,7 +258,7 @@ namespace MFToolkit.Net.Smtp
         //        handler(this, new LogAccessEventArgs(data));
         //}
 
-        private void CreateWorkerProcess(ref Socket client)
+        private void CreateWorkerProcess(Socket client)
         {
             int workerCount;
 
