@@ -62,11 +62,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		build.bat = build.bat
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebDAVConsole", "WebDAVConsole\WebDAVConsole.csproj", "{D9544279-3BB9-419B-B05A-6DA212522149}"
-EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 30
+		SccNumberOfProjects = 29
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs05
 		SccLocalPath0 = .
@@ -154,9 +152,6 @@ Global
 		SccProjectUniqueName28 = SSDP\\SSDP.csproj
 		SccProjectName28 = SSDP
 		SccLocalPath28 = SSDP
-		SccProjectUniqueName29 = WebDAVConsole\\WebDAVConsole.csproj
-		SccProjectName29 = WebDAVConsole
-		SccLocalPath29 = WebDAVConsole
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -222,7 +217,6 @@ Global
 		{99A86DD7-E28B-4E9E-B04A-1453C88F26ED}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
 		{99A86DD7-E28B-4E9E-B04A-1453C88F26ED}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
 		{99A86DD7-E28B-4E9E-B04A-1453C88F26ED}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{99A86DD7-E28B-4E9E-B04A-1453C88F26ED}.Debug|Mixed Platforms.Deploy.0 = Debug|Any CPU
 		{99A86DD7-E28B-4E9E-B04A-1453C88F26ED}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{99A86DD7-E28B-4E9E-B04A-1453C88F26ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{99A86DD7-E28B-4E9E-B04A-1453C88F26ED}.Release|Any CPU.Build.0 = Release|Any CPU
@@ -286,7 +280,6 @@ Global
 		{052865A7-299A-4D3F-BA8D-31368F872A29}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
 		{052865A7-299A-4D3F-BA8D-31368F872A29}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
 		{052865A7-299A-4D3F-BA8D-31368F872A29}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{052865A7-299A-4D3F-BA8D-31368F872A29}.Debug|Mixed Platforms.Deploy.0 = Debug|Any CPU
 		{052865A7-299A-4D3F-BA8D-31368F872A29}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{052865A7-299A-4D3F-BA8D-31368F872A29}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{052865A7-299A-4D3F-BA8D-31368F872A29}.Release|Any CPU.Build.0 = Release|Any CPU
@@ -320,7 +313,6 @@ Global
 		{680F8443-80B4-48DE-B68A-691F21E214BA}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
 		{680F8443-80B4-48DE-B68A-691F21E214BA}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
 		{680F8443-80B4-48DE-B68A-691F21E214BA}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{680F8443-80B4-48DE-B68A-691F21E214BA}.Debug|Mixed Platforms.Deploy.0 = Debug|Any CPU
 		{680F8443-80B4-48DE-B68A-691F21E214BA}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{680F8443-80B4-48DE-B68A-691F21E214BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{680F8443-80B4-48DE-B68A-691F21E214BA}.Release|Any CPU.Build.0 = Release|Any CPU
@@ -354,7 +346,6 @@ Global
 		{7B339108-37DE-40EB-85CB-9D736106D6EB}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
 		{7B339108-37DE-40EB-85CB-9D736106D6EB}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
 		{7B339108-37DE-40EB-85CB-9D736106D6EB}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{7B339108-37DE-40EB-85CB-9D736106D6EB}.Debug|Mixed Platforms.Deploy.0 = Debug|Any CPU
 		{7B339108-37DE-40EB-85CB-9D736106D6EB}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{7B339108-37DE-40EB-85CB-9D736106D6EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7B339108-37DE-40EB-85CB-9D736106D6EB}.Release|Any CPU.Build.0 = Release|Any CPU
@@ -463,16 +454,6 @@ Global
 		{B97AA318-DDB2-4FCB-AEE6-C1E5134A538A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{B97AA318-DDB2-4FCB-AEE6-C1E5134A538A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{B97AA318-DDB2-4FCB-AEE6-C1E5134A538A}.Release|x86.ActiveCfg = Release|Any CPU
-		{D9544279-3BB9-419B-B05A-6DA212522149}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{D9544279-3BB9-419B-B05A-6DA212522149}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{D9544279-3BB9-419B-B05A-6DA212522149}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{D9544279-3BB9-419B-B05A-6DA212522149}.Debug|x86.ActiveCfg = Debug|x86
-		{D9544279-3BB9-419B-B05A-6DA212522149}.Debug|x86.Build.0 = Debug|x86
-		{D9544279-3BB9-419B-B05A-6DA212522149}.Release|Any CPU.ActiveCfg = Release|x86
-		{D9544279-3BB9-419B-B05A-6DA212522149}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{D9544279-3BB9-419B-B05A-6DA212522149}.Release|Mixed Platforms.Build.0 = Release|x86
-		{D9544279-3BB9-419B-B05A-6DA212522149}.Release|x86.ActiveCfg = Release|x86
-		{D9544279-3BB9-419B-B05A-6DA212522149}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
