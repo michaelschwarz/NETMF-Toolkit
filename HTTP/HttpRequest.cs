@@ -468,8 +468,10 @@ namespace MFToolkit.Net.Web
                                 HttpMethod += (char)buffer[idx++];
                             else
                             {
-                                if (HttpMethod != "POST" && HttpMethod != "GET")
-                                    throw new HttpException(HttpStatusCode.MethodNotAllowed);
+                                // TODO: add a allowed methods list
+
+                                //if (HttpMethod != "POST" && HttpMethod != "GET" && HttpMethod != "OPTIONS")
+                                //    throw new HttpException(HttpStatusCode.MethodNotAllowed);
 
                                 idx++;
                                 state = RequestParserState.ReadUrl;

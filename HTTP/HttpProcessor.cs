@@ -38,11 +38,14 @@ using System.Text;
 using Socket = System.Net.Sockets.Socket;
 using System.Diagnostics;
 using System.IO;
+
+#if(SSL)
 #if(!MF)
 using System.Net.Security;
 using System.Security.Authentication;
 #else
 using Microsoft.SPOT.Net.Security;
+#endif
 #endif
 
 namespace MFToolkit.Net.Web
@@ -116,6 +119,7 @@ namespace MFToolkit.Net.Web
 
                     Stream stream;
 
+#if(SSL)
                     if (_server.IsSecure && _server.Certificate != null)
                     {
                         SslStream ssl = null;
@@ -138,6 +142,7 @@ namespace MFToolkit.Net.Web
                         }
                     }
                     else
+#endif
                     {
                         stream = new NetworkStream(_client);
                     }

@@ -24,6 +24,7 @@
  * 
  * 
  * MS   09-03-24    initial version (replaces ulong Address64 properties)
+ * MS   10-11-08    fixed property Value (work item 6894)
  * 
  */
 using System;
@@ -62,7 +63,7 @@ namespace MFToolkit.Net.XBee
         {
             get
             {
-                return (ulong)(_msb << 32) + _lsb;
+                return ((ulong)_msb << 32) + _lsb;
             }
             set 
             {

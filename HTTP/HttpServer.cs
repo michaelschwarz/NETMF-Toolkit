@@ -36,10 +36,12 @@ using System.Collections;
 using System.Threading;
 using Socket = System.Net.Sockets.Socket;
 
+#if(SSL)
 #if(!MF)
 using System.Security.Cryptography.X509Certificates;
 #else
 using Microsoft.SPOT.Net.Security;
+#endif
 #endif
 
 namespace MFToolkit.Net.Web
@@ -55,8 +57,11 @@ namespace MFToolkit.Net.Web
         private Thread _thdWorker;
         private bool _stopThreads = true;
         private const int _maxWorkers = 256;        // for AJAX enabled web sites we need a higher max worker process count
+
+#if(SSL)
         private bool _isSecure = false;
         private X509Certificate _certificate;
+#endif
 
         #region Events
 
@@ -106,6 +111,7 @@ namespace MFToolkit.Net.Web
             get { return _address; }
         }
 
+#if(SSL)
         public bool IsSecure
         {
             get { return _isSecure; }
@@ -117,6 +123,7 @@ namespace MFToolkit.Net.Web
             get { return _certificate; }
             set { _certificate = value; }
         }
+#endif
 
         #endregion
 
