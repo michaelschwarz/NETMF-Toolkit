@@ -162,6 +162,9 @@
     <Compile Include="..\Zigbee\Request\AT\XBeeSensorSample.cs">
       <Link>Request\AT\XBeeSensorSample.cs</Link>
     </Compile>
+    <Compile Include="..\Zigbee\Request\ExplicitZigBeeCommand.cs">
+      <Link>Request\ExplicitZigBeeCommand.cs</Link>
+    </Compile>
     <Compile Include="..\Zigbee\Request\RemoteAtRequest.cs">
       <Link>Request\RemoteAtRequest.cs</Link>
     </Compile>
@@ -203,6 +206,9 @@
     </Compile>
     <Compile Include="..\Zigbee\Response\AT\TimeBeforeSleep.cs">
       <Link>Response\AT\TimeBeforeSleep.cs</Link>
+    </Compile>
+    <Compile Include="..\Zigbee\Response\ExplicitZigBeeResponse.cs">
+      <Link>Response\ExplicitZigBeeResponse.cs</Link>
     </Compile>
     <Compile Include="..\Zigbee\Response\IAtCommandResponse.cs">
       <Link>Response\IAtCommandResponse.cs</Link>
