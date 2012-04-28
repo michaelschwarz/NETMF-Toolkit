@@ -25,6 +25,7 @@
  * 
  * MS   09-03-24    initial version (replaces ulong Address64 properties)
  * MS   10-11-08    fixed property Value (work item 6894)
+ * JS   11-05-19    XBeeAddress64.Value setter masks out bytes (work item 10320)
  * 
  */
 using System;
@@ -68,7 +69,7 @@ namespace MFToolkit.Net.XBee
             set 
             {
                 _msb = (uint)(value >> 32);
-                _lsb = (uint)(value & 0xFFFF);
+                _lsb = (uint)(value & 0xFFFFFFFF);
             }
         }
 

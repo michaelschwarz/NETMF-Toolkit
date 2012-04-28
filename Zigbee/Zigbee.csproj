@@ -67,6 +67,7 @@
     <Compile Include="FrameReceived.cs" />
     <Compile Include="Enums\SourceActionType.cs" />
     <Compile Include="ModemStatusChanged.cs" />
+    <Compile Include="Request\ExplicitZigBeeCommand.cs" />
     <Compile Include="Request\TxRequest64.cs" />
     <Compile Include="Request\TxRequest16.cs" />
     <Compile Include="Request\AT\SerialNumberLow.cs" />
@@ -74,6 +75,7 @@
     <Compile Include="Request\AT\DestinationNode.cs" />
     <Compile Include="Request\AT\DestinationAddressHigh.cs" />
     <Compile Include="Request\AT\DestinationAddressLow.cs" />
+    <Compile Include="Response\ExplicitZigBeeResponse.cs" />
     <Compile Include="Response\IAtCommandResponse.cs" />
     <Compile Include="Response\RxResponse64.cs" />
     <Compile Include="Response\ZNet\AT\ZNetNodeDiscover.cs" />

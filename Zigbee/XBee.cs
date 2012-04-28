@@ -31,9 +31,14 @@
  * MS   09-03-24    changed methods from SendCommand to Execute
  * MS   09-03-27    fixed if there are more than one API frame in received bytes
  *                  changed OnPacketReceived to FrameReceived
- *                  
+ * MQ   10-11-30    added ExplicitZigBeeResponse to checkframe (work item 7583)
+ * XC   11-05-17    Refactored and fixed bug in MFToolkit.Net.XBee.XBee.ReceiveData method
+ *                  to improve performance when more than one packet per second. (work item 9438)
  * 
  */
+
+#define LOG
+
 using System;
 using System.Text;
 using System.Threading;
@@ -354,134 +359,264 @@ namespace MFToolkit.Net.XBee
 
         #region Private Methods
 
+//        private void ReceiveData()
+//        {
+//            try
+//            {
+//                int bytesToRead = _serialPort.BytesToRead;
+
+//                while (!_stopThd)
+//                {
+//                    if (bytesToRead == 0)
+//                    {
+//                        Thread.Sleep(20);
+//                    }
+//                    else
+//                    {
+//                        byte[] bytes = new byte[1024];	// TODO: what is the maximum size of Zigbee packets?
+
+//                        if (_serialPort == null || !_serialPort.IsOpen)
+//                        {
+//                            if (_serialPort == null)
+//                                _serialPort = new SerialPort(_port, _baudRate);
+
+//                            _serialPort.Open();
+
+//                            bytesToRead = _serialPort.BytesToRead;
+//                            _readBuffer.SetLength(0);
+//                            continue;
+//                        }
+
+//                        try
+//                        {
+//                            int bytesRead = _serialPort.Read(bytes, 0, bytesToRead);
+
+//                            for (int i = 0; i < bytesRead; i++)
+//                            {
+//                                if (_apiType == ApiType.EnabledWithEscaped && XBeePacket.IsSpecialByte(bytes[i]))
+//                                {
+//                                    if (bytes[i] == XBeePacket.PACKET_STARTBYTE)
+//                                    {
+//                                        _readBuffer.WriteByte(bytes[i]);
+//                                    }
+//                                    else if (bytes[i] == XBeePacket.PACKET_ESCAPE)
+//                                    {
+//                                        _readBuffer.WriteByte((byte)(0x20 ^ bytes[++i]));
+//                                    }
+//                                    else
+//                                        throw new Exception("This special byte should not appear.");
+//                                }
+//                                else
+//                                    _readBuffer.WriteByte(bytes[i]);
+//                            }
+                           
+//                            bool startOK = false;
+//                            bool lengthAndCrcOK = false;
+
+//                            do
+//                            {
+//                                _readBuffer.Position = 0;
+
+//                                // startOK should be always true if there is at least on byte
+//                                startOK = ((byte)_readBuffer.ReadByte() == XBeePacket.PACKET_STARTBYTE);
+
+//                                if (!startOK)
+//                                {
+//                                    bytes = _readBuffer.ToArray();
+//                                    _readBuffer = new MemoryStream();
+
+//                                    startOK = false;
+//                                    for (int i = 0; i < bytes.Length; i++)
+//                                    {
+//                                        if (!startOK && bytes[i] != XBeePacket.PACKET_STARTBYTE)
+//                                            continue;
+
+//                                        startOK = true;
+//                                        _readBuffer.Write(bytes, i, bytes.Length - i);
+//                                        _readBuffer.Position = 0;
+//                                    }
+//                                }
+
+//                                lengthAndCrcOK = this.CheckLengthAndCrc();
+
+//                                bytes = _readBuffer.ToArray();
+//                                _readBuffer.SetLength(0);
+
+//                                ByteReader br = new ByteReader(bytes, ByteOrder.BigEndian);
+
+//#if(LOG && !MF && !WindowsCE)
+//                                Console.WriteLine("<<\t" + ByteUtil.PrintBytes(bytes, false));
+//#endif
+
+//                                if (startOK && lengthAndCrcOK)
+//                                {
+//                                    byte startByte = br.ReadByte();     // start byte
+//                                    short length = br.ReadInt16();
+
+//                                    CheckFrame(length, br);
+
+//                                    if (br.AvailableBytes > 1)
+//                                    {
+//                                        br.ReadByte();  // checksum of current API message
+                                        
+//                                        // ok, there are more bytes for an additional frame packet
+//                                        byte[] available = br.GetAvailableBytes();
+//                                        _readBuffer.Write(available, 0, available.Length);
+//                                    }
+//                                }
+//                                else
+//                                {
+//                                    _readBuffer.Write(bytes, 0, bytes.Length);
+//                                }
+//                            }
+//                            while (startOK & lengthAndCrcOK & (_readBuffer.Length > 4));
+//                        }
+//                        catch (Exception ex)
+//                        {
+//                            OnLogEvent(LogEventType.ServerException, ex.ToString());
+
+//                            _readBuffer.SetLength(0);
+
+//                            if (_serialPort != null && _serialPort.IsOpen)
+//                            {
+//                                bytesToRead = _serialPort.BytesToRead;
+//                            }
+//                        }
+//                    }
+
+//                    if (_serialPort != null && _serialPort.IsOpen)
+//                        bytesToRead = _serialPort.BytesToRead;
+//                }
+//            }
+//#if(!MF)
+//            catch (ThreadAbortException ex)
+//            {
+//                OnLogEvent(LogEventType.ServerException, ex.ToString());
+
+//#if(LOG && !MF && !WindowsCE)
+//                // Display a message to the console.
+//                Console.WriteLine("{0} : DisplayMessage thread terminating - {1}",
+//                    DateTime.Now.ToString("HH:mm:ss.ffff"),
+//                    (string)ex.ExceptionState);
+//#endif
+//            }
+//#else
+//            catch(Exception ex)
+//            {
+//                OnLogEvent(LogEventType.ServerException, ex.ToString());
+//            }
+//#endif
+//        }
+
+
         private void ReceiveData()
-		{
+        {
             try
             {
-                int bytesToRead = _serialPort.BytesToRead;
 
                 while (!_stopThd)
                 {
-                    if (bytesToRead == 0)
+                    Thread.Sleep(20);
+
+                    if (_serialPort.BytesToRead <= 0)
                     {
-                        Thread.Sleep(20);
+                        continue;
                     }
-                    else
+
+                    byte[] buf = new byte[1];
+
+                    while (_serialPort.BytesToRead > 0)
                     {
+                        _serialPort.Read(buf, 0, 1);
+
+                        if (_apiType == ApiType.EnabledWithEscaped && XBeePacket.IsSpecialByte(buf[0]))
+                        {
+                            if (buf[0] == XBeePacket.PACKET_STARTBYTE)
+                            {
+                                _readBuffer.WriteByte(buf[0]);
+                            }
+                            else if (buf[0] == XBeePacket.PACKET_ESCAPE)
+                            {
+                                _serialPort.Read(buf, 0, 1);
+                                _readBuffer.WriteByte((byte)(0x20 ^ buf[0]));
+                            }
+                            else
+                                throw new Exception("This special byte should not appear.");
+                        }
+                        else
+                        {
+                            _readBuffer.WriteByte(buf[0]);
+                        }
+
+                        if (_readBuffer.Length <= 4)
+                            continue;
+
+                        bool startOK = false;
+                        bool lengthAndCrcOK = false;
+
+                        _readBuffer.Position = 0; // set position of read buffer to beginning.
+
+                        startOK = ((byte)_readBuffer.ReadByte() == XBeePacket.PACKET_STARTBYTE); // startOK should be always true if there is at least one byte.
+
                         byte[] bytes = new byte[1024];	// TODO: what is the maximum size of Zigbee packets?
 
-                        if (_serialPort == null || !_serialPort.IsOpen)
+                        if (!startOK) // First byte is not the start byte, so keep removing bytes in the read buffer until we get to one.
                         {
-                            if (_serialPort == null)
-                                _serialPort = new SerialPort(_port, _baudRate);
+                            bytes = _readBuffer.ToArray();
+                            _readBuffer = new MemoryStream();
 
-                            _serialPort.Open();
+                            for (int i = 0; i < bytes.Length; i++)
+                            {
+                                if (!startOK && bytes[i] != XBeePacket.PACKET_STARTBYTE)
+                                    continue;
 
-                            bytesToRead = _serialPort.BytesToRead;
-                            _readBuffer.SetLength(0);
-                            continue;
+                                startOK = true;
+                                _readBuffer.Write(bytes, i, bytes.Length - i);
+                                _readBuffer.Position = 0;
+                                break;  // I think we needed this break or else the loop will keep deleting stuff after we get the start byte.
+                            }
+
+                            if (!startOK) // Check once more if we have the start byte, if not, continue in the outer while loop waiting for more data.
+                                continue;
                         }
 
-                        try
-                        {
-                            int bytesRead = _serialPort.Read(bytes, 0, bytesToRead);
+                        // We should now have a read buffer starting with a start byte.
 
-                            for (int i = 0; i < bytesRead; i++)
-                            {
-                                if (_apiType == ApiType.EnabledWithEscaped && XBeePacket.IsSpecialByte(bytes[i]))
-                                {
-                                    if (bytes[i] == XBeePacket.PACKET_STARTBYTE)
-                                    {
-                                        _readBuffer.WriteByte(bytes[i]);
-                                    }
-                                    else if (bytes[i] == XBeePacket.PACKET_ESCAPE)
-                                    {
-                                        _readBuffer.WriteByte((byte)(0x20 ^ bytes[++i]));
-                                    }
-                                    else
-                                        throw new Exception("This special byte should not appear.");
-                                }
-                                else
-                                    _readBuffer.WriteByte(bytes[i]);
-                            }
-                           
-                            bool startOK = false;
-                            bool lengthAndCrcOK = false;
+                        lengthAndCrcOK = this.CheckLengthAndCrc(); // check CRC and length.
 
-                            do
-                            {
-                                _readBuffer.Position = 0;
-
-                                // startOK should be always true if there is at least on byte
-                                startOK = ((byte)_readBuffer.ReadByte() == XBeePacket.PACKET_STARTBYTE);
-
-                                if (!startOK)
-                                {
-                                    bytes = _readBuffer.ToArray();
-                                    _readBuffer = new MemoryStream();
-
-                                    startOK = false;
-                                    for (int i = 0; i < bytes.Length; i++)
-                                    {
-                                        if (!startOK && bytes[i] != XBeePacket.PACKET_STARTBYTE)
-                                            continue;
-
-                                        startOK = true;
-                                        _readBuffer.Write(bytes, i, bytes.Length - i);
-                                        _readBuffer.Position = 0;
-                                    }
-                                }
-
-                                lengthAndCrcOK = this.CheckLengthAndCrc();
-
-                                bytes = _readBuffer.ToArray();
-                                _readBuffer.SetLength(0);
-
-                                ByteReader br = new ByteReader(bytes, ByteOrder.BigEndian);
+                        bytes = _readBuffer.ToArray();
+                        _readBuffer.SetLength(0);
 
 #if(LOG && !MF && !WindowsCE)
-                                Console.WriteLine("<<\t" + ByteUtil.PrintBytes(bytes, false));
+                        Console.WriteLine("<<\t" + ByteUtil.PrintBytes(bytes, false));
 #endif
 
-                                if (startOK && lengthAndCrcOK)
-                                {
-                                    byte startByte = br.ReadByte();     // start byte
-                                    short length = br.ReadInt16();
-
-                                    CheckFrame(length, br);
-
-                                    if (br.AvailableBytes > 1)
-                                    {
-                                        br.ReadByte();  // checksum of current API message
-                                        
-                                        // ok, there are more bytes for an additional frame packet
-                                        byte[] available = br.GetAvailableBytes();
-                                        _readBuffer.Write(available, 0, available.Length);
-                                    }
-                                }
-                                else
-                                {
-                                    _readBuffer.Write(bytes, 0, bytes.Length);
-                                }
-                            }
-                            while (startOK & lengthAndCrcOK & (_readBuffer.Length > 4));
-                        }
-                        catch (Exception ex)
+                        if (startOK && lengthAndCrcOK)
                         {
-                            OnLogEvent(LogEventType.ServerException, ex.ToString());
+                            ByteReader br = new ByteReader(bytes, ByteOrder.BigEndian);
 
-                            _readBuffer.SetLength(0);
+                            byte startByte = br.ReadByte();     // start byte
+                            short length = br.ReadInt16();
 
-                            if (_serialPort != null && _serialPort.IsOpen)
+                            CheckFrame(length, br);
+
+                            if (br.AvailableBytes > 1)
                             {
-                                bytesToRead = _serialPort.BytesToRead;
+                                br.ReadByte();  // checksum of current API message
+
+                                // ok, there are more bytes for an additional frame packet
+                                byte[] available = br.GetAvailableBytes();
+                                _readBuffer.Write(available, 0, available.Length);
                             }
                         }
-                    }
+                        else
+                        {
+                            _readBuffer.Write(bytes, 0, bytes.Length);
+                        }
 
-                    if (_serialPort != null && _serialPort.IsOpen)
-                        bytesToRead = _serialPort.BytesToRead;
+                    }
                 }
+
             }
 #if(!MF)
             catch (ThreadAbortException ex)
@@ -496,12 +631,14 @@ namespace MFToolkit.Net.XBee
 #endif
             }
 #else
-            catch(Exception ex)
-            {
-                OnLogEvent(LogEventType.ServerException, ex.ToString());
-            }
+			catch(Exception ex)
+			{
+				OnLogEvent(LogEventType.ServerException, ex.ToString());
+			}
 #endif
         }
+
+
 
         private bool CheckLengthAndCrc()
         {
@@ -525,6 +662,10 @@ namespace MFToolkit.Net.XBee
 
             checksum.Compute();
             bool result = checksum.Verify((byte)_readBuffer.ReadByte());
+#if(LOG && !MF && !WindowsCE)
+            if (!result) Console.WriteLine("++ --> BAD CRC!!");
+#endif
+
 
             return result;
         }
@@ -536,6 +677,10 @@ namespace MFToolkit.Net.XBee
 
             switch (apiId)
             {
+                case XBeeApiType.ZNetExplicitRxIndicator:
+                    res = new ExplicitZigBeeResponse(length, br);
+                    break;
+
                 case XBeeApiType.AtCommandResponse:
                     res = new AtCommandResponse(length, br);
                     break;
