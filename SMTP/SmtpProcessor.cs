@@ -54,6 +54,7 @@ namespace MFToolkit.Net.Smtp
 		public const int COMMAND_MAIL = 4;
 		public const int COMMAND_RCPT = 5;
 		public const int COMMAND_DATA = 6;
+		public const int COMMAND_VRFY = 7;
 
 		private const string MESSAGE_DEFAULT_WELCOME = "220 SMTP server ready";
 		private const string MESSAGE_DEFAULT_HELO_RESPONSE = "250 OK";
@@ -65,35 +66,38 @@ namespace MFToolkit.Net.Smtp
 		private const string MESSAGE_INVALID_ARGUMENT_COUNT = "501 Incorrect number of arguments";
 		private const string MESSAGE_INVALID_ADDRESS = "451 Address is invalid";
 		private const string MESSAGE_UNKNOWN_USER = "550 User does not exist";
-        private const string MESSAGE_SENDER_NOT_ALLOWED = "554 Sender address rejected: Access denied";
+		private const string MESSAGE_SENDER_NOT_ALLOWED = "554 Sender address rejected: Access denied";
 		private const string MESSAGE_SYSTEM_ERROR = "554 Transaction failed";
+		private const string MESSAGE_VRFY_VALID = "250 Address accepted";
+		private const string MESSAGE_VRFY_VALIDFORWARD = "251 Address accepted, but forwarded";
+		private const string MESSAGE_VRFY_NOTSURE = "252 Address is invalid";
 
 #if(!MF)
-        private static readonly Regex ADDRESS_REGEX = new Regex("<[a-z0-9-_\\=\\.]+@[a-z0-9-_\\.]+>", RegexOptions.IgnoreCase);
+		private static readonly Regex ADDRESS_REGEX = new Regex("(<)?[a-z0-9-_\\=\\.]+@[a-z0-9-_\\.]+(>)?", RegexOptions.IgnoreCase);
 #endif
 
 		#endregion
 		
 		#region Private Variables
 
-        private SmtpServer _server;
-        private ISmtpStorage _storage;
-        private Socket _socket;
+		private SmtpServer _server;
+		private ISmtpStorage _storage;
+		private Socket _socket;
 		
 		#endregion
 		
 		#region Constructors
 
-        public SmtpProcessor(SmtpServer server, Socket socket)
+		public SmtpProcessor(SmtpServer server, Socket socket)
 		{
-            _server = server;
-            _socket = socket;
+			_server = server;
+			_socket = socket;
 		}
 
 		public SmtpProcessor(SmtpServer server, Socket socket, ISmtpStorage storage)
-            : this(server, socket)
+			: this(server, socket)
 		{
-            _storage = storage;
+			_storage = storage;
 		}
 		
 		#endregion
@@ -102,55 +106,55 @@ namespace MFToolkit.Net.Smtp
 		
 		public void ProcessConnection()
 		{
-            Stream stream;
+			Stream stream;
 
-            if (_server.IsSecure && _server.Certificate != null)
-            {
-                SslStream ssl = null;
+			if (_server.IsSecure && _server.Certificate != null)
+			{
+				SslStream ssl = null;
 
-                try
-                {
+				try
+				{
 #if(!MF)
-                    ssl = new SslStream(new NetworkStream(_socket), false);
-                    ssl.AuthenticateAsServer(_server.Certificate); // , false, SslProtocols.Default, false);
+					ssl = new SslStream(new NetworkStream(_socket), false);
+					ssl.AuthenticateAsServer(_server.Certificate); // , false, SslProtocols.Default, false);
 #else
-                    ssl = new SslStream(_socket);
-                    ssl.AuthenticateAsServer(_server.Certificate, SslVerification.NoVerification, SslProtocols.Default);
+					ssl = new SslStream(_socket);
+					ssl.AuthenticateAsServer(_server.Certificate, SslVerification.NoVerification, SslProtocols.Default);
 #endif
-                    stream = ssl;
-                }
-                catch (Exception)
-                {
-                    //Close();
-                    return;
-                }
-            }
-            else
-            {
-                stream = new NetworkStream(_socket);
-            }
+					stream = ssl;
+				}
+				catch (Exception)
+				{
+					//Close();
+					return;
+				}
+			}
+			else
+			{
+				stream = new NetworkStream(_socket);
+			}
 
-            SmtpContext context = new SmtpContext(stream, (IPEndPoint)_socket.LocalEndPoint, (IPEndPoint)_socket.RemoteEndPoint);
+			SmtpContext context = new SmtpContext(stream, (IPEndPoint)_socket.LocalEndPoint, (IPEndPoint)_socket.RemoteEndPoint);
 
 			try 
 			{
 				SendWelcomeMessage(context);
 				
 				// TODO: add this if gmail google is running
-                //System.Threading.Thread.Sleep(200);
+				//System.Threading.Thread.Sleep(200);
 
 				ProcessCommands(context);
 			}
 			catch(Exception ex)
-            {
+			{
 #if(LOG && !MF && !WindowsCE)
 				Console.WriteLine("Processor Exception: " + ex.Message);
 #endif
-                if (_socket != null
+				if (_socket != null
 #if(!MF)
-                    && _socket.Connected
+					&& _socket.Connected
 #endif
-                )
+				)
 				{
 					context.WriteLine("421 Service not available, closing transmission channel");
 				}
@@ -173,11 +177,11 @@ namespace MFToolkit.Net.Smtp
 		#region Private Handler Methods
 		
 		private void SendWelcomeMessage(SmtpContext context)
-        {
+		{
 #if(LOG && !MF && !WindowsCE)
-            Console.WriteLine("*** Remote IP: {0} ***", context.RemoteEndPoint);
+			Console.WriteLine("*** Remote IP: {0} ***", context.RemoteEndPoint);
 #endif
-            context.WriteLine(MESSAGE_DEFAULT_WELCOME);
+			context.WriteLine(MESSAGE_DEFAULT_WELCOME);
 		}
 		
 		private void ProcessCommands(SmtpContext context)
@@ -208,9 +212,9 @@ namespace MFToolkit.Net.Smtp
 							Helo(context, inputs);
 							break;
 
-                        case "ehlo":
-                            Ehlo(context, inputs);
-                            break;
+						case "ehlo":
+							Ehlo(context, inputs);
+							break;
 
 						case "rset":
 							Rset(context);
@@ -218,6 +222,10 @@ namespace MFToolkit.Net.Smtp
 
 						case "noop":
 							context.WriteLine(MESSAGE_OK);
+							break;
+
+						case "vrfy":
+							Vrfy(context, inputLine.Substring(5));
 							break;
 
 						case "quit":
@@ -228,7 +236,7 @@ namespace MFToolkit.Net.Smtp
 							break;
 
 						case "mail":
-                            // TODO: move the input line to Mail(...)
+							// TODO: move the input line to Mail(...)
 							if(inputs[1].ToLower().StartsWith("from"))
 							{
 								Mail(context, inputLine.Substring(inputLine.IndexOf(":")));
@@ -240,7 +248,7 @@ namespace MFToolkit.Net.Smtp
 						case "rcpt":
 							if(inputs[1].ToLower().StartsWith("to")) 							
 							{
-                                Rcpt(context, inputLine.Substring(inputLine.IndexOf(":")));
+								Rcpt(context, inputLine.Substring(inputLine.IndexOf(":")));
 								break;
 							}
 							context.WriteLine(MESSAGE_UNKNOWN_COMMAND);
@@ -257,49 +265,49 @@ namespace MFToolkit.Net.Smtp
 				}
 				catch(Exception ex)
 				{
-                    SocketException sx = ex as SocketException;
+					SocketException sx = ex as SocketException;
 
-                    if (sx != null && sx.ErrorCode == 10060)
-                        context.WriteLine(MESSAGE_GOODBYE);
-                    else
-                        context.WriteLine(MESSAGE_SYSTEM_ERROR);
+					if (sx != null && sx.ErrorCode == 10060)
+						context.WriteLine(MESSAGE_GOODBYE);
+					else
+						context.WriteLine(MESSAGE_SYSTEM_ERROR);
 
-                    isRunning = false;
-                    context.Close();
+					isRunning = false;
+					context.Close();
 				}
 			}
 		}
 
-        /// <summary>
-        /// Handles the EHLO command.
-        /// </summary>
-        private void Ehlo(SmtpContext context, string[] inputs)
-        {
-            if (context.LastCommand == -1)
-            {
-                if (inputs.Length == 2)
-                {
-                    context.ClientDomain = inputs[1];
-                    context.LastCommand = COMMAND_HELO;
+		/// <summary>
+		/// Handles the EHLO command.
+		/// </summary>
+		private void Ehlo(SmtpContext context, string[] inputs)
+		{
+			if (context.LastCommand == -1)
+			{
+				if (inputs.Length == 2)
+				{
+					context.ClientDomain = inputs[1];
+					context.LastCommand = COMMAND_HELO;
 
-                    // TODO: EhloResponse instead of HeloResponse
-                    context.WriteLine(MESSAGE_DEFAULT_HELO_RESPONSE);
-                }
-                else
-                {
-                    context.WriteLine(MESSAGE_INVALID_ARGUMENT_COUNT);
-                }
-            }
-            else
-            {
-                context.WriteLine(MESSAGE_INVALID_COMMAND_ORDER);
-            }
-        }
+					// TODO: EhloResponse instead of HeloResponse
+					context.WriteLine(MESSAGE_DEFAULT_HELO_RESPONSE);
+				}
+				else
+				{
+					context.WriteLine(MESSAGE_INVALID_ARGUMENT_COUNT);
+				}
+			}
+			else
+			{
+				context.WriteLine(MESSAGE_INVALID_COMMAND_ORDER);
+			}
+		}
 
 		/// <summary>
 		/// Handles the HELO command.
 		/// </summary>
-		private void Helo(SmtpContext context, String[] inputs)
+		private void Helo(SmtpContext context, string[] inputs)
 		{
 			if(context.LastCommand == -1)
 			{
@@ -318,6 +326,40 @@ namespace MFToolkit.Net.Smtp
 			{
 				context.WriteLine(MESSAGE_INVALID_COMMAND_ORDER);
 			}
+		}
+
+		/// <summary>
+		/// Verify if the recipient is valid.
+		/// </summary>
+		/// <param name="context"></param>
+		/// <param name="argument"></param>
+		private void Vrfy(SmtpContext context, string argument)
+		{
+			//if (context.LastCommand != -1)
+			//{
+				if (!String.IsNullOrEmpty(argument))
+				{
+					MailAddress MailAddress = new MailAddress(ParseAddress(argument));
+
+					if (_storage == null || _storage.AcceptRecipient(MailAddress))
+					{
+						context.LastCommand = COMMAND_VRFY;
+						context.WriteLine(MESSAGE_VRFY_VALID);
+					}
+					else
+					{
+						context.WriteLine(MESSAGE_VRFY_NOTSURE);
+					}
+				}
+				else
+				{
+					context.WriteLine(MESSAGE_INVALID_ARGUMENT_COUNT);
+				}
+			//}
+			//else
+			//{
+			//    context.WriteLine(MESSAGE_INVALID_COMMAND_ORDER);
+			//}
 		}
 		
 		/// <summary>
@@ -341,27 +383,27 @@ namespace MFToolkit.Net.Smtp
 		/// </summary>
 		private void Mail(SmtpContext context, string argument)
 		{
-            if(context.LastCommand == COMMAND_HELO)
+			if(context.LastCommand == COMMAND_HELO)
 			{
-                try
-                {
-                    MailAddress MailAddress = new MailAddress(ParseAddress(argument));
+				try
+				{
+					MailAddress MailAddress = new MailAddress(ParseAddress(argument));
 
-                    if (_storage == null || _storage.AcceptSender(MailAddress))
-                    {
-                        context.Message.FromAddress = MailAddress;
-                        context.LastCommand = COMMAND_MAIL;
-                        context.WriteLine(MESSAGE_OK);
-                    }
-                    else
-                    {
-                        context.WriteLine(MESSAGE_SENDER_NOT_ALLOWED);
-                    }
-                }
-                catch (InvalidMailAddressException)
-                {
-                    context.WriteLine(MESSAGE_INVALID_ADDRESS);
-                }
+					if (_storage == null || _storage.AcceptSender(MailAddress))
+					{
+						context.Message.FromAddress = MailAddress;
+						context.LastCommand = COMMAND_MAIL;
+						context.WriteLine(MESSAGE_OK);
+					}
+					else
+					{
+						context.WriteLine(MESSAGE_SENDER_NOT_ALLOWED);
+					}
+				}
+				catch (InvalidMailAddressException)
+				{
+					context.WriteLine(MESSAGE_INVALID_ADDRESS);
+				}
 			}
 			else
 			{
@@ -376,25 +418,25 @@ namespace MFToolkit.Net.Smtp
 		{
 			if(context.LastCommand == COMMAND_MAIL || context.LastCommand == COMMAND_RCPT)
 			{
-                try
-                {
-                    MailAddress MailAddress = new MailAddress(ParseAddress(argument));
+				try
+				{
+					MailAddress MailAddress = new MailAddress(ParseAddress(argument));
 
-                    if (_storage == null || _storage.AcceptRecipient(MailAddress))
-                    {
-                        context.Message.ToAddress.Add(MailAddress);
-                        context.LastCommand = COMMAND_RCPT;
-                        context.WriteLine(MESSAGE_OK);
-                    }
-                    else
-                    {
-                        context.WriteLine(MESSAGE_UNKNOWN_USER);
-                    }
-                }
-                catch (InvalidMailAddressException)
-                {
-                    context.WriteLine(MESSAGE_INVALID_ADDRESS);
-                }
+					if (_storage == null || _storage.AcceptRecipient(MailAddress))
+					{
+						context.Message.ToAddress.Add(MailAddress);
+						context.LastCommand = COMMAND_RCPT;
+						context.WriteLine(MESSAGE_OK);
+					}
+					else
+					{
+						context.WriteLine(MESSAGE_UNKNOWN_USER);
+					}
+				}
+				catch (InvalidMailAddressException)
+				{
+					context.WriteLine(MESSAGE_INVALID_ADDRESS);
+				}
 			}
 			else
 			{
@@ -408,12 +450,12 @@ namespace MFToolkit.Net.Smtp
 			
 			MailMessage message = context.Message;
 			
-            //IPEndPoint clientEndPoint = (IPEndPoint) context.Socket.RemoteEndPoint;
-            //IPEndPoint localEndPoint = (IPEndPoint) context.Socket.LocalEndPoint;
+			//IPEndPoint clientEndPoint = (IPEndPoint) context.Socket.RemoteEndPoint;
+			//IPEndPoint localEndPoint = (IPEndPoint) context.Socket.LocalEndPoint;
 
 			StringBuilder header = new StringBuilder();
 
-            header.Append("Received: from " + context.ClientDomain + " (" + context.ClientDomain + " [" + context.RemoteEndPoint.Address + "])");
+			header.Append("Received: from " + context.ClientDomain + " (" + context.ClientDomain + " [" + context.RemoteEndPoint.Address + "])");
 			header.Append("\r\n");
 			header.Append("     by " + context.LocalEndPoint.Address);
 			header.Append("\r\n");
@@ -428,62 +470,65 @@ namespace MFToolkit.Net.Smtp
 				message.AddData(line);
 				message.AddData("\r\n");
 
-                if (line.Length == 0)
-                    message.SetEndOfHeader();
+				if (line.Length == 0)
+					message.SetEndOfHeader();
 
 				line = context.ReadLine();
 			}
 
-            string spoolError;
+			string spoolError;
 
-            if (message == null || _storage.SpoolMessage(message.ToAddress, message.Message, out spoolError))
-                context.WriteLine(MESSAGE_OK);
-            else
-            {
-                if (spoolError != null && spoolError.Length > 0)
-                {
-                    context.Write("554");
-                    context.WriteLine(spoolError);
-                }
-                else
-                    context.WriteLine(MESSAGE_SYSTEM_ERROR);
-            }
+			if (message == null || _storage.SpoolMessage(message.ToAddress, message.Message, out spoolError))
+				context.WriteLine(MESSAGE_OK);
+			else
+			{
+				if (spoolError != null && spoolError.Length > 0)
+				{
+					context.Write("554");
+					context.WriteLine(spoolError);
+				}
+				else
+					context.WriteLine(MESSAGE_SYSTEM_ERROR);
+			}
 			
 			context.Reset();
 		}
 
-        private string ParseAddress(string input)
-        {
-            if (input == null || input.Length == 0)
-                return null;
+		private string ParseAddress(string input)
+		{
+			if (input == null || input.Length == 0)
+				return null;
 
 #if(!MF)
-            System.Text.RegularExpressions.Match match = ADDRESS_REGEX.Match(input);
+			System.Text.RegularExpressions.Match match = ADDRESS_REGEX.Match(input);
 
-            if (match.Success)
-            {
-                string matchText = match.Value;
-                
-                matchText = matchText.Remove(0, 1);
-                matchText = matchText.Remove(matchText.Length - 1, 1);
+			if (match.Success)
+			{
+				string matchText = match.Value;
+				
+				if(matchText.StartsWith("<"))
+					matchText = matchText.Remove(0, 1);
 
-                return matchText;
-            }
+				if (matchText.EndsWith(">"))
+					matchText = matchText.Remove(matchText.Length - 1, 1);
 
-            return null;
+				return matchText;
+			}
+
+			return null;
 #else
-            string addr = "";
-            for(int i=0; i<input.Length; i++)
-            {
-                if(input[i] == '<' || input[i] == '>')
-                    continue;
-                
-                addr += input[i];
-            }
-            return addr;
+			string addr = "";
+			for(int i=0; i<input.Length; i++)
+			{
+				if(input[i] == '<' || input[i] == '>')
+					continue;
+				
+				addr += input[i];
+			}
+			return addr;
 #endif
-        }
+		}
 
 		#endregion
-    }
+	}
 }
