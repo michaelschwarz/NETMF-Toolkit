@@ -48,9 +48,9 @@ namespace MFToolkit.Net.Smtp
 		
 		#region Private Variables
 
-        private Stream _stream;
-        private IPEndPoint _localEndPoint;
-        private IPEndPoint _remoteEndPoint;
+		private Stream _stream;
+		private IPEndPoint _localEndPoint;
+		private IPEndPoint _remoteEndPoint;
 		private int _lastCommand;
 		private string _clientDomain;
 		private MailMessage _message;
@@ -64,15 +64,15 @@ namespace MFToolkit.Net.Smtp
 		public SmtpContext(Stream client, IPEndPoint localEndPoint, IPEndPoint remoteEndPoint)
 		{
 			_lastCommand = -1;
-            _stream = client;
-            _localEndPoint = localEndPoint;
-            _remoteEndPoint = remoteEndPoint;
-            _message = new MailMessage();
+			_stream = client;
+			_localEndPoint = localEndPoint;
+			_remoteEndPoint = remoteEndPoint;
+			_message = new MailMessage();
 
 #if(!MF)
 			_encoding = Encoding.ASCII;
 #else
-            encoding = Encoding.UTF8;
+			encoding = Encoding.UTF8;
 #endif
 
 			_inputBuffer = new StringBuilder();
@@ -127,103 +127,103 @@ namespace MFToolkit.Net.Smtp
 			}
 		}
 
-        public IPEndPoint LocalEndPoint
-        {
-            get
-            {
-                return _localEndPoint;
-            }
-        }
+		public IPEndPoint LocalEndPoint
+		{
+			get
+			{
+				return _localEndPoint;
+			}
+		}
 
-        public IPEndPoint RemoteEndPoint
-        {
-            get
-            {
-                return _remoteEndPoint;
-            }
-        }
+		public IPEndPoint RemoteEndPoint
+		{
+			get
+			{
+				return _remoteEndPoint;
+			}
+		}
 
 		#endregion
 		
 		#region Public Methods
 
-        public void Write(string s)
-        {
-            byte[] bytes = _encoding.GetBytes(s);
-            _stream.Write(bytes, 0, bytes.Length);
-        }
+		public void Write(string s)
+		{
+			byte[] bytes = _encoding.GetBytes(s);
+			_stream.Write(bytes, 0, bytes.Length);
+		}
 
 		public void WriteLine(string line)
 		{
 #if(LOG && !MF && !WindowsCE)
-            Console.WriteLine(" > " + line);
+			Console.WriteLine(" > " + line);
 #endif
-            Write(line + EOL);
+			Write(line + EOL);
 		}
 		
 		public String ReadLine()
 		{
 			string output = ReadBuffer();
 			if(output != null)
-            {
+			{
 #if(LOG && !MF && !WindowsCE)
 				Console.WriteLine(" < " + output);
 #endif
-                return output;
+				return output;
 			}
 						
 			byte[] byteBuffer = new byte[80];
-            int count = 0;
-            
-            DateTime begin = DateTime.Now;
-            DateTime lastByteReceived = begin;
+			int count = 0;
+			
+			DateTime begin = DateTime.Now;
+			DateTime lastByteReceived = begin;
 
-            do
+			do
 			{
-                _stream.ReadTimeout = 500;
+				_stream.ReadTimeout = 500;
 
-                try
-                {
-                    count = _stream.Read(byteBuffer, 0, byteBuffer.Length);
+				try
+				{
+					count = _stream.Read(byteBuffer, 0, byteBuffer.Length);
 
-                    if (count > 0)
-                        lastByteReceived = DateTime.Now;
-                }
-                catch (IOException)
-                {
-                    continue;
-                }
-                catch (Exception)
-                {
-                    DateTime nd = DateTime.Now;
+					if (count > 0)
+						lastByteReceived = DateTime.Now;
+				}
+				catch (IOException)
+				{
+					continue;
+				}
+				catch (Exception)
+				{
+					DateTime nd = DateTime.Now;
 #if(MF)
-                    if((nd.Ticks - lastByteReceived.Ticks) / TimeSpan.TicksPerMillisecond < 10 * 1000)
-                        continue;
+					if((nd.Ticks - lastByteReceived.Ticks) / TimeSpan.TicksPerMillisecond < 10 * 1000)
+						continue;
 #else
-                    if ((nd - lastByteReceived).TotalMilliseconds < 10 * 1000)
-                        continue;
+					if ((nd - lastByteReceived).TotalMilliseconds < 10 * 1000)
+						continue;
 #endif
-                }
+				}
 
 
 #if(MF)
-                string s = "";
-                foreach (char c in encoding.GetChars(byteBuffer))
-                {
-                    s += c;
-                }
-                inputBuffer.Append(s);
+				string s = "";
+				foreach (char c in encoding.GetChars(byteBuffer))
+				{
+					s += c;
+				}
+				inputBuffer.Append(s);
 #else
-                _inputBuffer.Append(_encoding.GetString(byteBuffer, 0, count));
+				_inputBuffer.Append(_encoding.GetString(byteBuffer, 0, count));
 #endif
 
-            }
+			}
 			while(count > 0 && (output = ReadBuffer()) == null);
 
 #if(LOG && !MF && !WindowsCE)
 			Console.WriteLine(" < " + output);
 #endif
-            return output;
+			return output;
 		}
 		
 		public void Reset()
@@ -234,10 +234,10 @@ namespace MFToolkit.Net.Smtp
 		
 		public void Close()
 		{
-            _stream.Close();
-            _stream.Dispose();
+			_stream.Close();
+			_stream.Dispose();
 
-            _stream = null;
+			_stream = null;
 		}
 		
 		#endregion

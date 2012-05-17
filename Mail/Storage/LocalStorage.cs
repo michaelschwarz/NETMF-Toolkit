@@ -90,7 +90,10 @@ namespace MFToolkit.Net.Mail.Storage
 
         public bool AcceptRecipient(MailAddress recipient)
         {
-            return true;
+            if (new List<string>(_domains).Contains(recipient.Domain.ToLower()) && recipient.LocalPart.ToLower() == "info")
+                return true;
+
+            return false;
         }
 
         public bool AcceptSender(MailAddress sender)

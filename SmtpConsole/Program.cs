@@ -36,7 +36,7 @@ namespace SmtpConsole
 {
     class Program
     {
-        static LocalStorage storage = new LocalStorage("c:\\temp", "ajaxpro.info", "control-my-world.com", "mftoolkit.net");
+        static LocalStorage storage = new LocalStorage("c:\\temp", "mydomain.com");
         static bool stop = false;
 
         static void Main(string[] args)
@@ -79,7 +79,6 @@ namespace SmtpConsole
         static void RunPop3()
         {
             Pop3Server pop3 = new Pop3Server(storage);
-
             pop3.Start();
 
             while (!stop)
