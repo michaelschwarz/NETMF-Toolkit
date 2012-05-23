@@ -23,10 +23,11 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  * MS   09-06-19    initial ersion
- * 
+ * MS	12-05-19	changed SpoolMessage method argument
  * 
  */
 using System;
+using System.Net;
 
 namespace MFToolkit.Net.Mail
 {
@@ -35,9 +36,11 @@ namespace MFToolkit.Net.Mail
 	/// </summary>
 	public interface ISmtpStorage
 	{
-        bool AcceptRecipient(MailAddress recipient);
+		bool AcceptClient(IPEndPoint client);
 
-        bool AcceptSender(MailAddress sender);
+		bool AcceptRecipient(MailAddress recipient);
+
+		bool AcceptSender(MailAddress sender);
 
 		/// <summary>
 		/// If the method returns true, the messeage will be marked as delivered,
@@ -45,6 +48,6 @@ namespace MFToolkit.Net.Mail
 		/// Return false if message will be rejected or if there is an error while
 		/// saving message to the spooler (file, SQL Server,...).
 		/// </summary>
-        bool SpoolMessage(MailAddressCollection recipients, string message, out string reply);
+		bool SpoolMessage(IPEndPoint client, MailAddressCollection recipients, string message, out string reply);
 	}
 }

@@ -315,7 +315,7 @@ namespace MFToolkit.Net.Smtp
 #endif
                 }
 
-                Thread.Sleep(300);
+                Thread.Sleep(5000);
             }
         }
 
