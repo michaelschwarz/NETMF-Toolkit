@@ -22,6 +22,8 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
+ * MS	12-05-19	incresed timeout
+ * 
  */
 using System;
 using System.Net.Sockets;
@@ -44,8 +46,8 @@ namespace MFToolkit.Net.Pop3
 		#region Private Variables
 
 		private Stream _stream;
-        private IPEndPoint _localEndPoint;
-        private IPEndPoint _remoteEndPoint;
+		private IPEndPoint _localEndPoint;
+		private IPEndPoint _remoteEndPoint;
 		private int _lastCommand;
 		private string _username;
 		private string _password;
@@ -60,8 +62,8 @@ namespace MFToolkit.Net.Pop3
 		{
 			_lastCommand = -1;
 			_stream = client;
-            _localEndPoint = localEndPoint;
-            _remoteEndPoint = remoteEndPoint;
+			_localEndPoint = localEndPoint;
+			_remoteEndPoint = remoteEndPoint;
 			_encoding = Encoding.ASCII;
 			_inputBuffer = new StringBuilder();
 		}
@@ -115,103 +117,112 @@ namespace MFToolkit.Net.Pop3
 			}
 		}
 
-        public IPEndPoint LocalEndPoint
-        {
-            get
-            {
-                return _localEndPoint;
-            }
-        }
+		public IPEndPoint LocalEndPoint
+		{
+			get
+			{
+				return _localEndPoint;
+			}
+		}
 
-        public IPEndPoint RemoteEndPoint
-        {
-            get
-            {
-                return _remoteEndPoint;
-            }
-        }
+		public IPEndPoint RemoteEndPoint
+		{
+			get
+			{
+				return _remoteEndPoint;
+			}
+		}
 
 		#endregion
 		
 		#region Public Methods
 
-        public void Write(string s)
-        {
-            byte[] bytes = _encoding.GetBytes(s);
-            _stream.Write(bytes, 0, bytes.Length);
-        }
+		public void Write(string s)
+		{
+			byte[] bytes = _encoding.GetBytes(s);
+			_stream.Write(bytes, 0, bytes.Length);
+		}
 
-        public void WriteLine(string line)
-        {
+		public void WriteLine(string line)
+		{
 #if(LOG && !MF && !WindowsCE)
-            Console.WriteLine(" > " + line);
+			Console.WriteLine(" > " + line);
 #endif
 
-            Write(line + EOL);
-        }
+			Write(line + EOL);
+		}
 		
 		public String ReadLine()
 		{
 			string output = ReadBuffer();
 			if(output != null)
-            {
+			{
 #if(LOG && !MF && !WindowsCE)
 				Console.WriteLine(" < " + output);
 #endif
-                return output;
+				return output;
 			}
 						
 			byte[] byteBuffer = new byte[80];
-            int count = 0;
+			int count = 0;
 
-            DateTime begin = DateTime.Now;
-            DateTime lastByteReceived = begin;
+			DateTime begin = DateTime.Now;
+			DateTime lastByteReceived = begin;
 
-            do
-            {
-                _stream.ReadTimeout = 2000;
-
-                try
-                {
-                    count = _stream.Read(byteBuffer, 0, byteBuffer.Length);
-
-                    if (count > 0)
-                        lastByteReceived = DateTime.Now;
-                }
-                catch (IOException)
-                {
-                    continue;
-                }
-                catch (Exception)
-                {
-                    DateTime nd = DateTime.Now;
+			while(true)
+			{
+				DateTime nd = DateTime.Now;
 #if(MF)
-                    if((nd.Ticks - lastByteReceived.Ticks) / TimeSpan.TicksPerMillisecond < 10 * 1000)
-                        continue;
+				if((nd.Ticks - lastByteReceived.Ticks) / TimeSpan.TicksPerMillisecond > 10 * 1000)
+					break;
 #else
-                    if ((nd - lastByteReceived).TotalMilliseconds < 10 * 1000)
-                        continue;
-#endif
-                }
-
-#if(MF)
-                string s = "";
-                foreach (char c in encoding.GetChars(byteBuffer))
-                {
-                    s += c;
-                }
-                inputBuffer.Append(s);
-#else
-                _inputBuffer.Append(_encoding.GetString(byteBuffer, 0, count));
+				if ((nd - lastByteReceived).TotalMilliseconds > 60 * 1000)
+					break;
 #endif
 
+				_stream.ReadTimeout = 1000;
+
+				try
+				{
+					if (!_stream.CanRead)
+					{
+						Thread.Sleep(10);
+						continue;
+					}
+
+					count = _stream.Read(byteBuffer, 0, byteBuffer.Length);
+
+					if (count > 0)
+						lastByteReceived = DateTime.Now;
+				}
+				catch (IOException ioex)
+				{
+					continue;
+				}
+				catch (Exception ex)
+				{
+					continue;
+				}
+#if(MF)
+				string s = "";
+				foreach (char c in encoding.GetChars(byteBuffer))
+				{
+					s += c;
+				}
+				inputBuffer.Append(s);
+#else
+				if (count > 0)
+					_inputBuffer.Append(_encoding.GetString(byteBuffer, 0, count));
+#endif
+
+				if (count == 0 || (output = ReadBuffer()) != null)
+					break;
 			}
-			while(count > 0 && (output = ReadBuffer()) == null);
 
 #if(LOG && !MF && !WindowsCE)
 			Console.WriteLine(" < " + output);
 #endif
-            return output;
+			return output;
 		}
 		
 		public void Reset()
@@ -225,7 +236,7 @@ namespace MFToolkit.Net.Pop3
 		public void Close()
 		{
 			_stream.Close();
-            _stream.Dispose();
+			_stream.Dispose();
 
 			_stream = null;
 		}

@@ -33,6 +33,7 @@ using System.IO;
 #if(!MF)
 using System.Net.Security;
 using System.Security.Authentication;
+using System.Threading;
 #else
 using MFToolkit.Text;
 using Microsoft.SPOT.Net.Security;
@@ -44,7 +45,7 @@ namespace MFToolkit.Net.Pop3
 	{
 		#region Constants
 
-        public const int COMMAND_USER = 0;
+		public const int COMMAND_USER = 0;
 		public const int COMMAND_PASS = 1;
 		public const int COMMAND_QUIT = 3;
 		public const int COMMAND_STAT = 4;
@@ -52,7 +53,7 @@ namespace MFToolkit.Net.Pop3
 		public const int COMMAND_RETR = 6;
 		public const int COMMAND_DELE = 7;
 		public const int COMMAND_UIDL = 8;
-        public const int COMMAND_TOP = 9;
+		public const int COMMAND_TOP = 9;
 
 		private const string EOL = "\r\n";
 
@@ -79,24 +80,24 @@ namespace MFToolkit.Net.Pop3
 		
 		#region Private Variables
 
-        private Pop3Server _server;
+		private Pop3Server _server;
 		private IPop3Storage _storage;
-        private Socket _socket;
+		private Socket _socket;
 
 		#endregion
 		
 		#region Constructors
 
-        public Pop3Processor(Pop3Server server, Socket socket)
-        {
-            _server = server;
-            _socket = socket;
-        }
-
-        public Pop3Processor(Pop3Server server, Socket socket, IPop3Storage storage)
-            : this(server, socket)
+		public Pop3Processor(Pop3Server server, Socket socket)
 		{
-            _storage = storage;
+			_server = server;
+			_socket = socket;
+		}
+
+		public Pop3Processor(Pop3Server server, Socket socket, IPop3Storage storage)
+			: this(server, socket)
+		{
+			_storage = storage;
 		}
 		
 		#endregion
@@ -109,39 +110,43 @@ namespace MFToolkit.Net.Pop3
 		
 		public void ProcessConnection()
 		{
-            Stream stream;
+			Stream stream;
 
-            if (_server.IsSecure && _server.Certificate != null)
-            {
-                SslStream ssl = null;
+			if (_server.IsSecure && _server.Certificate != null)
+			{
+				SslStream ssl = null;
 
-                try
-                {
+				try
+				{
 #if(!MF)
-                    ssl = new SslStream(new NetworkStream(_socket));
-                    ssl.AuthenticateAsServer(_server.Certificate, false, SslProtocols.Default, false);
+					ssl = new SslStream(new NetworkStream(_socket));
+					ssl.AuthenticateAsServer(_server.Certificate, false, SslProtocols.Default, false);
 #else
-                    ssl = new SslStream(_socket);
-                    ssl.AuthenticateAsServer(_server.Certificate, SslVerification.NoVerification, SslProtocols.Default);
+					ssl = new SslStream(_socket);
+					ssl.AuthenticateAsServer(_server.Certificate, SslVerification.NoVerification, SslProtocols.Default);
 #endif
-                    stream = ssl;
-                }
-                catch (Exception)
-                {
-                    //Close();
-                    return;
-                }
-            }
-            else
-            {
-                stream = new NetworkStream(_socket);
-            }
+					stream = ssl;
+				}
+				catch (Exception)
+				{
+					//Close();
+					return;
+				}
+			}
+			else
+			{
+				stream = new NetworkStream(_socket);
+			}
 
-            Pop3Context context = new Pop3Context(stream, (IPEndPoint)_socket.LocalEndPoint, (IPEndPoint)_socket.RemoteEndPoint);
+			Pop3Context context = new Pop3Context(stream, (IPEndPoint)_socket.LocalEndPoint, (IPEndPoint)_socket.RemoteEndPoint);
 
 			try 
 			{
+				if (_storage != null && !_storage.AcceptClient(context.RemoteEndPoint))
+					throw new Exception("Client not accepted!");
+
 				SendWelcomeMessage(context);
+
 				ProcessCommands(context);
 			}
 			catch(Exception)
@@ -167,12 +172,13 @@ namespace MFToolkit.Net.Pop3
 		#region Private Handler Methods
 		
 		private void SendWelcomeMessage(Pop3Context context)
-        {
+		{
 #if(LOG && !MF && !WindowsCE)
-            Console.WriteLine("*** Remote IP: {0} ***", context.RemoteEndPoint);
+			Console.WriteLine("*** Remote IP: {0} ***", context.RemoteEndPoint);
 #endif
 
-            context.WriteLine(MESSAGE_DEFAULT_WELCOME);
+			
+				context.WriteLine(MESSAGE_DEFAULT_WELCOME);
 		}
 		
 		private void ProcessCommands(Pop3Context context)
@@ -210,17 +216,17 @@ namespace MFToolkit.Net.Pop3
 							List(context, inputs);
 							break;
 
-                        case "uidl":
-                            Uidl(context, inputs);
-                            break;
+						case "uidl":
+							Uidl(context, inputs);
+							break;
 
 						case "retr":
 							Retr(context, inputs);
 							break;
 
-                        case "top":
-                            Top(context, inputs);
-                            break;
+						case "top":
+							Top(context, inputs);
+							break;
 
 						case "dele":
 							Dele(context, inputs);
@@ -233,11 +239,11 @@ namespace MFToolkit.Net.Pop3
 							context.Close();
 							break;
 
-                        case "capa":
-                            Capa(context);
-                            break;
+						case "capa":
+							Capa(context);
+							break;
 
-                        case "auth":
+						case "auth":
 						default:
 							context.WriteLine(MESSAGE_UNKNOWN_COMMAND);
 							break;
@@ -245,25 +251,25 @@ namespace MFToolkit.Net.Pop3
 				}
 				catch(Exception)
 				{
-                    isRunning = false;
+					isRunning = false;
 
 					context.WriteLine(MESSAGE_SYSTEM_ERROR);
-                    context.Close();
+					context.Close();
 				}
 			}
 		}
 
-        /// <summary>
-        /// Handels the CAPA command.
-        /// </summary>
-        private void Capa(Pop3Context context)
-        {
-            context.WriteLine(MESSAGE_OK);
-            context.WriteLine("TOP");
-            context.WriteLine("UIDL");
-            context.WriteLine("USER");
-            context.WriteLine(MESSAGE_EOF);
-        }
+		/// <summary>
+		/// Handels the CAPA command.
+		/// </summary>
+		private void Capa(Pop3Context context)
+		{
+			context.WriteLine(MESSAGE_OK);
+			context.WriteLine("TOP");
+			context.WriteLine("UIDL");
+			context.WriteLine("USER");
+			context.WriteLine(MESSAGE_EOF);
+		}
 
 		/// <summary>
 		/// Handels the USER command.
@@ -298,8 +304,8 @@ namespace MFToolkit.Net.Pop3
 			{
 				if(inputs.Length == 2)
 				{
-                    IMailStorage mail = (_storage != null ? _storage as IMailStorage : null);
-                    
+					IMailStorage mail = (_storage != null ? _storage as IMailStorage : null);
+					
 					if(mail == null || mail.Login(context.Username, inputs[1]) == true)
 					{
 						context.Password = inputs[1];
@@ -332,13 +338,13 @@ namespace MFToolkit.Net.Pop3
 		{
 			if(context.LastCommand != -1)
 			{
-                if (context != null && !String.IsNullOrEmpty(context.Username))
-                {
-                    IMailStorage mail = (_storage != null ? _storage as IMailStorage : null);
+				if (context != null && !String.IsNullOrEmpty(context.Username))
+				{
+					IMailStorage mail = (_storage != null ? _storage as IMailStorage : null);
 
-                    if (mail != null)
-                        mail.Logout(context.Username);
-                }
+					if (mail != null)
+						mail.Logout(context.Username);
+				}
 
 				context.Reset();
 				context.Username = null;
@@ -358,17 +364,17 @@ namespace MFToolkit.Net.Pop3
 		/// </summary>
 		private void Stat(Pop3Context context)
 		{
-            // TODO: wrong implementation, should only return unread messages
+			// TODO: wrong implementation, should only return unread messages
 			if(context.LastCommand >= COMMAND_PASS)
 			{
-                Pop3MessageInfo[] list = new Pop3MessageInfo[0];
+				Pop3MessageInfo[] list = new Pop3MessageInfo[0];
 
-                if (_storage != null)
-                    list = _storage.GetMessageOverview(context.Username);
+				if (_storage != null)
+					list = _storage.GetMessageOverview(context.Username);
 
 				long mailboxSize = 0;
 
-                foreach (Pop3MessageInfo l in list)
+				foreach (Pop3MessageInfo l in list)
 					mailboxSize += l.Size;
 
 				context.WriteLine(String.Format(MESSAGE_STAT, list.Length, mailboxSize));
@@ -383,46 +389,46 @@ namespace MFToolkit.Net.Pop3
 		/// <summary>
 		/// Handels the LIST command.
 		/// </summary>
-        private void List(Pop3Context context, String[] inputs)
+		private void List(Pop3Context context, String[] inputs)
 		{
 			if(context.LastCommand >= COMMAND_PASS)
 			{
-                if (inputs.Length > 2)
-                {
-                    context.WriteLine(MESSAGE_INVALID_ARGUMENT_COUNT);
-                }
-                else
-                {
-                    int idx = 0;
+				if (inputs.Length > 2)
+				{
+					context.WriteLine(MESSAGE_INVALID_ARGUMENT_COUNT);
+				}
+				else
+				{
+					int idx = 0;
 
-                    if (inputs.Length == 2)
-                        idx = Convert.ToInt32(inputs[1]);
+					if (inputs.Length == 2)
+						idx = Convert.ToInt32(inputs[1]);
 
-                    Pop3MessageInfo[] list = new Pop3MessageInfo[0];
+					Pop3MessageInfo[] list = new Pop3MessageInfo[0];
 
-                    if (_storage != null)
-                        list = _storage.GetMessageOverview(context.Username);
+					if (_storage != null)
+						list = _storage.GetMessageOverview(context.Username);
 
-                    if (inputs.Length == 1)
-                    {
-                        context.WriteLine(String.Format(MESSAGE_LIST, list.Length));
+					if (inputs.Length == 1)
+					{
+						context.WriteLine(String.Format(MESSAGE_LIST, list.Length));
 
-                        int id = 1;
-                        foreach (Pop3MessageInfo l in list)
-                        {
-                            context.WriteLine(id + " " + l.Size);
-                            id++;
-                        }
+						int id = 1;
+						foreach (Pop3MessageInfo l in list)
+						{
+							context.WriteLine(id + " " + l.Size);
+							id++;
+						}
 
-                        context.WriteLine(MESSAGE_EOF);
-                    }
-                    else
-                    {
-                        context.WriteLine(string.Format(MESSAGE_STAT, idx, list[idx - 1].Size));
-                    }
+						context.WriteLine(MESSAGE_EOF);
+					}
+					else
+					{
+						context.WriteLine(string.Format(MESSAGE_STAT, idx, list[idx - 1].Size));
+					}
 
-                    context.LastCommand = COMMAND_LIST;
-                }
+					context.LastCommand = COMMAND_LIST;
+				}
 			}
 			else
 			{
@@ -430,104 +436,104 @@ namespace MFToolkit.Net.Pop3
 			}
 		}
 
-        /// <summary>
-        /// Handels the UIDL command.
-        /// </summary>
-        private void Uidl(Pop3Context context, String[] inputs)
-        {
-            if (context.LastCommand >= COMMAND_PASS)
-            {
-                if (inputs.Length > 2)
-                {
-                    context.WriteLine(MESSAGE_INVALID_ARGUMENT_COUNT);
-                }
-                else
-                {
-                    int idx = 0;
+		/// <summary>
+		/// Handels the UIDL command.
+		/// </summary>
+		private void Uidl(Pop3Context context, String[] inputs)
+		{
+			if (context.LastCommand >= COMMAND_PASS)
+			{
+				if (inputs.Length > 2)
+				{
+					context.WriteLine(MESSAGE_INVALID_ARGUMENT_COUNT);
+				}
+				else
+				{
+					int idx = 0;
 
-                    if (inputs.Length == 2)
-                        idx = Convert.ToInt32(inputs[1]);
+					if (inputs.Length == 2)
+						idx = Convert.ToInt32(inputs[1]);
 
-                    Pop3MessageInfo[] list = new Pop3MessageInfo[0];
+					Pop3MessageInfo[] list = new Pop3MessageInfo[0];
 
-                    if (_storage != null)
-                        list = _storage.GetMessageOverview(context.Username);
+					if (_storage != null)
+						list = _storage.GetMessageOverview(context.Username);
 
-                    if (inputs.Length == 1)
-                    {
-                        context.WriteLine(String.Format(MESSAGE_LIST, list.Length));
+					if (inputs.Length == 1)
+					{
+						context.WriteLine(String.Format(MESSAGE_LIST, list.Length));
 
-                        int id = 1;
-                        foreach (Pop3MessageInfo l in list)
-                        {
-                            context.WriteLine(id + " " + l.UniqueIdentifier);
-                            id++;
-                        }
+						int id = 1;
+						foreach (Pop3MessageInfo l in list)
+						{
+							context.WriteLine(id + " " + l.UniqueIdentifier);
+							id++;
+						}
 
-                        context.WriteLine(MESSAGE_EOF);
-                    }
-                    else
-                    {
-                        context.WriteLine(string.Format(MESSAGE_STAT, idx, list[idx - 1].UniqueIdentifier));
-                    }
+						context.WriteLine(MESSAGE_EOF);
+					}
+					else
+					{
+						context.WriteLine(string.Format(MESSAGE_STAT, idx, list[idx - 1].UniqueIdentifier));
+					}
 
-                    context.LastCommand = COMMAND_LIST;
-                }
-            }
-            else
-            {
-                context.WriteLine(MESSAGE_INVALID_COMMAND_ORDER);
-            }
-        }
+					context.LastCommand = COMMAND_LIST;
+				}
+			}
+			else
+			{
+				context.WriteLine(MESSAGE_INVALID_COMMAND_ORDER);
+			}
+		}
 
-        /// <summary>
-        /// Handels the TOP command.
-        /// </summary>
-        private void Top(Pop3Context context, String[] inputs)
-        {
-            if (context.LastCommand >= COMMAND_STAT)
-            {
-                if (inputs.Length == 3)
-                {
-                    int idx = Convert.ToInt32(inputs[1]);
-                    int linesToRead = Convert.ToInt32(inputs[2]);
+		/// <summary>
+		/// Handels the TOP command.
+		/// </summary>
+		private void Top(Pop3Context context, String[] inputs)
+		{
+			if (context.LastCommand >= COMMAND_STAT)
+			{
+				if (inputs.Length == 3)
+				{
+					int idx = Convert.ToInt32(inputs[1]);
+					int linesToRead = Convert.ToInt32(inputs[2]);
 
-                    context.WriteLine(MESSAGE_RETR);
+					context.WriteLine(MESSAGE_RETR);
 
-                    string message = _storage.ReadMessage(context.Username, idx);
+					string message = _storage.ReadMessage(context.Username, idx);
 
-                    bool foundBody = false;
-                    int lines = 0;
+					bool foundBody = false;
+					int lines = 0;
 
-                    foreach (string line in message.Split(new string[] { "\r\n" }, 100, StringSplitOptions.None))
-                    {
-                        if (line.Length == 0)
-                            foundBody = true;
+					foreach (string line in message.Split(new string[] { "\r\n" }, 100, StringSplitOptions.None))
+					{
+						if (line.Length == 0)
+							foundBody = true;
 
-                        if (!foundBody)
-                            context.WriteLine(line);
-                        else
-                        {
-                            if (lines < linesToRead)
-                                context.WriteLine(line);
-                            else
-                                break;
-                        }
-                    }
+						if (!foundBody)
+							context.WriteLine(line);
+						else
+						{
+							if (lines < linesToRead)
+								context.WriteLine(line);
+							else
+								break;
+						}
+					}
 
-                    context.WriteLine(MESSAGE_EOF);
-                    context.LastCommand = COMMAND_RETR;
-                }
-                else
-                {
-                    context.WriteLine(MESSAGE_INVALID_ARGUMENT_COUNT);
-                }
-            }
-            else
-            {
-                context.WriteLine(MESSAGE_INVALID_COMMAND_ORDER);
-            }
-        }
+					context.WriteLine(MESSAGE_EOF);
+					context.LastCommand = COMMAND_RETR;
+				}
+				else
+				{
+					context.WriteLine(MESSAGE_INVALID_ARGUMENT_COUNT);
+				}
+			}
+			else
+			{
+				context.WriteLine(MESSAGE_INVALID_COMMAND_ORDER);
+			}
+		}
 
 		/// <summary>
 		/// Handels the RETR command.
@@ -565,7 +571,7 @@ namespace MFToolkit.Net.Pop3
 			{
 				if(inputs.Length == 2)
 				{
-                    int idx = Convert.ToInt32(inputs[1]);
+					int idx = Convert.ToInt32(inputs[1]);
 
 					_storage.DeleteMessage(context.Username, idx);
 					

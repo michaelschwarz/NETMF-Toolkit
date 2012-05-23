@@ -138,10 +138,10 @@ namespace MFToolkit.Net.Smtp
 
 			try 
 			{
+				if (_storage != null && !_storage.AcceptClient(context.RemoteEndPoint))
+					throw new Exception("Client not accepted!");
+
 				SendWelcomeMessage(context);
-				
-				// TODO: add this if gmail google is running
-				//System.Threading.Thread.Sleep(200);
 
 				ProcessCommands(context);
 			}
@@ -478,7 +478,7 @@ namespace MFToolkit.Net.Smtp
 
 			string spoolError;
 
-			if (message == null || _storage.SpoolMessage(message.ToAddress, message.Message, out spoolError))
+			if (message == null || _storage.SpoolMessage(context.RemoteEndPoint, message.ToAddress, message.Message, out spoolError))
 				context.WriteLine(MESSAGE_OK);
 			else
 			{

@@ -23,21 +23,24 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  * MS   09-06-19    initial ersion
+ * MS	12-05-19	added AcceptClient method
  * 
  * 
  */
 using System;
 using MFToolkit.Net.Pop3;
+using System.Net;
 
 namespace MFToolkit.Net.Mail
 {
-    /// <summary>
-    /// Provides an interface to read stored messages
-    /// </summary>
-    public interface IPop3Storage
-    {
-        Pop3MessageInfo[] GetMessageOverview(string mailbox);
-        string ReadMessage(string mailbox, int idx);
-        bool DeleteMessage(string mailbox, int idx);
-    }
+	/// <summary>
+	/// Provides an interface to read stored messages
+	/// </summary>
+	public interface IPop3Storage
+	{
+		bool AcceptClient(IPEndPoint client);
+		Pop3MessageInfo[] GetMessageOverview(string mailbox);
+		string ReadMessage(string mailbox, int idx);
+		bool DeleteMessage(string mailbox, int idx);
+	}
 }

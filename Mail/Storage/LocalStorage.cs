@@ -1,4 +1,6 @@
-﻿#if(!MF && !WindowsCE)
+﻿#define ACCEPT_ALL
+
+#if(!MF && !WindowsCE)
 /* 
  * LocalStorage.cs
  * 
@@ -31,125 +33,167 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using MFToolkit.Net.Pop3;
+using System.Xml;
+using System.Net;
+using System.Globalization;
+using MFToolkit.Net.Dns;
 
 namespace MFToolkit.Net.Mail.Storage
 {
-    /// <summary>
-    /// Represents a local mail storage used for Pop3 and Smtp server
-    /// </summary>
-    public class LocalStorage : IMailStorage, ISmtpStorage, IPop3Storage
-    {
-        private string _path;
-        private string[] _domains;
-        private List<string> _files;
+	/// <summary>
+	/// Represents a local mail storage used for Pop3 and Smtp server
+	/// </summary>
+	public class LocalStorage : IMailStorage, ISmtpStorage, IPop3Storage
+	{
+		private string _path;
+		private string[] _domains;
+		private List<string> _files;
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="path">The directory used to store mails.</param>
-        /// <param name="domains">The domains handled by this storage.</param>
-        public LocalStorage(string path, params string[] domains)
-        {
-            _path = path;
-            _domains = domains;
-        }
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="path">The directory used to store mails.</param>
+		/// <param name="domains">The domains handled by this storage.</param>
+		public LocalStorage(string path, params string[] domains)
+		{
+			_path = path;
+			_domains = domains;
+		}
 
-        private string GetMailboxFromAddress(MailAddress address)
-        {
-            return "postmaster";
-        }
+		private string GetMailboxFromAddress(MailAddress address)
+		{
+			return "postmaster";
+		}
 
-        private string GetMailboxPath(string mailbox)
-        {
-            string path = Path.Combine(_path, mailbox);
+		private string GetMailboxPath(string mailbox)
+		{
+			string path = Path.Combine(_path, mailbox);
 
-            if (!Directory.Exists(path))
-                Directory.CreateDirectory(path);
+			if (!Directory.Exists(path))
+				Directory.CreateDirectory(path);
 
-            return path;
-        }
+			return path;
+		}
 
-        #region IMailStorage Members
+		#region IMailStorage Members
 
-        public bool Login(string username, string password)
-        {
-            if(username == "postmaster") {
-                return true;
-            }
+		public bool Login(string username, string password)
+		{
+			if(username == "postmaster") {
+				return true;
+			}
 
-            return false;
-        }
+			return false;
+		}
 
-        public void Logout(string username)
-        {
-        }
+		public void Logout(string username)
+		{
+		}
 
-        #endregion
+		#endregion
 
-        #region ISmtpStorage Members
+		#region ISmtpStorage Members
 
-        public bool AcceptRecipient(MailAddress recipient)
-        {
-            if (new List<string>(_domains).Contains(recipient.Domain.ToLower()) && recipient.LocalPart.ToLower() == "info")
-                return true;
+		bool ISmtpStorage.AcceptClient(IPEndPoint client)
+		{
+			return true;
+		}
 
-            return false;
-        }
+		public bool AcceptRecipient(MailAddress recipient)
+		{
+#if(ACCEPT_ALL)
+			return true;
+#endif
+			if (new List<string>(_domains).Contains(recipient.Domain.ToLower()) && recipient.LocalPart.ToLower() == "info")
+				return true;
 
-        public bool AcceptSender(MailAddress sender)
-        {
-            return true;
-        }
+			return false;
+		}
 
-        public bool SpoolMessage(MailAddressCollection recipients, string message, out string reply)
-        {
-            reply = null;
+		public bool AcceptSender(MailAddress sender)
+		{
+			return true;
+		}
 
-            foreach (MailAddress address in recipients)
-            {
-                string mailbox = GetMailboxFromAddress(address);
-                string path = GetMailboxPath(mailbox);
+		public bool SpoolMessage(IPEndPoint client, MailAddressCollection recipients, string message, out string reply)
+		{
+			reply = null;
 
-                File.AppendAllText(Path.Combine(path, Guid.NewGuid() + ".txt"), "Delivered-To: " + address.Address + "\r\n" + message);
-            }
+			foreach (MailAddress address in recipients)
+			{
+				string mailbox = GetMailboxFromAddress(address);
+				string path = GetMailboxPath(mailbox);
 
-            return true;
-        }
+				File.AppendAllText(Path.Combine(path, Guid.NewGuid() + ".txt"), 
+					"Delivered-To: " + address.Address + "\r\n"
+					+ "Received: from [" + client.Address + "]; " + DateTime.Now.ToString("ddd, dd MMM yyyy HH':'mm':'ss 'GMT'\r\n")
+					+ message);
+			}
 
-        #endregion
+			return true;
+		}
 
-        #region IPop3Storage Members
+		#endregion
 
-        public Pop3MessageInfo[] GetMessageOverview(string mailbox)
-        {
-            List<Pop3MessageInfo> res = new List<Pop3MessageInfo>();
-            _files = new List<string>();
+		#region IPop3Storage Members
 
-            foreach (string fileName in Directory.GetFiles(GetMailboxPath(mailbox), "*.txt"))
-            {
-                _files.Add(fileName);
-                res.Add(new Pop3MessageInfo { Size = new FileInfo(fileName).Length, UniqueIdentifier = Path.GetFileNameWithoutExtension(fileName) });
-            }
+		bool IPop3Storage.AcceptClient(IPEndPoint client)
+		{
+			/*
+			DnsResolver dns = new DnsResolver();
+			dns.LoadNetworkConfiguration();
 
-            return res.ToArray();
-        }
+			DnsRequest r = new DnsRequest();
+			Question q = new Question(client.Address.ToString(), DnsType.PTR, DnsClass.IN);
+			r.Questions.Add(q);
 
-        public string ReadMessage(string mailbox, int idx)
-        {
-            return File.ReadAllText(_files[idx - 1]);
-        }
+			DnsResponse res = dns.Resolve(r);
 
-        public bool DeleteMessage(string mailbox, int idx)
-        {
-            if(!String.IsNullOrEmpty(_files[idx -1]))
-                File.Delete(_files[idx - 1]);
+			string ptr = "";
 
-            _files[idx - 1] = null;
+			if (res.Answers != null)
+				ptr = (res.Answers[0].Record as PTRERecord).Domain;
 
-            return true;
-        }
+			File.AppendAllText(Path.Combine(path, "log.txt"), DateTime.Now.ToString(DateTimeFormatInfo.InvariantInfo.SortableDateTimePattern, DateTimeFormatInfo.InvariantInfo) + "\t" + client.Address.ToString() + "\t" + ptr + "\r\n");
+			*/
+			return true;
+		}
 
-        #endregion
-    }
+		public Pop3MessageInfo[] GetMessageOverview(string mailbox)
+		{
+			List<Pop3MessageInfo> res = new List<Pop3MessageInfo>();
+			_files = new List<string>();
+
+			string mailboxPath = GetMailboxPath(mailbox);
+
+			if (!Directory.Exists(mailboxPath))
+				Directory.CreateDirectory(mailboxPath);
+
+			foreach (string fileName in Directory.GetFiles(mailboxPath, "*.txt"))
+			{
+				_files.Add(fileName);
+				res.Add(new Pop3MessageInfo { Size = new FileInfo(fileName).Length, UniqueIdentifier = Path.GetFileNameWithoutExtension(fileName) });
+			}
+
+			return res.ToArray();
+		}
+
+		public string ReadMessage(string mailbox, int idx)
+		{
+			return File.ReadAllText(_files[idx - 1]);
+		}
+
+		public bool DeleteMessage(string mailbox, int idx)
+		{
+			if(!String.IsNullOrEmpty(_files[idx -1]))
+				File.Delete(_files[idx - 1]);
+
+			_files[idx - 1] = null;
+
+			return true;
+		}
+
+		#endregion
+	}
 }
 #endif

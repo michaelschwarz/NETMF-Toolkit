@@ -31,76 +31,82 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using MFToolkit.Net.Pop3;
+using System.Net;
 
 namespace MFToolkit.Net.Mail.Storage
 {
-    /// <summary>
-    /// Represents a SQL Server storage used for Pop3 and Smtp server
-    /// </summary>
-    public class SqlStorage : IMailStorage, ISmtpStorage, IPop3Storage
-    {
-        private string _connectionString;
+	/// <summary>
+	/// Represents a SQL Server storage used for Pop3 and Smtp server
+	/// </summary>
+	public class SqlStorage : IMailStorage, ISmtpStorage, IPop3Storage
+	{
+		private string _connectionString;
 
-        public SqlStorage()
-        {
-        }
+		public SqlStorage()
+		{
+		}
 
-        public SqlStorage(string connectionString)
-        {
-            _connectionString = connectionString;
-        }
+		public SqlStorage(string connectionString)
+		{
+			_connectionString = connectionString;
+		}
 
-        #region IMailStorage Members
+		#region IMailStorage Members
 
-        public bool Login(string username, string password)
-        {
-            throw new NotImplementedException();
-        }
+		public bool Login(string username, string password)
+		{
+			throw new NotImplementedException();
+		}
 
-        public void Logout(string username)
-        {
-            throw new NotImplementedException();
-        }
+		public void Logout(string username)
+		{
+			throw new NotImplementedException();
+		}
 
-        #endregion
+		#endregion
 
-        #region ISmtpStorage Members
+		#region ISmtpStorage Members
 
-        public bool AcceptRecipient(MailAddress recipient)
-        {
-            throw new NotImplementedException();
-        }
+		public bool AcceptRecipient(MailAddress recipient)
+		{
+			throw new NotImplementedException();
+		}
 
-        public bool AcceptSender(MailAddress sender)
-        {
-            throw new NotImplementedException();
-        }
+		public bool AcceptSender(MailAddress sender)
+		{
+			throw new NotImplementedException();
+		}
 
-        public bool SpoolMessage(MailAddressCollection recipients, string message, out string reply)
-        {
-            throw new NotImplementedException();
-        }
+		public bool SpoolMessage(IPEndPoint client, MailAddressCollection recipients, string message, out string reply)
+		{
+			throw new NotImplementedException();
+		}
 
-        #endregion
+		#endregion
 
-        #region IPop3Storage Members
+		#region IPop3Storage Members
 
-        public Pop3MessageInfo[] GetMessageOverview(string mailbox)
-        {
-            throw new NotImplementedException();
-        }
+		public bool AcceptClient(IPEndPoint client)
+		{
+			return true;
+		}
 
-        public string ReadMessage(string mailbox, int idx)
-        {
-            throw new NotImplementedException();
-        }
+		public Pop3MessageInfo[] GetMessageOverview(string mailbox)
+		{
+			throw new NotImplementedException();
+		}
 
-        public bool DeleteMessage(string mailbox, int idx)
-        {
-            throw new NotImplementedException();
-        }
+		public string ReadMessage(string mailbox, int idx)
+		{
+			throw new NotImplementedException();
+		}
 
-        #endregion
-    }
+		public bool DeleteMessage(string mailbox, int idx)
+		{
+			throw new NotImplementedException();
+		}
+
+		#endregion
+	}
 }
 #endif
