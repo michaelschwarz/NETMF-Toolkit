@@ -79,6 +79,7 @@
     <Compile Include="Response\IAtCommandResponse.cs" />
     <Compile Include="Response\RxResponse64.cs" />
     <Compile Include="Response\ZNet\AT\ZNetNodeDiscover.cs" />
+    <Compile Include="Utilities\DigiXBeeSensorHelper.cs" />
     <Compile Include="Response\ZNet\ZNetRxResponse.cs" />
     <Compile Include="Response\TxStatusResponse.cs" />
     <Compile Include="XBeeFrameResponse.cs" />
