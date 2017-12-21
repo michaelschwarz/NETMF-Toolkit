@@ -1,7 +1,7 @@
 ﻿/* 
  * ZNetRxIoSampleResponse.cs
  * 
- * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
+ * Copyright (c) 2009-2017, Michael Schwarz (http://www.schwarz-interactive.de)
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -25,6 +25,7 @@
  */
 /*
  * MS   09-02-06    fixed work item 3711
+ * MS	17-12-21	fixed supply voltage property to nullable double value
  * 
  */
 using System;
@@ -33,155 +34,155 @@ using MFToolkit.IO;
 
 namespace MFToolkit.Net.XBee
 {
-    /// <summary>
-    /// Represents a ZigBee IO data sample response
-    /// </summary>
-    public class ZNetRxIoSampleResponse : XBeeResponse
-    {
-        private XBeeAddress64 _address64;
-        private XBeeAddress16 _address16;
-        private byte _options;
-        private byte _numSamples;
-        private byte _digitalChannelMask1;
-        private byte _digitalChannelMask2;
-        private byte _analogChannelMask;
-        private byte _digital1;
-        private byte _digital2;
-        private ushort _AD0;
-        private ushort _AD1;
-        private ushort _AD2;
-        private ushort _AD3;
-        private ushort _supplyVoltage;
+	/// <summary>
+	/// Represents a ZigBee IO data sample response
+	/// </summary>
+	public class ZNetRxIoSampleResponse : XBeeResponse
+	{
+		private XBeeAddress64 _address64;
+		private XBeeAddress16 _address16;
+		private byte _options;
+		private byte _numSamples;
+		private byte _digitalChannelMask1;
+		private byte _digitalChannelMask2;
+		private byte _analogChannelMask;
+		private byte _digital1;
+		private byte _digital2;
+		private ushort _AD0;
+		private ushort _AD1;
+		private ushort _AD2;
+		private ushort _AD3;
+		private ushort? _supplyVoltage;
 
-        #region Public Properties
+		#region Public Properties
 
-        /// <summary>
-        /// Serial Number
-        /// </summary>
-        public XBeeAddress64 SerialNumber
-        {
-            get { return _address64; }
-        }
+		/// <summary>
+		/// Serial Number
+		/// </summary>
+		public XBeeAddress64 SerialNumber
+		{
+			get { return _address64; }
+		}
 
-        /// <summary>
-        /// Short Address
-        /// </summary>
-        public XBeeAddress16 ShortAddress
-        {
-            get { return _address16; }
-        }
-        
-        public ReceiveOptionType ReceiveOption
-        {
-            get { return (ReceiveOptionType)_options; } 
-        }
+		/// <summary>
+		/// Short Address
+		/// </summary>
+		public XBeeAddress16 ShortAddress
+		{
+			get { return _address16; }
+		}
 
-        public byte NumSamples 
-        { 
-            get { return _numSamples; } 
-        }
+		public ReceiveOptionType ReceiveOption
+		{
+			get { return (ReceiveOptionType)_options; }
+		}
 
-        public byte DigitalMask1 
-        {
-            get { return _digitalChannelMask1; } 
-        }
+		public byte NumSamples
+		{
+			get { return _numSamples; }
+		}
 
-        public byte DigitalMask2 
-        { 
-            get { return _digitalChannelMask2; } 
-        }
+		public byte DigitalMask1
+		{
+			get { return _digitalChannelMask1; }
+		}
 
-        public byte AnalogMask 
-        {
-            get { return _analogChannelMask; }
-        }
+		public byte DigitalMask2
+		{
+			get { return _digitalChannelMask2; }
+		}
 
-        public byte Digital1 
-        { 
-            get { return _digital1; }
-        }
+		public byte AnalogMask
+		{
+			get { return _analogChannelMask; }
+		}
 
-        public byte Digital2
-        {
-            get { return _digital2; } 
-        }
+		public byte Digital1
+		{
+			get { return _digital1; }
+		}
 
-        public ushort AD0 
-        { 
-            get { return _AD0; } 
-        }
+		public byte Digital2
+		{
+			get { return _digital2; }
+		}
 
-        public ushort AD1 
-        { 
-            get { return _AD1; }
-        }
+		public ushort AD0
+		{
+			get { return _AD0; }
+		}
 
-        public ushort AD2
-        { 
-            get { return _AD2; } 
-        }
+		public ushort AD1
+		{
+			get { return _AD1; }
+		}
 
-        public ushort AD3 
-        { 
-            get { return _AD3; } 
-        }
+		public ushort AD2
+		{
+			get { return _AD2; }
+		}
 
-        // return value is always Supply Voltage so I scaled it to real value
-        public int SupplyVoltage 
-        {
-            get { return _supplyVoltage * 1200 / 1024; } 
-        }
+		public ushort AD3
+		{
+			get { return _AD3; }
+		}
 
-        #endregion
+		// return value is always Supply Voltage so I scaled it to real value
+		public double? SupplyVoltage
+		{
+			get { return _supplyVoltage.HasValue ? _supplyVoltage.Value * 1.2 / 1024 : (double?)null; }
+		}
 
-        public ZNetRxIoSampleResponse(short length, ByteReader br)
-            : base(length, br)
-        {
-            _address64 = XBeeAddress64.ReadBytes(br);
-            _address16 = XBeeAddress16.ReadBytes(br);
+		#endregion
 
-            _options = br.ReadByte();
+		public ZNetRxIoSampleResponse(short length, ByteReader br)
+			: base(length, br)
+		{
+			_address64 = XBeeAddress64.ReadBytes(br);
+			_address16 = XBeeAddress16.ReadBytes(br);
 
-            _numSamples = br.ReadByte();
-            _digitalChannelMask1 = br.ReadByte();
-            _digitalChannelMask2 = br.ReadByte();
-            _analogChannelMask = br.ReadByte();
+			_options = br.ReadByte();
 
-            if (_digitalChannelMask1 != 0x00 || _digitalChannelMask2 != 0x00)
-            {
-                _digital1 = br.ReadByte();
-                _digital2 = br.ReadByte();
-            }
+			_numSamples = br.ReadByte();
+			_digitalChannelMask1 = br.ReadByte();
+			_digitalChannelMask2 = br.ReadByte();
+			_analogChannelMask = br.ReadByte();
 
-            if (_analogChannelMask != 0x00)
-            {
-                if ((_analogChannelMask & 0x01) == 0x01) _AD0 = br.ReadUInt16();
-                if ((_analogChannelMask & 0x02) == 0x02) _AD1 = br.ReadUInt16();
-                if ((_analogChannelMask & 0x04) == 0x04) _AD2 = br.ReadUInt16();
-                if ((_analogChannelMask & 0x08) == 0x08) _AD3 = br.ReadUInt16();
-                if ((_analogChannelMask & 0x80) == 0x80) _supplyVoltage = br.ReadUInt16();
-            }
-        }
+			if (_digitalChannelMask1 != 0x00 || _digitalChannelMask2 != 0x00)
+			{
+				_digital1 = br.ReadByte();
+				_digital2 = br.ReadByte();
+			}
 
-        public override string ToString()
-        {
-            string s = base.ToString() + "\r\n";
+			if (_analogChannelMask != 0x00)
+			{
+				if ((_analogChannelMask & 0x01) == 0x01) _AD0 = br.ReadUInt16();
+				if ((_analogChannelMask & 0x02) == 0x02) _AD1 = br.ReadUInt16();
+				if ((_analogChannelMask & 0x04) == 0x04) _AD2 = br.ReadUInt16();
+				if ((_analogChannelMask & 0x08) == 0x08) _AD3 = br.ReadUInt16();
+				if ((_analogChannelMask & 0x80) == 0x80) _supplyVoltage = br.ReadUInt16();
+			}
+		}
 
-            s += "Receive Options = " + ReceiveOption + "\r\n";
+		public override string ToString()
+		{
+			string s = base.ToString() + "\r\n";
 
-            if (DigitalMask1 != 0x00 || DigitalMask2 != 0x00)
-            {
-                s += "D1  = " + Digital1 + "\r\n";
-                s += "D2  = " + Digital2 + "\r\n";
-            }
+			s += "Receive Options = " + ReceiveOption + "\r\n";
 
-            if ((AnalogMask & 0x01) == 0x01) s += "AD0 = " + AD0 + "\r\n";
-            if ((AnalogMask & 0x02) == 0x02) s += "AD1 = " + AD1 + "\r\n";
-            if ((AnalogMask & 0x04) == 0x04) s += "AD2 = " + AD2 + "\r\n";
-            if ((AnalogMask & 0x08) == 0x08) s += "AD3 = " + AD3 + "\r\n";
-            if ((AnalogMask & 0x80) == 0x80) s += "supplyVoltage = " + SupplyVoltage + "mV\r\n";
+			if (DigitalMask1 != 0x00 || DigitalMask2 != 0x00)
+			{
+				s += "D1  = " + Digital1 + "\r\n";
+				s += "D2  = " + Digital2 + "\r\n";
+			}
 
-            return s;
-        }
-    }
+			if ((AnalogMask & 0x01) == 0x01) s += "AD0 = " + AD0 + "\r\n";
+			if ((AnalogMask & 0x02) == 0x02) s += "AD1 = " + AD1 + "\r\n";
+			if ((AnalogMask & 0x04) == 0x04) s += "AD2 = " + AD2 + "\r\n";
+			if ((AnalogMask & 0x08) == 0x08) s += "AD3 = " + AD3 + "\r\n";
+			if ((AnalogMask & 0x80) == 0x80) s += "supplyVoltage = " + SupplyVoltage + "mV\r\n";
+
+			return s;
+		}
+	}
 }

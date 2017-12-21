@@ -1,7 +1,7 @@
 ﻿/* 
  * XBee.cs
  * 
- * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
+ * Copyright (c) 2009-2017, Michael Schwarz (http://www.schwarz-interactive.de)
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -34,11 +34,10 @@
  * MQ   10-11-30    added ExplicitZigBeeResponse to checkframe (work item 7583)
  * XC   11-05-17    Refactored and fixed bug in MFToolkit.Net.XBee.XBee.ReceiveData method
  *                  to improve performance when more than one packet per second. (work item 9438)
+ * MS	17-12-21	removed LOG compile switch from sourc code
+ * 
  * 
  */
-
-#define LOG
-
 using System;
 using System.Text;
 using System.Threading;
@@ -48,59 +47,59 @@ using MFToolkit.IO;
 
 namespace MFToolkit.Net.XBee
 {
-    /// <summary>
-    /// Represents a XBee module communication class
-    /// </summary>
-    public class XBee : IDisposable
-    {
-        private string _port;
-        private int _baudRate = 9600;
-        private SerialPort _serialPort;
+	/// <summary>
+	/// Represents a XBee module communication class
+	/// </summary>
+	public class XBee : IDisposable
+	{
+		private string _port;
+		private int _baudRate = 9600;
+		private SerialPort _serialPort;
 		private MemoryStream _readBuffer = new MemoryStream();
 		private ApiType _apiType = ApiType.Unknown;
-		
+
 		private byte _frameID = 0x00;
 		private bool _waitResponse = false;
 		private XBeeResponse _receivedPacket = null;
 
-        private Thread _thd;
-        private bool _stopThd;
+		private Thread _thd;
+		private bool _stopThd;
 
-        #region Events
+		#region Events
 
-        public event FrameReceivedEventHandler FrameReceived;
-        public event ModemStatusChangedEventHandler ModemStatusChanged;
-        public event LogEventHandler LogEvent;
+		public event FrameReceivedEventHandler FrameReceived;
+		public event ModemStatusChangedEventHandler ModemStatusChanged;
+		public event LogEventHandler LogEvent;
 
-        #endregion
+		#endregion
 
-        #region Public Properties
+		#region Public Properties
 
-        public ApiType ApiType
-        {
-            get { return _apiType; }
-            protected set { _apiType = value; }
-        }
+		public ApiType ApiType
+		{
+			get { return _apiType; }
+			protected set { _apiType = value; }
+		}
 
-        #endregion
+		#endregion
 
-        #region Constructor
+		#region Constructor
 
-        ~XBee()
-        {
-            Dispose();
-        }
+		~XBee()
+		{
+			Dispose();
+		}
 
-        public XBee(string port)
-        {
-            _port = port;
-        }
+		public XBee(string port)
+		{
+			_port = port;
+		}
 
-        public XBee(string port, int baudRate)
-            : this(port)
-        {
-            _baudRate = baudRate;
-        }
+		public XBee(string port, int baudRate)
+			: this(port)
+		{
+			_baudRate = baudRate;
+		}
 
 		public XBee(string port, ApiType apiType)
 			: this(port)
@@ -112,30 +111,30 @@ namespace MFToolkit.Net.XBee
 			: this(port, baudRate)
 		{
 			_apiType = apiType;
-        }
+		}
 
-        #endregion
+		#endregion
 
-        #region Public Methods
+		#region Public Methods
 
-        /// <summary>
-        /// Opens the connection to the XBee module with the specified port configuration
-        /// </summary>
-        /// <param name="port">The serial port (i.e. COM1)</param>
-        /// <param name="baudRate">The baudrate to use</param>
-        /// <returns></returns>
-        public bool Open(string port, int baudRate)
-        {
-            _port = port;
-            _baudRate = baudRate;
+		/// <summary>
+		/// Opens the connection to the XBee module with the specified port configuration
+		/// </summary>
+		/// <param name="port">The serial port (i.e. COM1)</param>
+		/// <param name="baudRate">The baudrate to use</param>
+		/// <returns></returns>
+		public bool Open(string port, int baudRate)
+		{
+			_port = port;
+			_baudRate = baudRate;
 
-            return Open();
-        }
+			return Open();
+		}
 
-        /// <summary>
-        /// Opens the connection to the XBee module
-        /// </summary>
-        /// <returns></returns>
+		/// <summary>
+		/// Opens the connection to the XBee module
+		/// </summary>
+		/// <returns></returns>
 		public bool Open()
 		{
 			try
@@ -153,7 +152,7 @@ namespace MFToolkit.Net.XBee
 			}
 			catch (Exception ex)
 			{
-                OnLogEvent(LogEventType.ServerException, ex.ToString());
+				OnLogEvent(LogEventType.ServerException, ex.ToString());
 				return false;
 			}
 
@@ -163,16 +162,16 @@ namespace MFToolkit.Net.XBee
 
 				try
 				{
-                    WriteCommand("+++");
-                    Thread.Sleep(1025);     // at least one second to wait for OK response
+					WriteCommand("+++");
+					Thread.Sleep(1025);     // at least one second to wait for OK response
 
-                    if (ReadResponse() == "OK")
-                    {
-                        _apiType = ApiType.Disabled;
+					if (ReadResponse() == "OK")
+					{
+						_apiType = ApiType.Disabled;
 
-                        // we need some msecs to wait before calling another EnterCommandMode
-                        Thread.Sleep(1000);
-                    }
+						// we need some msecs to wait before calling another EnterCommandMode
+						Thread.Sleep(1000);
+					}
 				}
 				catch (Exception)
 				{
@@ -180,14 +179,14 @@ namespace MFToolkit.Net.XBee
 
 					_thd = new Thread(new ThreadStart(this.ReceiveData));
 #if(!MF)
-                    _thd.Name = "Receive Data Thread";
-                    _thd.IsBackground = true;
+					_thd.Name = "Receive Data Thread";
+					_thd.IsBackground = true;
 #endif
 					_thd.Start();
 
 					AtCommandResponse at = Execute(new ApiEnableCommand()) as AtCommandResponse;
 
-                    _apiType = ApiEnable.Parse(at).ApiType;
+					_apiType = ApiEnable.Parse(at).ApiType;
 				}
 
 				#endregion
@@ -196,8 +195,8 @@ namespace MFToolkit.Net.XBee
 			{
 				_thd = new Thread(new ThreadStart(this.ReceiveData));
 #if(!MF)
-                _thd.Name = "Receive Data Thread";
-                _thd.IsBackground = true;
+				_thd.Name = "Receive Data Thread";
+				_thd.IsBackground = true;
 #endif
 				_thd.Start();
 			}
@@ -206,422 +205,422 @@ namespace MFToolkit.Net.XBee
 				throw new NotSupportedException("The API type could not be read or is configured wrong.");
 
 			return true;
-        }
+		}
 
-        /// <summary>
-        /// Close the connection to the XBee module
-        /// </summary>
-        public void Close()
-        {
-            StopReceiveData();
+		/// <summary>
+		/// Close the connection to the XBee module
+		/// </summary>
+		public void Close()
+		{
+			StopReceiveData();
 
-            if (_serialPort != null && _serialPort.IsOpen)
-            {
-                _serialPort.Close();
-            }
-        }
+			if (_serialPort != null && _serialPort.IsOpen)
+			{
+				_serialPort.Close();
+			}
+		}
 
-        /// <summary>
-        /// Stops the receive thread
-        /// </summary>
-        public void StopReceiveData()
-        {
-            try
-            {
-                if (_thd != null)
-                {
-                    _stopThd = true;
+		/// <summary>
+		/// Stops the receive thread
+		/// </summary>
+		public void StopReceiveData()
+		{
+			try
+			{
+				if (_thd != null)
+				{
+					_stopThd = true;
 
-                    // Block again until the DoWork thread finishes
-                    _thd.Join(2000);
-                    _thd.Abort();
-                    _thd.Join(2000);
-                }
-            }
-            catch (Exception ex)
-            {
-                OnLogEvent(LogEventType.ServerException, ex.ToString());
-            }
-            finally
-            {
-                _thd = null;
-            }
-        }
+					// Block again until the DoWork thread finishes
+					_thd.Join(2000);
+					_thd.Abort();
+					_thd.Join(2000);
+				}
+			}
+			catch (Exception ex)
+			{
+				OnLogEvent(LogEventType.ServerException, ex.ToString());
+			}
+			finally
+			{
+				_thd = null;
+			}
+		}
 
-        /// <summary>
-        /// Sends a XBeeRequest
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        public bool ExecuteNonQuery(XBeeRequest request)
-        {
-            if (request is XBeeFrameRequest)
-            {
-                if (_frameID == byte.MaxValue)
-                    _frameID = byte.MinValue;
+		/// <summary>
+		/// Sends a XBeeRequest
+		/// </summary>
+		/// <param name="request"></param>
+		/// <returns></returns>
+		public bool ExecuteNonQuery(XBeeRequest request)
+		{
+			if (request is XBeeFrameRequest)
+			{
+				if (_frameID == byte.MaxValue)
+					_frameID = byte.MinValue;
 
-                ((XBeeFrameRequest)request).FrameID = ++_frameID;
-            }
+				((XBeeFrameRequest)request).FrameID = ++_frameID;
+			}
 
-            byte[] bytes;
+			byte[] bytes;
 
-            if (_apiType == ApiType.EnabledWithEscaped)
-                bytes = request.GetEscapedApiPacket();
-            else if (_apiType == ApiType.Enabled)
-                bytes = request.GetApiPacket();
-            else if (_apiType == ApiType.Disabled)
-                bytes = request.GetAtPacket();
-            else
-                throw new NotSupportedException("This ApiType is not supported.");
+			if (_apiType == ApiType.EnabledWithEscaped)
+				bytes = request.GetEscapedApiPacket();
+			else if (_apiType == ApiType.Enabled)
+				bytes = request.GetApiPacket();
+			else if (_apiType == ApiType.Disabled)
+				bytes = request.GetAtPacket();
+			else
+				throw new NotSupportedException("This ApiType is not supported.");
 
 #if(LOG && !MF && !WindowsCE)
             Console.WriteLine(">>\t" + ByteUtil.PrintBytes(bytes, false));
 #endif
 
-            _serialPort.Write(bytes, 0, bytes.Length);
+			_serialPort.Write(bytes, 0, bytes.Length);
 
-            return true;
-        }
+			return true;
+		}
 
 #if(!MF && !WindowsCE)
 
-        public T Execute<T>(XBeeRequest request) where T : XBeeResponse
-        {
-            return (T)Execute(request);
-        }
+		public T Execute<T>(XBeeRequest request) where T : XBeeResponse
+		{
+			return (T)Execute(request);
+		}
 
-        public T Execute<T>(XBeeRequest request, int timeout) where T : XBeeResponse
-        {
-            return (T)Execute(request, timeout);
-        }
+		public T Execute<T>(XBeeRequest request, int timeout) where T : XBeeResponse
+		{
+			return (T)Execute(request, timeout);
+		}
 #endif
 
-        /// <summary>
-        /// Sends a XBeeRequest and waits 1000 msec for the XBeeResponse
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        /// <exception cref="System.TimoutException">Throws an TimoutException when response could not be read.</exception>
-        public XBeeResponse Execute(XBeeRequest request)
-        {
-            return Execute(request, 3000);
-        }
+		/// <summary>
+		/// Sends a XBeeRequest and waits 1000 msec for the XBeeResponse
+		/// </summary>
+		/// <param name="request"></param>
+		/// <returns></returns>
+		/// <exception cref="System.TimoutException">Throws an TimoutException when response could not be read.</exception>
+		public XBeeResponse Execute(XBeeRequest request)
+		{
+			return Execute(request, 3000);
+		}
 
-        /// <summary>
-        /// Sends a XBeeRequest and waits for the XBeeResponse for specified milliseconds
-        /// </summary>
-        /// <param name="request">The XBeeRequest.</param>
-        /// <param name="timeout">Milliseconds to wait for the response.</param>
-        /// <returns></returns>
-        public XBeeResponse Execute(XBeeRequest request, int timeout)
-        {
-            _waitResponse = true;
+		/// <summary>
+		/// Sends a XBeeRequest and waits for the XBeeResponse for specified milliseconds
+		/// </summary>
+		/// <param name="request">The XBeeRequest.</param>
+		/// <param name="timeout">Milliseconds to wait for the response.</param>
+		/// <returns></returns>
+		public XBeeResponse Execute(XBeeRequest request, int timeout)
+		{
+			_waitResponse = true;
 
-            ExecuteNonQuery(request);
+			ExecuteNonQuery(request);
 
-            if (_apiType == ApiType.Enabled || _apiType == ApiType.EnabledWithEscaped)
-            {
-                int c = 0;
+			if (_apiType == ApiType.Enabled || _apiType == ApiType.EnabledWithEscaped)
+			{
+				int c = 0;
 
-                while (_waitResponse && ++c <= (timeout / 10))
-                {
-                    Thread.Sleep(10);
-                }
+				while (_waitResponse && ++c <= (timeout / 10))
+				{
+					Thread.Sleep(10);
+				}
 
-                if (c > (timeout / 10))
-                {
+				if (c > (timeout / 10))
+				{
 #if(MF)
 				    throw new Exception("Could not receive response.");
 #else
-                    throw new TimeoutException("Could not receive response.");
+					throw new TimeoutException("Could not receive response.");
 #endif
-                }
+				}
 
-                if (_waitResponse)
-                    return null;
+				if (_waitResponse)
+					return null;
 
-                OnFrameReceived(_receivedPacket);
+				OnFrameReceived(_receivedPacket);
 
-                return _receivedPacket;
-            }
-            else if (_apiType == ApiType.Disabled)
-            {
-                if (ReadResponse() == "OK")
-                    return null;
+				return _receivedPacket;
+			}
+			else if (_apiType == ApiType.Disabled)
+			{
+				if (ReadResponse() == "OK")
+					return null;
 
-                // throw new NotImplementedException("This method is not yet implemented.");
-            }
+				// throw new NotImplementedException("This method is not yet implemented.");
+			}
 
-            throw new NotSupportedException("This ApiType is not supported.");
-        }
+			throw new NotSupportedException("This ApiType is not supported.");
+		}
 
-        #endregion
+		#endregion
 
-        #region Private Methods
+		#region Private Methods
 
-//        private void ReceiveData()
-//        {
-//            try
-//            {
-//                int bytesToRead = _serialPort.BytesToRead;
+		//        private void ReceiveData()
+		//        {
+		//            try
+		//            {
+		//                int bytesToRead = _serialPort.BytesToRead;
 
-//                while (!_stopThd)
-//                {
-//                    if (bytesToRead == 0)
-//                    {
-//                        Thread.Sleep(20);
-//                    }
-//                    else
-//                    {
-//                        byte[] bytes = new byte[1024];	// TODO: what is the maximum size of Zigbee packets?
+		//                while (!_stopThd)
+		//                {
+		//                    if (bytesToRead == 0)
+		//                    {
+		//                        Thread.Sleep(20);
+		//                    }
+		//                    else
+		//                    {
+		//                        byte[] bytes = new byte[1024];	// TODO: what is the maximum size of Zigbee packets?
 
-//                        if (_serialPort == null || !_serialPort.IsOpen)
-//                        {
-//                            if (_serialPort == null)
-//                                _serialPort = new SerialPort(_port, _baudRate);
+		//                        if (_serialPort == null || !_serialPort.IsOpen)
+		//                        {
+		//                            if (_serialPort == null)
+		//                                _serialPort = new SerialPort(_port, _baudRate);
 
-//                            _serialPort.Open();
+		//                            _serialPort.Open();
 
-//                            bytesToRead = _serialPort.BytesToRead;
-//                            _readBuffer.SetLength(0);
-//                            continue;
-//                        }
+		//                            bytesToRead = _serialPort.BytesToRead;
+		//                            _readBuffer.SetLength(0);
+		//                            continue;
+		//                        }
 
-//                        try
-//                        {
-//                            int bytesRead = _serialPort.Read(bytes, 0, bytesToRead);
+		//                        try
+		//                        {
+		//                            int bytesRead = _serialPort.Read(bytes, 0, bytesToRead);
 
-//                            for (int i = 0; i < bytesRead; i++)
-//                            {
-//                                if (_apiType == ApiType.EnabledWithEscaped && XBeePacket.IsSpecialByte(bytes[i]))
-//                                {
-//                                    if (bytes[i] == XBeePacket.PACKET_STARTBYTE)
-//                                    {
-//                                        _readBuffer.WriteByte(bytes[i]);
-//                                    }
-//                                    else if (bytes[i] == XBeePacket.PACKET_ESCAPE)
-//                                    {
-//                                        _readBuffer.WriteByte((byte)(0x20 ^ bytes[++i]));
-//                                    }
-//                                    else
-//                                        throw new Exception("This special byte should not appear.");
-//                                }
-//                                else
-//                                    _readBuffer.WriteByte(bytes[i]);
-//                            }
-                           
-//                            bool startOK = false;
-//                            bool lengthAndCrcOK = false;
+		//                            for (int i = 0; i < bytesRead; i++)
+		//                            {
+		//                                if (_apiType == ApiType.EnabledWithEscaped && XBeePacket.IsSpecialByte(bytes[i]))
+		//                                {
+		//                                    if (bytes[i] == XBeePacket.PACKET_STARTBYTE)
+		//                                    {
+		//                                        _readBuffer.WriteByte(bytes[i]);
+		//                                    }
+		//                                    else if (bytes[i] == XBeePacket.PACKET_ESCAPE)
+		//                                    {
+		//                                        _readBuffer.WriteByte((byte)(0x20 ^ bytes[++i]));
+		//                                    }
+		//                                    else
+		//                                        throw new Exception("This special byte should not appear.");
+		//                                }
+		//                                else
+		//                                    _readBuffer.WriteByte(bytes[i]);
+		//                            }
 
-//                            do
-//                            {
-//                                _readBuffer.Position = 0;
+		//                            bool startOK = false;
+		//                            bool lengthAndCrcOK = false;
 
-//                                // startOK should be always true if there is at least on byte
-//                                startOK = ((byte)_readBuffer.ReadByte() == XBeePacket.PACKET_STARTBYTE);
+		//                            do
+		//                            {
+		//                                _readBuffer.Position = 0;
 
-//                                if (!startOK)
-//                                {
-//                                    bytes = _readBuffer.ToArray();
-//                                    _readBuffer = new MemoryStream();
+		//                                // startOK should be always true if there is at least on byte
+		//                                startOK = ((byte)_readBuffer.ReadByte() == XBeePacket.PACKET_STARTBYTE);
 
-//                                    startOK = false;
-//                                    for (int i = 0; i < bytes.Length; i++)
-//                                    {
-//                                        if (!startOK && bytes[i] != XBeePacket.PACKET_STARTBYTE)
-//                                            continue;
+		//                                if (!startOK)
+		//                                {
+		//                                    bytes = _readBuffer.ToArray();
+		//                                    _readBuffer = new MemoryStream();
 
-//                                        startOK = true;
-//                                        _readBuffer.Write(bytes, i, bytes.Length - i);
-//                                        _readBuffer.Position = 0;
-//                                    }
-//                                }
+		//                                    startOK = false;
+		//                                    for (int i = 0; i < bytes.Length; i++)
+		//                                    {
+		//                                        if (!startOK && bytes[i] != XBeePacket.PACKET_STARTBYTE)
+		//                                            continue;
 
-//                                lengthAndCrcOK = this.CheckLengthAndCrc();
+		//                                        startOK = true;
+		//                                        _readBuffer.Write(bytes, i, bytes.Length - i);
+		//                                        _readBuffer.Position = 0;
+		//                                    }
+		//                                }
 
-//                                bytes = _readBuffer.ToArray();
-//                                _readBuffer.SetLength(0);
+		//                                lengthAndCrcOK = this.CheckLengthAndCrc();
 
-//                                ByteReader br = new ByteReader(bytes, ByteOrder.BigEndian);
+		//                                bytes = _readBuffer.ToArray();
+		//                                _readBuffer.SetLength(0);
 
-//#if(LOG && !MF && !WindowsCE)
-//                                Console.WriteLine("<<\t" + ByteUtil.PrintBytes(bytes, false));
-//#endif
+		//                                ByteReader br = new ByteReader(bytes, ByteOrder.BigEndian);
 
-//                                if (startOK && lengthAndCrcOK)
-//                                {
-//                                    byte startByte = br.ReadByte();     // start byte
-//                                    short length = br.ReadInt16();
+		//#if(LOG && !MF && !WindowsCE)
+		//                                Console.WriteLine("<<\t" + ByteUtil.PrintBytes(bytes, false));
+		//#endif
 
-//                                    CheckFrame(length, br);
+		//                                if (startOK && lengthAndCrcOK)
+		//                                {
+		//                                    byte startByte = br.ReadByte();     // start byte
+		//                                    short length = br.ReadInt16();
 
-//                                    if (br.AvailableBytes > 1)
-//                                    {
-//                                        br.ReadByte();  // checksum of current API message
-                                        
-//                                        // ok, there are more bytes for an additional frame packet
-//                                        byte[] available = br.GetAvailableBytes();
-//                                        _readBuffer.Write(available, 0, available.Length);
-//                                    }
-//                                }
-//                                else
-//                                {
-//                                    _readBuffer.Write(bytes, 0, bytes.Length);
-//                                }
-//                            }
-//                            while (startOK & lengthAndCrcOK & (_readBuffer.Length > 4));
-//                        }
-//                        catch (Exception ex)
-//                        {
-//                            OnLogEvent(LogEventType.ServerException, ex.ToString());
+		//                                    CheckFrame(length, br);
 
-//                            _readBuffer.SetLength(0);
+		//                                    if (br.AvailableBytes > 1)
+		//                                    {
+		//                                        br.ReadByte();  // checksum of current API message
 
-//                            if (_serialPort != null && _serialPort.IsOpen)
-//                            {
-//                                bytesToRead = _serialPort.BytesToRead;
-//                            }
-//                        }
-//                    }
+		//                                        // ok, there are more bytes for an additional frame packet
+		//                                        byte[] available = br.GetAvailableBytes();
+		//                                        _readBuffer.Write(available, 0, available.Length);
+		//                                    }
+		//                                }
+		//                                else
+		//                                {
+		//                                    _readBuffer.Write(bytes, 0, bytes.Length);
+		//                                }
+		//                            }
+		//                            while (startOK & lengthAndCrcOK & (_readBuffer.Length > 4));
+		//                        }
+		//                        catch (Exception ex)
+		//                        {
+		//                            OnLogEvent(LogEventType.ServerException, ex.ToString());
 
-//                    if (_serialPort != null && _serialPort.IsOpen)
-//                        bytesToRead = _serialPort.BytesToRead;
-//                }
-//            }
-//#if(!MF)
-//            catch (ThreadAbortException ex)
-//            {
-//                OnLogEvent(LogEventType.ServerException, ex.ToString());
+		//                            _readBuffer.SetLength(0);
 
-//#if(LOG && !MF && !WindowsCE)
-//                // Display a message to the console.
-//                Console.WriteLine("{0} : DisplayMessage thread terminating - {1}",
-//                    DateTime.Now.ToString("HH:mm:ss.ffff"),
-//                    (string)ex.ExceptionState);
-//#endif
-//            }
-//#else
-//            catch(Exception ex)
-//            {
-//                OnLogEvent(LogEventType.ServerException, ex.ToString());
-//            }
-//#endif
-//        }
+		//                            if (_serialPort != null && _serialPort.IsOpen)
+		//                            {
+		//                                bytesToRead = _serialPort.BytesToRead;
+		//                            }
+		//                        }
+		//                    }
+
+		//                    if (_serialPort != null && _serialPort.IsOpen)
+		//                        bytesToRead = _serialPort.BytesToRead;
+		//                }
+		//            }
+		//#if(!MF)
+		//            catch (ThreadAbortException ex)
+		//            {
+		//                OnLogEvent(LogEventType.ServerException, ex.ToString());
+
+		//#if(LOG && !MF && !WindowsCE)
+		//                // Display a message to the console.
+		//                Console.WriteLine("{0} : DisplayMessage thread terminating - {1}",
+		//                    DateTime.Now.ToString("HH:mm:ss.ffff"),
+		//                    (string)ex.ExceptionState);
+		//#endif
+		//            }
+		//#else
+		//            catch(Exception ex)
+		//            {
+		//                OnLogEvent(LogEventType.ServerException, ex.ToString());
+		//            }
+		//#endif
+		//        }
 
 
-        private void ReceiveData()
-        {
-            try
-            {
+		private void ReceiveData()
+		{
+			try
+			{
 
-                while (!_stopThd)
-                {
-                    Thread.Sleep(20);
+				while (!_stopThd)
+				{
+					Thread.Sleep(20);
 
-                    if (_serialPort.BytesToRead <= 0)
-                    {
-                        continue;
-                    }
+					if (_serialPort.BytesToRead <= 0)
+					{
+						continue;
+					}
 
-                    byte[] buf = new byte[1];
+					byte[] buf = new byte[1];
 
-                    while (_serialPort.BytesToRead > 0)
-                    {
-                        _serialPort.Read(buf, 0, 1);
+					while (_serialPort.BytesToRead > 0)
+					{
+						_serialPort.Read(buf, 0, 1);
 
-                        if (_apiType == ApiType.EnabledWithEscaped && XBeePacket.IsSpecialByte(buf[0]))
-                        {
-                            if (buf[0] == XBeePacket.PACKET_STARTBYTE)
-                            {
-                                _readBuffer.WriteByte(buf[0]);
-                            }
-                            else if (buf[0] == XBeePacket.PACKET_ESCAPE)
-                            {
-                                _serialPort.Read(buf, 0, 1);
-                                _readBuffer.WriteByte((byte)(0x20 ^ buf[0]));
-                            }
-                            else
-                                throw new Exception("This special byte should not appear.");
-                        }
-                        else
-                        {
-                            _readBuffer.WriteByte(buf[0]);
-                        }
+						if (_apiType == ApiType.EnabledWithEscaped && XBeePacket.IsSpecialByte(buf[0]))
+						{
+							if (buf[0] == XBeePacket.PACKET_STARTBYTE)
+							{
+								_readBuffer.WriteByte(buf[0]);
+							}
+							else if (buf[0] == XBeePacket.PACKET_ESCAPE)
+							{
+								_serialPort.Read(buf, 0, 1);
+								_readBuffer.WriteByte((byte)(0x20 ^ buf[0]));
+							}
+							else
+								throw new Exception("This special byte should not appear.");
+						}
+						else
+						{
+							_readBuffer.WriteByte(buf[0]);
+						}
 
-                        if (_readBuffer.Length <= 4)
-                            continue;
+						if (_readBuffer.Length <= 4)
+							continue;
 
-                        bool startOK = false;
-                        bool lengthAndCrcOK = false;
+						bool startOK = false;
+						bool lengthAndCrcOK = false;
 
-                        _readBuffer.Position = 0; // set position of read buffer to beginning.
+						_readBuffer.Position = 0; // set position of read buffer to beginning.
 
-                        startOK = ((byte)_readBuffer.ReadByte() == XBeePacket.PACKET_STARTBYTE); // startOK should be always true if there is at least one byte.
+						startOK = ((byte)_readBuffer.ReadByte() == XBeePacket.PACKET_STARTBYTE); // startOK should be always true if there is at least one byte.
 
-                        byte[] bytes = new byte[1024];	// TODO: what is the maximum size of Zigbee packets?
+						byte[] bytes = new byte[1024];	// TODO: what is the maximum size of Zigbee packets?
 
-                        if (!startOK) // First byte is not the start byte, so keep removing bytes in the read buffer until we get to one.
-                        {
-                            bytes = _readBuffer.ToArray();
-                            _readBuffer = new MemoryStream();
+						if (!startOK) // First byte is not the start byte, so keep removing bytes in the read buffer until we get to one.
+						{
+							bytes = _readBuffer.ToArray();
+							_readBuffer = new MemoryStream();
 
-                            for (int i = 0; i < bytes.Length; i++)
-                            {
-                                if (!startOK && bytes[i] != XBeePacket.PACKET_STARTBYTE)
-                                    continue;
+							for (int i = 0; i < bytes.Length; i++)
+							{
+								if (!startOK && bytes[i] != XBeePacket.PACKET_STARTBYTE)
+									continue;
 
-                                startOK = true;
-                                _readBuffer.Write(bytes, i, bytes.Length - i);
-                                _readBuffer.Position = 0;
-                                break;  // I think we needed this break or else the loop will keep deleting stuff after we get the start byte.
-                            }
+								startOK = true;
+								_readBuffer.Write(bytes, i, bytes.Length - i);
+								_readBuffer.Position = 0;
+								break;  // I think we needed this break or else the loop will keep deleting stuff after we get the start byte.
+							}
 
-                            if (!startOK) // Check once more if we have the start byte, if not, continue in the outer while loop waiting for more data.
-                                continue;
-                        }
+							if (!startOK) // Check once more if we have the start byte, if not, continue in the outer while loop waiting for more data.
+								continue;
+						}
 
-                        // We should now have a read buffer starting with a start byte.
+						// We should now have a read buffer starting with a start byte.
 
-                        lengthAndCrcOK = this.CheckLengthAndCrc(); // check CRC and length.
+						lengthAndCrcOK = this.CheckLengthAndCrc(); // check CRC and length.
 
-                        bytes = _readBuffer.ToArray();
-                        _readBuffer.SetLength(0);
+						bytes = _readBuffer.ToArray();
+						_readBuffer.SetLength(0);
 
 #if(LOG && !MF && !WindowsCE)
-                        Console.WriteLine("<<\t" + ByteUtil.PrintBytes(bytes, false));
+						Console.WriteLine("<<\t" + ByteUtil.PrintBytes(bytes, false));
 #endif
 
-                        if (startOK && lengthAndCrcOK)
-                        {
-                            ByteReader br = new ByteReader(bytes, ByteOrder.BigEndian);
+						if (startOK && lengthAndCrcOK)
+						{
+							ByteReader br = new ByteReader(bytes, ByteOrder.BigEndian);
 
-                            byte startByte = br.ReadByte();     // start byte
-                            short length = br.ReadInt16();
+							byte startByte = br.ReadByte();     // start byte
+							short length = br.ReadInt16();
 
-                            CheckFrame(length, br);
+							CheckFrame(length, br);
 
-                            if (br.AvailableBytes > 1)
-                            {
-                                br.ReadByte();  // checksum of current API message
+							if (br.AvailableBytes > 1)
+							{
+								br.ReadByte();  // checksum of current API message
 
-                                // ok, there are more bytes for an additional frame packet
-                                byte[] available = br.GetAvailableBytes();
-                                _readBuffer.Write(available, 0, available.Length);
-                            }
-                        }
-                        else
-                        {
-                            _readBuffer.Write(bytes, 0, bytes.Length);
-                        }
+								// ok, there are more bytes for an additional frame packet
+								byte[] available = br.GetAvailableBytes();
+								_readBuffer.Write(available, 0, available.Length);
+							}
+						}
+						else
+						{
+							_readBuffer.Write(bytes, 0, bytes.Length);
+						}
 
-                    }
-                }
+					}
+				}
 
-            }
+			}
 #if(!MF)
-            catch (ThreadAbortException ex)
-            {
-                OnLogEvent(LogEventType.ServerException, ex.ToString());
+			catch (ThreadAbortException ex)
+			{
+				OnLogEvent(LogEventType.ServerException, ex.ToString());
 
 #if(LOG && !MF && !WindowsCE)
                 // Display a message to the console.
@@ -629,89 +628,89 @@ namespace MFToolkit.Net.XBee
                     DateTime.Now.ToString("HH:mm:ss.ffff"),
                     (string)ex.ExceptionState);
 #endif
-            }
+			}
 #else
 			catch(Exception ex)
 			{
 				OnLogEvent(LogEventType.ServerException, ex.ToString());
 			}
 #endif
-        }
+		}
 
 
 
-        private bool CheckLengthAndCrc()
-        {
-            // can't be to short
-            if (_readBuffer.Length < 4)
-                return false;
+		private bool CheckLengthAndCrc()
+		{
+			// can't be to short
+			if (_readBuffer.Length < 4)
+				return false;
 
-            int length = (_readBuffer.ReadByte() << 8) + _readBuffer.ReadByte();
+			int length = (_readBuffer.ReadByte() << 8) + _readBuffer.ReadByte();
 
-            // real length = start(1) + length.length(2) + length parameter + crc(1) 
-            if ((length + 4) > _readBuffer.Length)
-            {
-                return false;
-            }
+			// real length = start(1) + length.length(2) + length parameter + crc(1) 
+			if ((length + 4) > _readBuffer.Length)
+			{
+				return false;
+			}
 
-            XBeeChecksum checksum = new XBeeChecksum();
-            for (int i = 0; i < length; i++)
-            {
-                checksum.AddByte((byte)_readBuffer.ReadByte());
-            }
+			XBeeChecksum checksum = new XBeeChecksum();
+			for (int i = 0; i < length; i++)
+			{
+				checksum.AddByte((byte)_readBuffer.ReadByte());
+			}
 
-            checksum.Compute();
-            bool result = checksum.Verify((byte)_readBuffer.ReadByte());
+			checksum.Compute();
+			bool result = checksum.Verify((byte)_readBuffer.ReadByte());
 #if(LOG && !MF && !WindowsCE)
             if (!result) Console.WriteLine("++ --> BAD CRC!!");
 #endif
 
 
-            return result;
-        }
+			return result;
+		}
 
 		private void CheckFrame(short length, ByteReader br)
-        {
-            XBeeApiType apiId = (XBeeApiType)br.Peek();
-            XBeeResponse res = null;
+		{
+			XBeeApiType apiId = (XBeeApiType)br.Peek();
+			XBeeResponse res = null;
 
-            switch (apiId)
-            {
-                case XBeeApiType.ZNetExplicitRxIndicator:
-                    res = new ExplicitZigBeeResponse(length, br);
-                    break;
+			switch (apiId)
+			{
+				case XBeeApiType.ZNetExplicitRxIndicator:
+					res = new ExplicitZigBeeResponse(length, br);
+					break;
 
-                case XBeeApiType.AtCommandResponse:
-                    res = new AtCommandResponse(length, br);
-                    break;
-                case XBeeApiType.RemoteAtCommandResponse:
-                    res = new RemoteAtResponse(length, br);
-                    break;
-                case XBeeApiType.ModemStatus:
-                    res = new ModemStatusResponse(length, br);
-                    if (res != null)
-                        OnModemStatusChanged((res as ModemStatusResponse).ModemStatus);
-                    break;
+				case XBeeApiType.AtCommandResponse:
+					res = new AtCommandResponse(length, br);
+					break;
+				case XBeeApiType.RemoteAtCommandResponse:
+					res = new RemoteAtResponse(length, br);
+					break;
+				case XBeeApiType.ModemStatus:
+					res = new ModemStatusResponse(length, br);
+					if (res != null)
+						OnModemStatusChanged((res as ModemStatusResponse).ModemStatus);
+					break;
 
-                case XBeeApiType.RxPacket16:
-                    res = new RxResponse16(length, br);
-                    break;
-                case XBeeApiType.RxPacket64:
-                    res = new RxResponse64(length, br);
-                    break;
-                case XBeeApiType.TxStatus:
-                    res = new TxStatusResponse(length, br);
-                    break;
+				case XBeeApiType.RxPacket16:
+					res = new RxResponse16(length, br);
+					break;
+				case XBeeApiType.RxPacket64:
+					res = new RxResponse64(length, br);
+					break;
+				case XBeeApiType.TxStatus:
+					res = new TxStatusResponse(length, br);
+					break;
 
-                case XBeeApiType.NodeIdentificationIndicator:
+				case XBeeApiType.NodeIdentificationIndicator:
 					res = new ZNetNodeIdentificationResponse(length, br);
-                    break;
-                case XBeeApiType.ZNetRxPacket:
+					break;
+				case XBeeApiType.ZNetRxPacket:
 					res = new ZNetRxResponse(length, br);
-                    break;
-                case XBeeApiType.XBeeSensorReadIndicator:
+					break;
+				case XBeeApiType.XBeeSensorReadIndicator:
 					res = new XBeeSensorRead(length, br);
-                    break;
+					break;
 				case XBeeApiType.ZNetIODataSampleRxIndicator:
 					res = new ZNetRxIoSampleResponse(length, br);
 					break;
@@ -719,57 +718,57 @@ namespace MFToolkit.Net.XBee
 					res = new ZNetTxStatusResponse(length, br);
 					break;
 
-                
+
 				default:
 					break;
-            }
+			}
 
 			if (res != null)
 			{
-                if (_waitResponse && res is XBeeResponse)
-                {
-                    if (res is AtCommandResponse && (res as AtCommandResponse).FrameID != _frameID)
-                        return;
+				if (_waitResponse && res is XBeeResponse)
+				{
+					if (res is AtCommandResponse && (res as AtCommandResponse).FrameID != _frameID)
+						return;
 
-                    _receivedPacket = res;
-                    _waitResponse = false;
-                }
-                else
-                {
-                    OnFrameReceived(res);
-                }
+					_receivedPacket = res;
+					_waitResponse = false;
+				}
+				else
+				{
+					OnFrameReceived(res);
+				}
 			}
-        }
+		}
 
-        #region Event Handling
+		#region Event Handling
 
-        private void OnFrameReceived(XBeeResponse response)
-        {
-            FrameReceivedEventHandler handler = FrameReceived;
+		private void OnFrameReceived(XBeeResponse response)
+		{
+			FrameReceivedEventHandler handler = FrameReceived;
 
-            if (handler != null)
-                handler(this, new FrameReceivedEventArgs(response));
-        }
+			if (handler != null)
+				handler(this, new FrameReceivedEventArgs(response));
+		}
 
-        private void OnModemStatusChanged(ModemStatusType status)
-        {
-            ModemStatusChangedEventHandler handler = ModemStatusChanged;
+		private void OnModemStatusChanged(ModemStatusType status)
+		{
+			ModemStatusChangedEventHandler handler = ModemStatusChanged;
 
-            if (handler != null)
-                handler(this, new ModemStatusChangedEventArgs(status));
-        }
+			if (handler != null)
+				handler(this, new ModemStatusChangedEventArgs(status));
+		}
 
-        private void OnLogEvent(LogEventType eventType, string message)
-        {
-            LogEventHandler handler = LogEvent;
+		private void OnLogEvent(LogEventType eventType, string message)
+		{
+			LogEventHandler handler = LogEvent;
 
-            if (handler != null)
-                handler(this, new LogEventArgs(eventType, message));
-        }
+			if (handler != null)
+				handler(this, new LogEventArgs(eventType, message));
+		}
 
-        #endregion
+		#endregion
 
-        private string ReadTo(string value)
+		private string ReadTo(string value)
 		{
 			string textArrived = string.Empty;
 
@@ -831,14 +830,14 @@ namespace MFToolkit.Net.XBee
 			return textArrived;
 		}
 
-        protected void WriteCommand(string s)
-        {
+		protected void WriteCommand(string s)
+		{
 #if(LOG && !MF && !WindowsCE)
             Console.WriteLine(s);
 #endif
-            byte[] bytes = Encoding.UTF8.GetBytes(s);
-            _serialPort.Write(bytes, 0, bytes.Length);
-        }
+			byte[] bytes = Encoding.UTF8.GetBytes(s);
+			_serialPort.Write(bytes, 0, bytes.Length);
+		}
 
 		protected string ReadResponse()
 		{
@@ -860,39 +859,39 @@ namespace MFToolkit.Net.XBee
 				return false;
 			else
 				return true;
-        }
+		}
 
-        #endregion
+		#endregion
 
-        #region IDisposable Members
+		#region IDisposable Members
 
-        public void Dispose()
-        {
-            Close();
+		public void Dispose()
+		{
+			Close();
 
-            if(_serialPort != null)
-            {
-                _serialPort.Dispose();
-                _serialPort = null;
-            }
-        }
+			if (_serialPort != null)
+			{
+				_serialPort.Dispose();
+				_serialPort = null;
+			}
+		}
 
-        #endregion
+		#endregion
 
-        #region Obsolete Members
+		#region Obsolete Members
 
-        [Obsolete("Use XBee.ExecuteNonQuery(XBeeRequest) instead.", true)]
-        public bool SendPacket(XBeePacket packet)
-        {
-            throw new NotSupportedException("This method is not supported any more.");
-        }
+		[Obsolete("Use XBee.ExecuteNonQuery(XBeeRequest) instead.", true)]
+		public bool SendPacket(XBeePacket packet)
+		{
+			throw new NotSupportedException("This method is not supported any more.");
+		}
 
-        [Obsolete("Use XBee.Execute(XBeeRequest) instead.", true)]
-        public XBeeResponse SendCommand(AtCommand cmd)
-        {
-            throw new NotSupportedException("This method is not supported any more.");
-        }
+		[Obsolete("Use XBee.Execute(XBeeRequest) instead.", true)]
+		public XBeeResponse SendCommand(AtCommand cmd)
+		{
+			throw new NotSupportedException("This method is not supported any more.");
+		}
 
-        #endregion
-    }
+		#endregion
+	}
 }
