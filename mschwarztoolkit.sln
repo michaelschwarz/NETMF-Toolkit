@@ -1,6 +1,8 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31911.196
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZigbeeConsole", "ZigbeeConsole\ZigbeeConsole.csproj", "{74F0327C-8A14-44B4-A13D-5746A751D705}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zigbee", "Zigbee\Zigbee.csproj", "{712410B3-03CB-4771-9AFE-75CA1C65EC3E}"
@@ -57,102 +59,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mail", "Mail\Mail.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SSDP", "SSDP\SSDP.csproj", "{B97AA318-DDB2-4FCB-AEE6-C1E5134A538A}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5D52D6EB-4846-4C48-A7EF-11EB3C6A39D6}"
-	ProjectSection(SolutionItems) = preProject
-		build.bat = build.bat
-	EndProjectSection
-EndProject
 Global
-	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 29
-		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs05
-		SccLocalPath0 = .
-		SccProjectUniqueName1 = ZigbeeConsole\\ZigbeeConsole.csproj
-		SccProjectName1 = ZigbeeConsole
-		SccLocalPath1 = ZigbeeConsole
-		SccProjectUniqueName2 = Zigbee\\Zigbee.csproj
-		SccProjectName2 = Zigbee
-		SccLocalPath2 = Zigbee
-		SccProjectUniqueName3 = IO\\IO.csproj
-		SccProjectName3 = IO
-		SccLocalPath3 = IO
-		SccProjectUniqueName4 = MicroIO\\MicroIO.csproj
-		SccProjectName4 = MicroIO
-		SccLocalPath4 = MicroIO
-		SccProjectUniqueName5 = MicroZigbee\\MicroZigbee.csproj
-		SccProjectName5 = MicroZigbee
-		SccLocalPath5 = MicroZigbee
-		SccProjectUniqueName6 = MicroZigbeeConsole\\MicroZigbeeConsole.csproj
-		SccProjectName6 = MicroZigbeeConsole
-		SccLocalPath6 = MicroZigbeeConsole
-		SccProjectUniqueName7 = DNS\\DNS.csproj
-		SccProjectName7 = DNS
-		SccLocalPath7 = DNS
-		SccProjectUniqueName8 = DnsConsole\\DnsConsole.csproj
-		SccProjectName8 = DnsConsole
-		SccLocalPath8 = DnsConsole
-		SccProjectUniqueName9 = HTTP\\HTTP.csproj
-		SccProjectName9 = HTTP
-		SccLocalPath9 = HTTP
-		SccProjectUniqueName10 = HttpConsole\\HttpConsole.csproj
-		SccProjectName10 = HttpConsole
-		SccLocalPath10 = HttpConsole
-		SccProjectUniqueName11 = MicroHTTP\\MicroHTTP.csproj
-		SccProjectName11 = MicroHTTP
-		SccLocalPath11 = MicroHTTP
-		SccProjectUniqueName12 = MicroHTTPConsole\\MicroHTTPConsole.csproj
-		SccProjectName12 = MicroHTTPConsole
-		SccLocalPath12 = MicroHTTPConsole
-		SccProjectUniqueName13 = MicroDNS\\MicroDNS.csproj
-		SccProjectName13 = MicroDNS
-		SccLocalPath13 = MicroDNS
-		SccProjectUniqueName14 = uALFAT\\uALFAT.csproj
-		SccProjectName14 = uALFAT
-		SccLocalPath14 = uALFAT
-		SccProjectUniqueName15 = uALFAT_DemoApplication\\uALFAT_DemoApplication.csproj
-		SccProjectName15 = uALFAT_DemoApplication
-		SccLocalPath15 = uALFAT_DemoApplication
-		SccProjectUniqueName16 = MicroUtilities\\MicroUtilities.csproj
-		SccProjectName16 = MicroUtilities
-		SccLocalPath16 = MicroUtilities
-		SccProjectUniqueName17 = MicroGM862\\MicroGM862.csproj
-		SccProjectName17 = MicroGM862
-		SccLocalPath17 = MicroGM862
-		SccProjectUniqueName18 = MicroGM862Demo\\MicroGM862Demo.csproj
-		SccProjectName18 = MicroGM862Demo
-		SccLocalPath18 = MicroGM862Demo
-		SccProjectUniqueName19 = MicroC6820\\MicroC6820.csproj
-		SccProjectName19 = MicroC6820
-		SccLocalPath19 = MicroC6820
-		SccProjectUniqueName20 = NetBIOS\\NetBIOS.csproj
-		SccProjectName20 = NetBIOS
-		SccLocalPath20 = NetBIOS
-		SccProjectUniqueName21 = NTP\\NTP.csproj
-		SccProjectName21 = NTP
-		SccLocalPath21 = NTP
-		SccProjectUniqueName22 = POP3\\POP3.csproj
-		SccProjectName22 = POP3
-		SccLocalPath22 = POP3
-		SccProjectUniqueName23 = SMTP\\SMTP.csproj
-		SccProjectName23 = SMTP
-		SccLocalPath23 = SMTP
-		SccProjectUniqueName24 = SmtpConsole\\SmtpConsole.csproj
-		SccProjectName24 = SmtpConsole
-		SccLocalPath24 = SmtpConsole
-		SccProjectUniqueName25 = SsdpConsole\\SsdpConsole.csproj
-		SccProjectName25 = SsdpConsole
-		SccLocalPath25 = SsdpConsole
-		SccProjectUniqueName26 = MicroNTP\\MicroNTP.csproj
-		SccProjectName26 = MicroNTP
-		SccLocalPath26 = MicroNTP
-		SccProjectUniqueName27 = Mail\\Mail.csproj
-		SccProjectName27 = Mail
-		SccLocalPath27 = Mail
-		SccProjectUniqueName28 = SSDP\\SSDP.csproj
-		SccProjectName28 = SSDP
-		SccLocalPath28 = SSDP
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -457,5 +364,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CC36E24E-E2ED-4646-8DA2-48D1F7147DFC}
 	EndGlobalSection
 EndGlobal
