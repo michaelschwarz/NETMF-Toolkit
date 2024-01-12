@@ -83,10 +83,6 @@
       <Project>{A0F47113-574C-40F3-BE10-158763874C09}</Project>
       <Name>SMTP</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Zigbee\Zigbee.csproj">
-      <Project>{712410B3-03CB-4771-9AFE-75CA1C65EC3E}</Project>
-      <Name>Zigbee</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

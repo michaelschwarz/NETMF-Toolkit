@@ -1,7 +1,7 @@
 ﻿/* 
  * Program.cs		(Demo Application)
  * 
- * Copyright (c) 2009, Michael Schwarz (http://www.schwarz-interactive.de)
+ * Copyright (c) 2009-2024, Michael Schwarz (http://www.schwarz-interactive.de)
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -23,14 +23,11 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  */
-using System;
-using System.Collections.Generic;
-using System.Text;
-using MFToolkit.Net.Smtp;
-using System.Threading;
-using MFToolkit.Net.XBee;
-using MFToolkit.Net.Pop3;
 using MFToolkit.Net.Mail.Storage;
+using MFToolkit.Net.Pop3;
+using MFToolkit.Net.Smtp;
+using System;
+using System.Threading;
 
 namespace SmtpConsole
 {
@@ -49,6 +46,7 @@ namespace SmtpConsole
             thd2.IsBackground = true;
             thd2.Start();
 
+            Console.WriteLine("Press any key to stop server...");
             Console.ReadLine();
 
             Console.WriteLine("Shutting down mail server...");
@@ -88,64 +86,5 @@ namespace SmtpConsole
 
             pop3.Stop();
         }
-    }
-
-    class XBeeMessageSpool
-    {
-        #region IMessageSpool Members
-
-        public bool SpoolMessage(MailMessage message, out string reply)
-        {
-            reply = null;
-
-            string subject = message.Subject;
-
-            if (String.IsNullOrEmpty(subject))
-            {
-                reply = "Missing subject";
-                return false;
-            }
-
-            string[] parts = subject.Split('|');
-
-            if (parts.Length == 0)
-            {
-                reply = "Missing command arguments seperator";
-                return false;
-            }
-
-            if (parts[0] == "NI")
-            {
-                using (XBee xbee = new XBee("COM4", ApiType.Enabled))
-                {
-                    xbee.Open();
-
-                    XBeeResponse res = xbee.Execute(new NodeIdentifierCommand());
-
-                    if (res == null)
-                    {
-                        reply = "Could not execute NI command";
-                        return false;
-                    }
-
-                    AtCommandResponse atr = res as AtCommandResponse;
-
-                    if (atr != null)
-                    {
-                        NodeIdentifier ni = NodeIdentifier.Parse(atr);
-
-                        if (ni != null)
-                        {
-                            reply = "XBee module response: " + ni.GetType() + " = " + ni.Identifier;
-                            return false;
-                        }
-                    }
-                }
-            }
-
-            return true;
-        }
-
-        #endregion
     }
 }

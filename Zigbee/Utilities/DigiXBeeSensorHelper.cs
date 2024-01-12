@@ -1,7 +1,7 @@
 ﻿/* 
  * DigiXBeeSensorHelper.cs
  * 
- * Copyright (c) 2017, Michael Schwarz (http://www.schwarz-interactive.de)
+ * Copyright (c) 2009-2024, Michael Schwarz (http://www.schwarz-interactive.de)
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
